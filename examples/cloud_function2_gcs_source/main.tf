@@ -14,17 +14,30 @@
  * limitations under the License.
  */
 
+resource "google_storage_bucket" "bucket" {
+  name                        = "${var.project_id}-gcf-source"
+  location                    = "US"
+  uniform_bucket_level_access = true
+  project                     = var.project_id
+}
+
+resource "google_storage_bucket_object" "function-source" {
+  name   = "sample_function_py.zip"
+  bucket = google_storage_bucket.bucket.name
+  source = "../../helpers/sample_function_py.zip"
+}
+
 module "cloud_functions2" {
   source = "../.."
 
   project_id        = var.project_id
-  function_name     = "function2-gcs-source"
+  function_name     = "function2-gcs-source-py"
   function_location = "us-central1"
   runtime           = "python38"
   entrypoint        = "hello_http"
   storage_source = {
-    bucketname = "dc-in-lz-pr-poc-01_cloudbuild"
-    object     = "cf_source_sample/cf_sample_func.zip"
+    bucket     = google_storage_bucket.bucket.name
+    object     = google_storage_bucket_object.function-source.name
     generation = null
   }
 }

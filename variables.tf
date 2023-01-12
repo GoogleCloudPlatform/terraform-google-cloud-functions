@@ -72,7 +72,7 @@ variable "docker_repository" {
 variable "storage_source" {
   description = "Get the source from this location in Google Cloud Storage"
   type = object({
-    bucketname = string
+    bucket     = string
     object     = string
     generation = string
   })
@@ -139,5 +139,18 @@ variable "service_config" {
     service_account_email          = string
     all_traffic_on_latest_revision = bool
   })
-  default = null
+  default = {
+    all_traffic_on_latest_revision = true
+    available_memory               = "256M"
+    ingress_settings               = null
+    max_instance_count             = "100"
+    min_instance_count             = null
+    runtime_env_variables          = null
+    service_account_email          = null
+    timeout_seconds                = "60"
+    vpc_connector                  = null
+    vpc_connector_egress_settings  = null
+    runtime_secret_env_variables   = null
+    secret_volumes                 = null
+  }
 }

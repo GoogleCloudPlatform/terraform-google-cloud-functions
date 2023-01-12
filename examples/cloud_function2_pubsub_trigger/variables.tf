@@ -17,10 +17,5 @@
 variable "project_id" {
   description = "The ID of the project in which to provision resources."
   type        = string
-}
-
-variable "pubsub_topic" {
-  description = "Name of the PubSub Topic"
-  type        = string
-  default     = "func-topic"
+  default     = "dc-in-lz-pr-poc-01"
 }

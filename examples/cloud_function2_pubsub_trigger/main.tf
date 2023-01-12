@@ -14,24 +14,45 @@
  * limitations under the License.
  */
 
+resource "google_storage_bucket" "bucket" {
+  name                        = "${var.project_id}-gcf-source-pubsub"
+  location                    = "US"
+  uniform_bucket_level_access = true
+  project                     = var.project_id
+}
+
+resource "google_storage_bucket_object" "function-source" {
+  name   = "sample_function_py.zip"
+  bucket = google_storage_bucket.bucket.name
+  source = "../../helpers/sample_function_py.zip"
+}
+
+module "pubsub" {
+  source  = "terraform-google-modules/pubsub/google"
+  version = "~> 5.0"
+
+  topic      = "function2-topic"
+  project_id = var.project_id
+}
+
 module "cloud_functions2" {
   source = "../.."
 
   project_id        = var.project_id
-  function_name     = "function2-pubsub-trigger"
+  function_name     = "function2-pubsub-trigger-py"
   function_location = "us-central1"
   runtime           = "python38"
   entrypoint        = "hello_http"
   storage_source = {
-    bucketname = "dc-in-lz-pr-poc-01_cloudbuild"
-    object     = "cf_source_sample/cf_sample_func.zip"
+    bucket     = google_storage_bucket.bucket.name
+    object     = google_storage_bucket_object.function-source.name
     generation = null
   }
   event_trigger = {
     trigger_region        = "us-central1"
     event_type            = "google.cloud.pubsub.topic.v1.messagePublished"
     service_account_email = null
-    pubsub_topic          = "projects/${var.project_id}/topics/${var.pubsub_topic}"
+    pubsub_topic          = module.pubsub.id
     retry_policy          = "RETRY_POLICY_RETRY"
     event_filters         = null
   }

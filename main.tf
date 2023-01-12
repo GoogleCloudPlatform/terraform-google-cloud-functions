@@ -26,14 +26,14 @@ resource "google_cloudfunctions2_function" "function" {
 
   build_config {
     runtime               = var.runtime
-    entry_point           = var.entrypoint # Set the entry point
+    entry_point           = var.entrypoint
     environment_variables = var.build_env_variables
 
     source {
       dynamic "storage_source" {
         for_each = var.repo_source == null ? [var.storage_source] : []
         content {
-          bucket     = storage_source.value.bucketname
+          bucket     = storage_source.value.bucket
           object     = storage_source.value.object
           generation = storage_source.value.generation
         }
@@ -80,10 +80,10 @@ resource "google_cloudfunctions2_function" "function" {
   dynamic "service_config" {
     for_each = var.service_config != null ? [var.service_config] : []
     content {
-      max_instance_count    = service_config.value.max_instance_count ? service_config.value.max_instance_count : 100
+      max_instance_count    = service_config.value.max_instance_count
       min_instance_count    = service_config.value.min_instance_count
-      available_memory      = service_config.value.available_memory ? service_config.value.available_memory : "256M"
-      timeout_seconds       = service_config.value.timeout_seconds ? service_config.value.timeout_seconds : 60
+      available_memory      = service_config.value.available_memory
+      timeout_seconds       = service_config.value.timeout_seconds
       environment_variables = service_config.value.runtime_env_variables != null ? service_config.value.runtime_env_variables : {}
 
       vpc_connector                 = service_config.value.vpc_connector
@@ -91,7 +91,7 @@ resource "google_cloudfunctions2_function" "function" {
       ingress_settings              = service_config.value.ingress_settings
 
       service_account_email          = service_config.value.service_account_email
-      all_traffic_on_latest_revision = service_config.value.all_traffic_on_latest_revision ? service_config.value.all_traffic_on_latest_revision : true
+      all_traffic_on_latest_revision = service_config.value.all_traffic_on_latest_revision
 
       dynamic "secret_environment_variables" {
         for_each = service_config.value.runtime_secret_env_variables != null ? service_config.value.runtime_secret_env_variables : []

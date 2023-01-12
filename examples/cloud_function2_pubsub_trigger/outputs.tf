@@ -26,5 +26,5 @@ output "function_name" {
 
 output "pubsub_topic" {
   description = "Name of the PubSub Topic"
-  value       = var.pubsub_topic
+  value       = module.pubsub.topic
 }
