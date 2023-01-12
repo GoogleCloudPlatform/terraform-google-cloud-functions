@@ -27,11 +27,6 @@ variable "function_name" {
 variable "function_location" {
   description = "The location of this cloud function"
   type        = string
-
-  /*validation {
-    condition     = length(var.some_api_token) == 32
-    error_message = "Must be a 32 character long API token."
-  }*/
 }
 
 variable "description" {
@@ -49,11 +44,6 @@ variable "labels" {
 variable "runtime" {
   description = "The runtime in which to run the function."
   type        = string
-
-  /*validation {
-    condition     = contains(["Standard_DS2", "Standard_D2", "Standard_DS2_v2"], var.vm_size)
-    error_message = "VM Size must be "Standard_DS2", "Standard_D2" or "Standard_DS2_v2".
-  } */
 }
 
 variable "entrypoint" {
@@ -83,9 +73,6 @@ variable "storage_source" {
   description = "Get the source from this location in Google Cloud Storage"
   type = object({
     bucketname = string
-    #filepath    = string
-    #filename    = string
-    #source_path = string
     object     = string
     generation = string
   })
@@ -152,18 +139,5 @@ variable "service_config" {
     service_account_email          = string
     all_traffic_on_latest_revision = bool
   })
-  default = {
-    all_traffic_on_latest_revision = true
-    available_memory               = "256M"
-    ingress_settings               = null
-    max_instance_count             = "100"
-    min_instance_count             = null
-    runtime_env_variables          = null
-    service_account_email          = null
-    timeout_seconds                = "60"
-    vpc_connector                  = null
-    vpc_connector_egress_settings  = null
-    runtime_secret_env_variables   = null
-    secret_volumes                 = null
-  }
+  default = null
 }

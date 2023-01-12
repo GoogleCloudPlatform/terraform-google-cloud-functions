@@ -15,26 +15,8 @@
  */
 
 /******************************************
-	ZIP Archive of the Cloud Function Code
- *****************************************/
-/*data "archive_file" "source" {
-  type        = "zip"
-  output_path = var.storage_source.filename
-  source_dir  = var.storage_source.source_path
-}*/
-
-/******************************************
-	Upload ZIP Archive to GCS Bucket
- *****************************************/
-/*resource "google_storage_bucket_object" "object" {
-  name   = "${var.storage_source.filepath}/${var.storage_source.filename}"
-  bucket = var.storage_source.bucketname
-  source = data.archive_file.source.output_path
-}*/
-
-/******************************************
 	Cloud Function Definition with
-	Repo/Storage	Build Source and Event Trigger
+	Repo/Storage Build Source and Event Trigger
  *****************************************/
 resource "google_cloudfunctions2_function" "function" {
   name        = var.function_name
@@ -51,20 +33,12 @@ resource "google_cloudfunctions2_function" "function" {
       dynamic "storage_source" {
         for_each = var.repo_source == null ? [var.storage_source] : []
         content {
-          bucket = storage_source.value.bucketname
-          #object = "${storage_source.value.filepath}/${storage_source.value.filename}"
+          bucket     = storage_source.value.bucketname
           object     = storage_source.value.object
           generation = storage_source.value.generation
         }
       }
 
-      /*storage_source {
-        bucket = var.storage_source.bucketname
-        object = "${var.storage_source.filepath}/${var.storage_source.filename}"
-      }*/
-
-      ### TODO: Repo Source has issues with building the function source.
-      ##
       dynamic "repo_source" {
         for_each = var.storage_source == null ? [var.repo_source] : []
         content {
@@ -77,16 +51,6 @@ resource "google_cloudfunctions2_function" "function" {
           invert_regex = repo_source.value.invert_regex
         }
       }
-
-      /*repo_source {
-        project_id  = var.repo_source["project_id"]
-        repo_name   = var.repo_source["repo_name"]
-        commit_sha = var.repo_source["branch_name"]
-        dir         = var.repo_source["dir"]
-        #tag_name = ""
-        #commit_sha= ""
-        #invert_regex = ""
-      }*/
     }
 
     worker_pool       = var.worker_pool
@@ -96,7 +60,7 @@ resource "google_cloudfunctions2_function" "function" {
   dynamic "event_trigger" {
     for_each = var.event_trigger != null ? [var.event_trigger] : []
     content {
-      trigger_region        = event_trigger.value["trigger_region"] != null ? event_trigger.value["trigger_region"] : null # same as the function
+      trigger_region        = event_trigger.value["trigger_region"] != null ? event_trigger.value["trigger_region"] : null
       event_type            = event_trigger.value["event_type"] != null ? event_trigger.value["event_type"] : null
       pubsub_topic          = event_trigger.value["pubsub_topic"] != null ? event_trigger.value["pubsub_topic"] : null
       service_account_email = event_trigger.value["service_account_email"] != null ? event_trigger.value["service_account_email"] : null
@@ -110,22 +74,16 @@ resource "google_cloudfunctions2_function" "function" {
           operator  = event_filters.value.operator
         }
       }
-
-      /*event_filters {
-        attribute = ""
-        value = ""
-        operator = ""
-      }*/
     }
   }
 
   dynamic "service_config" {
     for_each = var.service_config != null ? [var.service_config] : []
     content {
-      max_instance_count    = service_config.value.max_instance_count
+      max_instance_count    = service_config.value.max_instance_count ? service_config.value.max_instance_count : 100
       min_instance_count    = service_config.value.min_instance_count
-      available_memory      = service_config.value.available_memory
-      timeout_seconds       = service_config.value.timeout_seconds
+      available_memory      = service_config.value.available_memory ? service_config.value.available_memory : "256M"
+      timeout_seconds       = service_config.value.timeout_seconds ? service_config.value.timeout_seconds : 60
       environment_variables = service_config.value.runtime_env_variables != null ? service_config.value.runtime_env_variables : {}
 
       vpc_connector                 = service_config.value.vpc_connector
@@ -133,7 +91,7 @@ resource "google_cloudfunctions2_function" "function" {
       ingress_settings              = service_config.value.ingress_settings
 
       service_account_email          = service_config.value.service_account_email
-      all_traffic_on_latest_revision = service_config.value.all_traffic_on_latest_revision
+      all_traffic_on_latest_revision = service_config.value.all_traffic_on_latest_revision ? service_config.value.all_traffic_on_latest_revision : true
 
       dynamic "secret_environment_variables" {
         for_each = service_config.value.runtime_secret_env_variables != null ? service_config.value.runtime_secret_env_variables : []
@@ -145,13 +103,6 @@ resource "google_cloudfunctions2_function" "function" {
           version    = sev.value.version
         }
       }
-
-      /*secret_environment_variables {
-        key = ""
-        project_id = ""
-        secret = ""
-        version = ""
-      }*/
 
       dynamic "secret_volumes" {
         for_each = service_config.value.secret_volumes != null ? service_config.value.secret_volumes : []
@@ -168,27 +119,8 @@ resource "google_cloudfunctions2_function" "function" {
           }
         }
       }
-
-      /*secret_volumes {
-        mount_path = ""
-        project_id = ""
-        secret = ""
-        versions = {
-          version = ""
-          path = ""
-        }
-      }*/
     }
   }
 
   labels = var.labels != null ? var.labels : {}
-
-  ### TODO: Cloud Function via Storage Source updates the function each time
-  # Find a solution to avoid this update each time when there are no changes
-  /*lifecycle {
-    ignore_changes = [
-      build_config,
-      event_trigger,
-    ]
-  }*/
 }
