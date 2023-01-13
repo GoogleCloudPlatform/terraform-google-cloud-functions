@@ -1,0 +1,170 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: blueprints.cloud.google.com/v1alpha1
+kind: BlueprintMetadata
+metadata:
+  name: terraform-google-cloud-functions
+  annotations:
+    config.kubernetes.io/local-config: "true"
+spec:
+  title: Terraform Google Cloud Functions (Gen 2) module
+  source:
+    repo: sso://user/prabhuramasamy/terraform-google-cloud-functions
+    sourceType: git
+  version: 0.0.1
+  actuationTool:
+    type: Terraform
+    version: '>= 0.13'
+  examples:
+  - name: cloud_function2_gcs_source
+    location: examples/cloud_function2_gcs_source
+  - name: cloud_function2_pubsub_trigger
+    location: examples/cloud_function2_pubsub_trigger
+  variables:
+  - name: build_env_variables
+    description: User-provided build-time environment variables
+    type: map(string)
+    required: false
+  - name: description
+    description: Short description of the function
+    type: string
+    required: false
+  - name: docker_repository
+    description: User managed repository created in Artifact Registry optionally with a customer managed encryption key.
+    type: string
+    required: false
+  - name: entrypoint
+    description: The name of the function (as defined in source code) that will be executed. Defaults to the resource name suffix, if not specified
+    type: string
+    required: true
+  - name: event_trigger
+    description: Event triggers for the function
+    type: |-
+      object({
+          trigger_region        = string
+          event_type            = string
+          service_account_email = string
+          pubsub_topic          = string
+          retry_policy          = string
+          event_filters = set(object({
+            attribute       = string
+            attribute_value = string
+            operator        = string
+          }))
+        })
+    required: false
+  - name: function_location
+    description: The location of this cloud function
+    type: string
+    required: true
+  - name: function_name
+    description: A user-defined name of the function
+    type: string
+    required: true
+  - name: labels
+    description: A set of key/value label pairs associated with this Cloud Function
+    type: map(string)
+    required: false
+  - name: project_id
+    description: Project ID to create Cloud Function
+    type: string
+    required: true
+  - name: repo_source
+    description: Get the source from this location in a Cloud Source Repository
+    type: |-
+      object({
+          project_id   = string
+          repo_name    = string
+          branch_name  = string
+          dir          = string
+          tag_name     = string
+          commit_sha   = string
+          invert_regex = bool
+        })
+    required: false
+  - name: runtime
+    description: The runtime in which to run the function.
+    type: string
+    required: true
+  - name: service_config
+    description: Details of the service
+    type: |-
+      object({
+          max_instance_count    = string
+          min_instance_count    = string
+          available_memory      = string
+          timeout_seconds       = string
+          runtime_env_variables = map(string)
+          runtime_secret_env_variables = set(object({
+            key_name   = string
+            project_id = string
+            secret     = string
+            version    = string
+          }))
+          secret_volumes = set(object({
+            mount_path = string
+            project_id = string
+            secret     = string
+            versions = set(object({
+              version = string
+              path    = string
+            }))
+          }))
+          vpc_connector                  = string
+          vpc_connector_egress_settings  = string
+          ingress_settings               = string
+          service_account_email          = string
+          all_traffic_on_latest_revision = bool
+        })
+    default:
+      all_traffic_on_latest_revision: true
+      available_memory: 256M
+      ingress_settings: null
+      max_instance_count: "100"
+      min_instance_count: null
+      runtime_env_variables: null
+      runtime_secret_env_variables: null
+      secret_volumes: null
+      service_account_email: null
+      timeout_seconds: "60"
+      vpc_connector: null
+      vpc_connector_egress_settings: null
+    required: false
+  - name: storage_source
+    description: Get the source from this location in Google Cloud Storage
+    type: |-
+      object({
+          bucket     = string
+          object     = string
+          generation = string
+        })
+    required: false
+  - name: worker_pool
+    description: Name of the Cloud Build Custom Worker Pool that should be used to build the function.
+    type: string
+    required: false
+  outputs:
+  - name: function_name
+    description: Name of the Cloud Function (Gen 2)
+  - name: function_uri
+    description: URI of the Cloud Function (Gen 2)
+  roles:
+  - level: Project
+    roles:
+    - roles/owner
+  services:
+  - cloudresourcemanager.googleapis.com
+  - storage-api.googleapis.com
+  - serviceusage.googleapis.com

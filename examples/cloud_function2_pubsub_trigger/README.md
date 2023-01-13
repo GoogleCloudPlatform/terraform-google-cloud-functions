@@ -7,8 +7,7 @@ This example illustrates how to use the `cloud-functions` module.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| project\_id | The ID of the project in which to provision resources. | `string` | n/a | yes |
-| pubsub\_topic | Name of the PubSub Topic | `string` | `"func-topic"` | no |
+| project\_id | The ID of the project in which to provision resources. | `string` | `"dc-in-lz-pr-poc-01"` | no |
 
 ## Outputs
 

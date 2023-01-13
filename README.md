@@ -25,8 +25,8 @@ module "cloud_functions2" {
   # Required variables
   function_name  = "<FUNCTION_NAME>"
   project_id     = "<PROJECT_ID>"
-  location       = "us-central1"
-  runtime        = "java11"
+  location       = "<LOCATION>"
+  runtime        = "<RUNTIME>"
   entrypoint     = "<ENTRYPOINT>"
   storage_source = {
     filepath    = "<sourcefilepath>"
@@ -57,7 +57,7 @@ Functional examples are included in the
 | repo\_source | Get the source from this location in a Cloud Source Repository | <pre>object({<br>    project_id   = string<br>    repo_name    = string<br>    branch_name  = string<br>    dir          = string<br>    tag_name     = string<br>    commit_sha   = string<br>    invert_regex = bool<br>  })</pre> | `null` | no |
 | runtime | The runtime in which to run the function. | `string` | n/a | yes |
 | service\_config | Details of the service | <pre>object({<br>    max_instance_count    = string<br>    min_instance_count    = string<br>    available_memory      = string<br>    timeout_seconds       = string<br>    runtime_env_variables = map(string)<br>    runtime_secret_env_variables = set(object({<br>      key_name   = string<br>      project_id = string<br>      secret     = string<br>      version    = string<br>    }))<br>    secret_volumes = set(object({<br>      mount_path = string<br>      project_id = string<br>      secret     = string<br>      versions = set(object({<br>        version = string<br>        path    = string<br>      }))<br>    }))<br>    vpc_connector                  = string<br>    vpc_connector_egress_settings  = string<br>    ingress_settings               = string<br>    service_account_email          = string<br>    all_traffic_on_latest_revision = bool<br>  })</pre> | <pre>{<br>  "all_traffic_on_latest_revision": true,<br>  "available_memory": "256M",<br>  "ingress_settings": null,<br>  "max_instance_count": "100",<br>  "min_instance_count": null,<br>  "runtime_env_variables": null,<br>  "runtime_secret_env_variables": null,<br>  "secret_volumes": null,<br>  "service_account_email": null,<br>  "timeout_seconds": "60",<br>  "vpc_connector": null,<br>  "vpc_connector_egress_settings": null<br>}</pre> | no |
-| storage\_source | Get the source from this location in Google Cloud Storage | <pre>object({<br>    bucketname = string<br>    #filepath    = string<br>    #filename    = string<br>    #source_path = string<br>    object     = string<br>    generation = string<br>  })</pre> | `null` | no |
+| storage\_source | Get the source from this location in Google Cloud Storage | <pre>object({<br>    bucket     = string<br>    object     = string<br>    generation = string<br>  })</pre> | `null` | no |
 | worker\_pool | Name of the Cloud Build Custom Worker Pool that should be used to build the function. | `string` | `null` | no |
 
 ## Outputs
@@ -86,6 +86,12 @@ A service account with the following roles must be used to provision
 the resources of this module:
 
 - Storage Admin: `roles/storage.admin`
+- Cloud Functions Admin: `roles/cloudfunctions.admin`
+- Cloud Run Admin: `roles/run.admin`
+- Pub/Sub Admin: `roles/pubsub.admin`
+- Artifact Registry Admin: `roles/artifactregistry.admin`
+- Cloud Build Editor: `roles/cloudbuild.builds.editor`
+- Secret Manager Admin: `roles/secretmanager.admin`
 
 The [Project Factory module][project-factory-module] and the
 [IAM module][iam-module] may be used in combination to provision a
@@ -97,6 +103,12 @@ A project with the following APIs enabled must be used to host the
 resources of this module:
 
 - Google Cloud Storage JSON API: `storage-api.googleapis.com`
+- Cloud Functions API: `cloudfunctions.googleapis.com`
+- Cloud Run Admin API: `run.googleapis.com`
+- Cloud Build API: `cloudbuild.googleapis.com`
+- Artifact Registry API: `artifactregistry.googleapis.com`
+- Pub/Sub API: `pubsub.googleapis.com`
+- Secret Manager API: `secretmanager.googleapis.com`
 
 The [Project Factory module][project-factory-module] can be used to
 provision a project with the necessary APIs enabled.
