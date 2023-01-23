@@ -5,6 +5,7 @@ The Terraform module handles the deployment of Cloud Functions (Gen 2) on GCP.
 The resources/services/activations/deletions that this module will create/trigger are:
 
 - Deploy Cloud Functions (2nd Gen) with provided source code and trigger
+- Provide Cloud Functions Invoker or Developer roles to the users and service accounts
 
 ## Assumptions and Prerequisites
 
@@ -29,10 +30,9 @@ module "cloud_functions2" {
   runtime        = "<RUNTIME>"
   entrypoint     = "<ENTRYPOINT>"
   storage_source = {
-    filepath    = "<sourcefilepath>"
-    filename    = "<sourcefilename>"
-    source_path = "<dirname>"
-    bucketname  = "<GCS NAME>"
+    bucket      = "<BUCEKTNAME>"
+    object      = "<ARCHIVE_PATH>"
+    generation  = "<GCS_GENERATION>"
   }
 }
 ```
@@ -53,6 +53,7 @@ Functional examples are included in the
 | function\_location | The location of this cloud function | `string` | n/a | yes |
 | function\_name | A user-defined name of the function | `string` | n/a | yes |
 | labels | A set of key/value label pairs associated with this Cloud Function | `map(string)` | `null` | no |
+| members | Cloud Function Invoker and Developer roles for Users/SAs. Key names must be developers and/or invokers | `map(list(string))` | `{}` | no |
 | project\_id | Project ID to create Cloud Function | `string` | n/a | yes |
 | repo\_source | Get the source from this location in a Cloud Source Repository | <pre>object({<br>    project_id   = string<br>    repo_name    = string<br>    branch_name  = string<br>    dir          = string<br>    tag_name     = string<br>    commit_sha   = string<br>    invert_regex = bool<br>  })</pre> | `null` | no |
 | runtime | The runtime in which to run the function. | `string` | n/a | yes |

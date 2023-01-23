@@ -124,3 +124,23 @@ resource "google_cloudfunctions2_function" "function" {
 
   labels = var.labels != null ? var.labels : {}
 }
+
+// IAM for invoking HTTP functions (roles/cloudfunctions.invoker)
+resource "google_cloudfunctions2_function_iam_member" "invokers" {
+  count          = contains(keys(var.members), "invokers") ? length(var.members["invokers"]) : 0
+  location       = google_cloudfunctions2_function.function.location
+  project        = google_cloudfunctions2_function.function.project
+  cloud_function = google_cloudfunctions2_function.function.name
+  role           = "roles/cloudfunctions.invoker"
+  member         = var.members["invokers"][count.index]
+}
+
+// Read and write access to all functions-related resources (roles/cloudfunctions.developer)
+resource "google_cloudfunctions2_function_iam_member" "developers" {
+  count          = contains(keys(var.members), "developers") ? length(var.members["developers"]) : 0
+  location       = google_cloudfunctions2_function.function.location
+  project        = google_cloudfunctions2_function.function.project
+  cloud_function = google_cloudfunctions2_function.function.name
+  role           = "roles/cloudfunctions.developer"
+  member         = var.members["developers"][count.index]
+}

@@ -154,3 +154,10 @@ variable "service_config" {
     secret_volumes                 = null
   }
 }
+
+// IAM
+variable "members" {
+  type        = map(list(string))
+  description = "Cloud Function Invoker and Developer roles for Users/SAs. Key names must be developers and/or invokers"
+  default     = {}
+}
