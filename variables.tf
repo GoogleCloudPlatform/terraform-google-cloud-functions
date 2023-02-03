@@ -160,4 +160,10 @@ variable "members" {
   type        = map(list(string))
   description = "Cloud Function Invoker and Developer roles for Users/SAs. Key names must be developers and/or invokers"
   default     = {}
+  validation {
+    condition = alltrue([
+      for key in keys(var.members) : contains(["invokers", "developers"], key)
+    ])
+    error_message = "The supported keys are invokers and developers."
+  }
 }
