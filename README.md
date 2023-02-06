@@ -30,7 +30,7 @@ module "cloud_functions2" {
   runtime        = "<RUNTIME>"
   entrypoint     = "<ENTRYPOINT>"
   storage_source = {
-    bucket      = "<BUCEKTNAME>"
+    bucket      = "<BUCKET_NAME>"
     object      = "<ARCHIVE_PATH>"
     generation  = "<GCS_GENERATION>"
   }
