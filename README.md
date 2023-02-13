@@ -20,7 +20,7 @@ Basic usage of this module is as follows:
 
 ```hcl
 module "cloud_functions2" {
-  source  = "terraform-google-modules/cloud-functions/google"
+  source  = "GoogleCloudPlatform/cloud-functions/google"
   version = "~> 0.1.0"
 
   # Required variables
