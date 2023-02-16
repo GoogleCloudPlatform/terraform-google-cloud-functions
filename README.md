@@ -78,7 +78,7 @@ These sections describe requirements for using this module.
 
 The following dependencies must be available:
 
-- [Terraform][terraform] v0.13
+- [Terraform][terraform] v1.3+
 - [Terraform Provider for GCP][terraform-provider-gcp] plugin v3.0
 
 ### Service Account
@@ -110,6 +110,7 @@ resources of this module:
 - Artifact Registry API: `artifactregistry.googleapis.com`
 - Pub/Sub API: `pubsub.googleapis.com`
 - Secret Manager API: `secretmanager.googleapis.com`
+- EventArc API: `eventarc.googleapis.com`
 
 The [Project Factory module][project-factory-module] can be used to
 provision a project with the necessary APIs enabled.

@@ -34,5 +34,6 @@ module "project" {
     "cloudbuild.googleapis.com",
     "artifactregistry.googleapis.com",
     "pubsub.googleapis.com",
+    "eventarc.googleapis.com",
   ]
 }
