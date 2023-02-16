@@ -21,5 +21,6 @@ variable "project_id" {
 
 variable "function_location" {
   description = "The location of this cloud function"
-  type        = "us-central1"
+  type        = string
+  default     = "us-central1"
 }
