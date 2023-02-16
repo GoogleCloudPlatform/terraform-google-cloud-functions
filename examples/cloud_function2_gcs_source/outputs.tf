@@ -24,6 +24,11 @@ output "function_name" {
   value       = module.cloud_functions2.function_name
 }
 
+output "function_location" {
+  description = "Location of the Cloud Function (Gen 2)"
+  value       = var.function_location
+}
+
 output "project_id" {
   value       = var.project_id
   description = "The project ID"

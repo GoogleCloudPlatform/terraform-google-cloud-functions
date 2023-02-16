@@ -40,7 +40,7 @@ module "cloud_functions2" {
 
   project_id        = var.project_id
   function_name     = "function2-pubsub-trigger-py"
-  function_location = "us-central1"
+  function_location = var.function_location
   runtime           = "python38"
   entrypoint        = "hello_http"
   storage_source = {
