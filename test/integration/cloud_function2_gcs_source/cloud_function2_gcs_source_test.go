@@ -20,7 +20,6 @@ import (
 
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
-	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -31,7 +30,7 @@ func TestGCF2GCSSource(t *testing.T) {
 		gcs_sourceT.DefaultVerify(assert)
 
 		function_name := gcs_sourceT.GetStringOutput("function_name")
-		projectID := utils.ValFromEnv(t, "TF_VAR_project_id")
+		projectID := gcs_sourceT.GetStringOutput("project_id")
 
 		function_cmd := gcloud.Run(t, "functions describe", gcloud.WithCommonArgs([]string{function_name, "--project", projectID, "--format", "json"}))
 

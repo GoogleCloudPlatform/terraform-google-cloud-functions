@@ -20,7 +20,6 @@ import (
 
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
-	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,7 +31,7 @@ func TestGCF2PubSubTrigger(t *testing.T) {
 
 		function_name := pubsub_triggerT.GetStringOutput("function_name")
 		pubsubTopic := pubsub_triggerT.GetStringOutput("pubsub_topic")
-		projectID := utils.ValFromEnv(t, "TF_VAR_project_id")
+		projectID := pubsub_triggerT.GetStringOutput("project_id")
 
 		function_cmd := gcloud.Run(t, "functions describe", gcloud.WithCommonArgs([]string{function_name,"--project", projectID, "--format", "json"}))
 
