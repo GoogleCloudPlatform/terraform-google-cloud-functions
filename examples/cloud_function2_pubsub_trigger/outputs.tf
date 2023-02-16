@@ -28,3 +28,8 @@ output "pubsub_topic" {
   description = "Name of the PubSub Topic"
   value       = module.pubsub.topic
 }
+
+output "project_id" {
+  value       = var.project_id
+  description = "The project ID"
+}

@@ -15,6 +15,7 @@ This example illustrates how to use the `cloud-functions` module.
 |------|-------------|
 | function\_name | Name of the Cloud Function (Gen 2) |
 | function\_uri | URI of the Cloud Function (Gen 2) |
+| project\_id | The project ID |
 | pubsub\_topic | Name of the PubSub Topic |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
