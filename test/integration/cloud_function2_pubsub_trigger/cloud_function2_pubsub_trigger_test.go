@@ -32,7 +32,7 @@ func TestGCF2PubSubTrigger(t *testing.T) {
 		function_name := pubsub_triggerT.GetStringOutput("function_name")
 		pubsubTopic := pubsub_triggerT.GetStringOutput("pubsub_topic")
 		projectID := pubsub_triggerT.GetStringOutput("project_id")
-		function_location := gcs_sourceT.GetStringOutput("function_location")
+		function_location := pubsub_triggerT.GetStringOutput("function_location")
 
 		function_cmd := gcloud.Run(t, "functions describe", gcloud.WithCommonArgs([]string{function_name,"--project", projectID, "--gen2", "--region", function_Location, "--format", "json"}))
 
