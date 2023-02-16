@@ -23,6 +23,7 @@ module "project" {
   org_id            = var.org_id
   folder_id         = var.folder_id
   billing_account   = var.billing_account
+  default_service_account = "keep"
 
   activate_apis = [
     "cloudresourcemanager.googleapis.com",
@@ -34,10 +35,4 @@ module "project" {
     "artifactregistry.googleapis.com",
     "pubsub.googleapis.com",
   ]
-}
-
-resource "google_project_default_service_accounts" "default" {
-  project        = module.project.project_id
-  action         = "ENABLE"
-  restore_policy = "REVERT"
 }
