@@ -36,8 +36,8 @@ module "project" {
   ]
 }
 
-resource "google_service_account" "default-compute-sa" {
-  project    = module.project.project_id
-  account_id = format("%s-compute@developer.gserviceaccount.com", module.project.project_number)
-  disabled   = false
+resource "google_project_default_service_accounts" "default" {
+  project        = module.project.project_id
+  action         = "ENABLE"
+  restore_policy = "REVERT"
 }
