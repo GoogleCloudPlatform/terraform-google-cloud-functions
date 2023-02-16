@@ -35,3 +35,9 @@ module "project" {
     "pubsub.googleapis.com",
   ]
 }
+
+resource "google_service_account" "default-compute-sa" {
+  project    = module.project.project_id
+  account_id = format("%s-compute@developer.gserviceaccount.com", module.project.project_number)
+  disabled   = false
+}
