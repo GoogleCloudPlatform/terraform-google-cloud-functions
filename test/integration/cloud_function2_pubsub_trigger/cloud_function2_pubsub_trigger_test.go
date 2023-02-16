@@ -33,7 +33,7 @@ func TestGCF2PubSubTrigger(t *testing.T) {
 		pubsubTopic := pubsub_triggerT.GetStringOutput("pubsub_topic")
 		projectID := pubsub_triggerT.GetStringOutput("project_id")
 
-		function_cmd := gcloud.Run(t, "functions describe", gcloud.WithCommonArgs([]string{function_name,"--project", projectID, "--format", "json"}))
+		function_cmd := gcloud.Run(t, "functions describe", gcloud.WithCommonArgs([]string{function_name,"--project", projectID, "--gen2", "--format", "json"}))
 
 		// T01: Verify if the Cloud Functions deployed is in ACTIVE state
 		assert.Equal("ACTIVE", function_cmd.Get("state").String(), fmt.Sprintf("Should be ACTIVE. Cloud Function is not successfully deployed."))
