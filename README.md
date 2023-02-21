@@ -21,7 +21,7 @@ Basic usage of this module is as follows:
 ```hcl
 module "cloud_functions2" {
   source  = "GoogleCloudPlatform/cloud-functions/google"
-  version = "~> 0.1"
+  version = "~> 0.2"
 
   # Required variables
   function_name  = "<FUNCTION_NAME>"
