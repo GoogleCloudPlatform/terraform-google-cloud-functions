@@ -20,7 +20,6 @@ import (
 
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
-	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,9 +31,10 @@ func TestGCF2PubSubTrigger(t *testing.T) {
 
 		function_name := pubsub_triggerT.GetStringOutput("function_name")
 		pubsubTopic := pubsub_triggerT.GetStringOutput("pubsub_topic")
-		projectID := utils.ValFromEnv(t, "TF_VAR_project_id")
+		projectID := pubsub_triggerT.GetStringOutput("project_id")
+		function_location := pubsub_triggerT.GetStringOutput("function_location")
 
-		function_cmd := gcloud.Run(t, "functions describe", gcloud.WithCommonArgs([]string{function_name,"--project", projectID, "--format", "json"}))
+		function_cmd := gcloud.Run(t, "functions describe", gcloud.WithCommonArgs([]string{function_name,"--project", projectID, "--gen2", "--region", function_location, "--format", "json"}))
 
 		// T01: Verify if the Cloud Functions deployed is in ACTIVE state
 		assert.Equal("ACTIVE", function_cmd.Get("state").String(), fmt.Sprintf("Should be ACTIVE. Cloud Function is not successfully deployed."))

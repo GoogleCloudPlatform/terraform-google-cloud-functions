@@ -74,7 +74,7 @@ variable "storage_source" {
   type = object({
     bucket     = string
     object     = string
-    generation = string
+    generation = optional(string, null)
   })
   default = null
 }
@@ -82,13 +82,13 @@ variable "storage_source" {
 variable "repo_source" {
   description = "Get the source from this location in a Cloud Source Repository"
   type = object({
-    project_id   = string
+    project_id   = optional(string)
     repo_name    = string
     branch_name  = string
-    dir          = string
-    tag_name     = string
-    commit_sha   = string
-    invert_regex = bool
+    dir          = optional(string)
+    tag_name     = optional(string)
+    commit_sha   = optional(string)
+    invert_regex = optional(bool, false)
   })
   default = null
 }
@@ -96,16 +96,16 @@ variable "repo_source" {
 variable "event_trigger" {
   description = "Event triggers for the function"
   type = object({
-    trigger_region        = string
+    trigger_region        = optional(string)
     event_type            = string
     service_account_email = string
-    pubsub_topic          = string
+    pubsub_topic          = optional(string)
     retry_policy          = string
-    event_filters = set(object({
+    event_filters = optional(set(object({
       attribute       = string
       attribute_value = string
-      operator        = string
-    }))
+      operator        = optional(string)
+    })))
   })
   default = null
 }
@@ -113,46 +113,33 @@ variable "event_trigger" {
 variable "service_config" {
   description = "Details of the service"
   type = object({
-    max_instance_count    = string
-    min_instance_count    = string
-    available_memory      = string
-    timeout_seconds       = string
-    runtime_env_variables = map(string)
-    runtime_secret_env_variables = set(object({
+    max_instance_count    = optional(string, 100)
+    min_instance_count    = optional(string, 1)
+    available_memory      = optional(string, "256M")
+    timeout_seconds       = optional(string, 60)
+    runtime_env_variables = optional(map(string), null)
+    runtime_secret_env_variables = optional(set(object({
       key_name   = string
-      project_id = string
+      project_id = optional(string)
       secret     = string
       version    = string
-    }))
-    secret_volumes = set(object({
+    })), null)
+    secret_volumes = optional(set(object({
       mount_path = string
-      project_id = string
+      project_id = optional(string)
       secret     = string
       versions = set(object({
         version = string
         path    = string
       }))
-    }))
-    vpc_connector                  = string
-    vpc_connector_egress_settings  = string
-    ingress_settings               = string
-    service_account_email          = string
-    all_traffic_on_latest_revision = bool
+    })), null)
+    vpc_connector                  = optional(string, null)
+    vpc_connector_egress_settings  = optional(string, null)
+    ingress_settings               = optional(string, null)
+    service_account_email          = optional(string, null)
+    all_traffic_on_latest_revision = optional(bool, true)
   })
-  default = {
-    all_traffic_on_latest_revision = true
-    available_memory               = "256M"
-    ingress_settings               = null
-    max_instance_count             = "100"
-    min_instance_count             = null
-    runtime_env_variables          = null
-    service_account_email          = null
-    timeout_seconds                = "60"
-    vpc_connector                  = null
-    vpc_connector_egress_settings  = null
-    runtime_secret_env_variables   = null
-    secret_volumes                 = null
-  }
+  default = {}
 }
 
 // IAM

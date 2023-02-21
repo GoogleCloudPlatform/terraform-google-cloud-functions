@@ -18,3 +18,9 @@ variable "project_id" {
   description = "The ID of the project in which to provision resources."
   type        = string
 }
+
+variable "function_location" {
+  description = "The location of this cloud function"
+  type        = string
+  default     = "us-central1"
+}
