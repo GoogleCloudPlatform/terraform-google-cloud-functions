@@ -1,32 +1,44 @@
-# Secure Cloud Run Core
+# Secure Cloud Function (2nd Gen) Core
 
-This module handles the basic deployment core configurations for Cloud Run module.
+This module handles the basic deployment core configurations for Cloud Function (2nd Gen) module.
 
 The resources/services/activations/deletions that this module will create/trigger are:
 
-* Creates a Cloud Run Service.
-* Adds "Secret Manager Secret Accessor" role on the Secret for the Service Account used to run Cloud Run.
-* Creates a Load Balancer Service using Google-managed SSL certificates.
-* Creates Cloud Armor Service only including the pre-configured rules for SQLi, XSS, LFI, RCE, RFI, Scanner Detection, Protocol Attack and Session Fixation.
+* Creates a Cloud Function (2nd Gen).
+* Creates the Cloud Function source bucket in the same location as the Cloud Function.
+* Configure the EventArc Google Channel to use Customer Encryption Key in the Cloud Function location.
+* Creates a private worker pool for Cloud Build.
+* Grants Cloud Functions Invoker to EventArc Trigger Service Account.
 
 ## Usage
 
 ```hcl
-module "cloud_run_core" {
-  source = "GoogleCloudPlatform/cloud-run/google//modules/secure-cloud-run-core"
-  version = "~> 0.3.0"
+module "secure_cloud_function_core" {
+  source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function-core"
 
-  service_name          = <SERVICE NAME>
-  location              = <SERVICE LOCATION>
-  region                = <REGION>
-  domain                = <YOUR-DOMAIN>
-  serverless_project_id = <SERVICE PROJECT ID>
-  image                 = <IMAGE URL>
-  cloud_run_sa          = <CLOUD RUN SERVICE ACCOUNT EMAIL>
-  vpc_connector_id      = <VPC CONNECTOR ID>
-  encryption_key        = <KMS KEY>
-  env_vars              = <ENV VARIABLES>
-  members               = <MEMBERS ALLOWED TO CALL SERVICE>
+  function_name               = <FUNCTION-NAME>
+  function_description        = <FUNCTION-DESCRIPTION>
+  project_id                  = <PROJECT-ID>
+  project_number              = <PROJECT-NUMBER>
+  labels                      = <RESOURCES-LABELS>
+  location                    = <FUNCTION-LOCATION>
+  runtime                     = <FUNCTION-RUNTIME>
+  entry_point                 = <FUNCTION-ENTRY-POINT>
+  storage_source              = <FUNCTION-SOURCE-BUCKET>
+  build_environment_variables = <FUNCTION-BUILD-ENV-VARS>
+  event_trigger               = <FUNCTION-EVENT-TRIGGER>
+  encryption_key              = <CUSTOMER-ENCRYPTION-KEY>
+
+  service_config = {
+    vpc_connector                  = <FUNCTION-VPC-CONNECTOR>
+    service_account_email          = <FUNCTION-SERVICE-ACCOUNT-EMAIL>
+    ingress_settings               = "ALLOW_INTERNAL_AND_GCLB"
+    all_traffic_on_latest_revision = true
+    vpc_connector_egress_settings  = "PRIVATE_RANGES_ONLY"
+    runtime_env_variables          = <FUNCTION-RUNTIME-ENV-VARS>
+
+    runtime_secret_env_variables = <FUNCTION-RUNTIME-SECRET-ENV-VARS>
+    secret_volumes               = <FUNCTION-SECRET-VOLUMES>
 }
 
 ```
@@ -76,7 +88,7 @@ A project with the following APIs enabled must be used to host the
 resources of this module:
 
 * Serverless Project
-  * Google Cloud Run Service: `run.googleapis.com`
+  * Google Cloud Function Service: `cloudfunctions.googleapis.com`
   * Google Compute Service: `compute.googleapis.com`
 
 ### Service Account
@@ -84,6 +96,6 @@ resources of this module:
 A service account with the following roles must be used to provision
 the resources of this module:
 
-* Cloud Run Developer: `roles/run.developer`
+* Cloud Function Developer: `roles/cloudfunctions.developer`
 * Compute Network User: `roles/compute.networkUser`
 * Artifact Registry Reader: `roles/artifactregistry.reader`
