@@ -67,7 +67,7 @@ module "cloud_serverless_security" {
 | key\_rotation\_period | Period of key rotation in seconds. | `string` | `"2592000s"` | no |
 | keyring\_name | Keyring name. | `string` | n/a | yes |
 | kms\_project\_id | The project where KMS will be created. | `string` | n/a | yes |
-| location | The location where resources are going to be deployed. | `string` | n/a | yes |
+| location | The location where resources are going to be deployed. | `string` | `"us-east4"` | no |
 | organization\_id | The organization ID to apply the policy to. | `string` | `""` | no |
 | owners | List of comma-separated owners for each key declared in set\_owners\_for. | `list(string)` | `[]` | no |
 | policy\_for | Policy Root: set one of the following values to determine where the policy is applied. Possible values: ["project", "folder", "organization"]. | `string` | `"project"` | no |

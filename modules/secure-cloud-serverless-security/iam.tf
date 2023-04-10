@@ -14,16 +14,8 @@
  * limitations under the License.
  */
 
-locals {
-  roles_serverless_administrator          = var.groups.group_serverless_administrator == null ? [] : ["roles/run.admin", "roles/cloudfunctions.admin", "roles/compute.networkViewer", "roles/compute.networkUser"]
-  roles_serverless_security_administrator = var.groups.group_serverless_security_administrator == null ? [] : ["roles/run.viewer", "roles/cloudfunctions.viewer", "roles/cloudkms.viewer", "roles/artifactregistry.reader"]
-  roles_group_cloud_function_developer    = var.groups.group_cloud_function_developer == null ? [] : ["roles/cloudfunctions.developer", "roles/artifactregistry.writer", "cloudkms.cryptoKeyEncrypter"]
-  roles_group_cloud_function_user         = var.groups.group_cloud_function_user == null ? [] : ["cloudfunctions.invoker", "run.invoker"]
-}
-
-
 resource "google_project_iam_member" "group_serverless_administrator_admin" {
-  for_each = toset(local.roles_serverless_administrator)
+  for_each = var.groups.group_serverless_administrator == null ? [] : toset(["roles/run.admin", "roles/cloudfunctions.admin", "roles/compute.networkViewer", "roles/compute.networkUser"])
 
   project = var.serverless_project_id
   role    = each.value
@@ -31,16 +23,15 @@ resource "google_project_iam_member" "group_serverless_administrator_admin" {
 }
 
 resource "google_project_iam_member" "group_serverless_security_administrator_viewer" {
-  for_each = toset(local.roles_serverless_security_administrator)
+  for_each = var.groups.group_serverless_security_administrator == null ? [] : toset(["roles/run.viewer", "roles/cloudfunctions.viewer", "roles/cloudkms.viewer", "roles/artifactregistry.reader"])
 
   project = var.kms_project_id
   role    = each.value
   member  = "group:${var.groups.group_serverless_security_administrator}"
 }
 
-
 resource "google_project_iam_member" "group_cloud_function_developer_run_developer" {
-  for_each = toset(local.roles_group_cloud_function_developer)
+  for_each = var.groups.group_cloud_function_developer == null ? [] : toset(["roles/cloudfunctions.developer", "roles/artifactregistry.writer", "cloudkms.cryptoKeyEncrypter"])
 
   project = var.kms_project_id
   role    = each.value
@@ -48,7 +39,7 @@ resource "google_project_iam_member" "group_cloud_function_developer_run_develop
 }
 
 resource "google_project_iam_member" "group_cloud_function_user_run_invoker" {
-  for_each = toset(local.roles_group_cloud_function_user)
+  for_each = var.groups.group_cloud_function_user == null ? [] : toset(["cloudfunctions.invoker", "run.invoker"])
 
   project = var.serverless_project_id
   role    = each.value
