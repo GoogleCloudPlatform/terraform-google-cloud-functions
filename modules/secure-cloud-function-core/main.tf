@@ -41,7 +41,7 @@ resource "google_eventarc_google_channel_config" "primary" {
 resource "google_artifact_registry_repository" "cloudfunction_repo" {
   location      = var.location
   project       = var.project_id
-  repository_id = "rep-cloud-function"
+  repository_id = "rep-cloud-function-${var.function_name}"
   description   = "This repo stores de image of the secure cloud function"
   format        = "DOCKER"
   kms_key_name  = var.encryption_key

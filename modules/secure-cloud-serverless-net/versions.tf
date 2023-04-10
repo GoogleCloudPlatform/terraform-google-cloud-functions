@@ -15,7 +15,7 @@
  */
 
 terraform {
-  required_version = ">= 1.3"
+  required_version = ">= 0.13"
 
   required_providers {
     google = {
@@ -27,11 +27,12 @@ terraform {
       version = "< 5.0"
     }
   }
+
   provider_meta "google" {
-    module_name = "blueprints/terraform/terraform-google-cloud-functions:secure-cloud-function-core/v0.2.0"
+    module_name = "blueprints/terraform/terraform-google-cloud-function:secure-cloud-serverless-net/v0.2.0"
   }
 
   provider_meta "google-beta" {
-    module_name = "blueprints/terraform/terraform-google-cloud-functions:secure-cloud-function-core/v0.2.0"
+    module_name = "blueprints/terraform/terraform-google-cloud-function:secure-cloud-serverless-net/v0.2.0"
   }
 }

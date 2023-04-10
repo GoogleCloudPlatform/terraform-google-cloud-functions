@@ -7,7 +7,7 @@ The resources/services/activations/deletions that this module will create/trigge
 * Creates a Cloud Function (2nd Gen).
 * Creates the Cloud Function source bucket in the same location as the Cloud Function.
 * Configure the EventArc Google Channel to use Customer Encryption Key in the Cloud Function location.
-* Creates a private worker pool for Cloud Build.
+* Creates a private worker pool for Cloud Build configured to not use External IP.
 * Grants Cloud Functions Invoker to EventArc Trigger Service Account.
 
 ## Usage
@@ -56,7 +56,7 @@ module "secure_cloud_function_core" {
 | function\_description | The description of the Cloud Function to create. | `string` | `""` | no |
 | function\_name | The name of the Cloud Function to create. | `string` | n/a | yes |
 | labels | Labels to be assigned to resources. | `map(any)` | `{}` | no |
-| location | Cloud Function deployment location. | `string` | n/a | yes |
+| location | Cloud Function deployment location. | `string` | `"us-east4"` | no |
 | project\_id | The project ID to deploy to. | `string` | n/a | yes |
 | project\_number | The project number to deploy to. | `string` | n/a | yes |
 | repo\_source | The source repository where the Cloud Function Source is stored. Do not use combined with source\_path. | <pre>object({<br>    project_id   = optional(string)<br>    repo_name    = string<br>    branch_name  = string<br>    dir          = optional(string)<br>    tag_name     = optional(string)<br>    commit_sha   = optional(string)<br>    invert_regex = optional(bool, false)<br>  })</pre> | `null` | no |

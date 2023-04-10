@@ -50,6 +50,7 @@ variable "labels" {
 variable "location" {
   description = "Cloud Function deployment location."
   type        = string
+  default     = "us-east4"
 }
 
 variable "runtime" {
