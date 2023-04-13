@@ -74,6 +74,13 @@ module "cloud_function" {
   storage_source      = var.storage_source
   service_config      = var.service_config
   docker_repository   = google_artifact_registry_repository.cloudfunction_repo.id
+
+
+
+  depends_on = [
+    module.cloudfunction_bucket,
+    google_eventarc_google_channel_config.primary
+  ]
 }
 
 // IAM for invoking HTTP functions (roles/cloudfunctions.invoker)
