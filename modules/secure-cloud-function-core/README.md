@@ -7,6 +7,7 @@ The resources/services/activations/deletions that this module will create/trigge
 * Creates a Cloud Function (2nd Gen).
 * Creates the Cloud Function source bucket in the same location as the Cloud Function.
 * Configure the EventArc Google Channel to use Customer Encryption Key in the Cloud Function location.
+  * **Warning:** If there is another CMEK configured for the same region, it will be overwritten.
 * Creates a private worker pool for Cloud Build configured to not use External IP.
 * Grants Cloud Functions Invoker to EventArc Trigger Service Account.
 
