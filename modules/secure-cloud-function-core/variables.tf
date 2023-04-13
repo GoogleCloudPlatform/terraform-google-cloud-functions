@@ -25,11 +25,6 @@ variable "encryption_key" {
   type        = string
 }
 
-variable "project_number" {
-  description = "The project number to deploy to."
-  type        = string
-}
-
 variable "function_name" {
   description = "The name of the Cloud Function to create."
   type        = string

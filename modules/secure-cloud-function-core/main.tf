@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+data "google_project" "project" {
+  project_id = var.project_id
+}
 
 module "cloudfunction_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
@@ -21,7 +24,7 @@ module "cloudfunction_bucket" {
 
   project_id    = var.project_id
   labels        = var.labels
-  name          = "gcf-v2-sources-${var.project_number}-${var.location}"
+  name          = "gcf-v2-sources-${data.google_project.project.number}-${var.location}"
   location      = var.location
   storage_class = "REGIONAL"
   force_destroy = var.force_destroy
@@ -74,8 +77,6 @@ module "cloud_function" {
   storage_source      = var.storage_source
   service_config      = var.service_config
   docker_repository   = google_artifact_registry_repository.cloudfunction_repo.id
-
-
 
   depends_on = [
     module.cloudfunction_bucket,
