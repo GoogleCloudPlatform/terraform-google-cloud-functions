@@ -20,7 +20,7 @@ output "serverless_project_id" {
 }
 
 output "serverless_project_number" {
-  value       = module.secure_harness.serverless_project_numbers[0]
+  value       = module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]
   description = "The serverless project number."
 }
 

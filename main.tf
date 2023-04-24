@@ -133,6 +133,10 @@ resource "google_cloudfunctions2_function_iam_member" "invokers" {
   cloud_function = google_cloudfunctions2_function.function.name
   role           = "roles/cloudfunctions.invoker"
   member         = each.value
+
+  depends_on = [
+    google_cloudfunctions2_function.function
+  ]
 }
 
 // Read and write access to all functions-related resources (roles/cloudfunctions.developer)
@@ -143,4 +147,8 @@ resource "google_cloudfunctions2_function_iam_member" "developers" {
   cloud_function = google_cloudfunctions2_function.function.name
   role           = "roles/cloudfunctions.developer"
   member         = each.value
+
+  depends_on = [
+    google_cloudfunctions2_function.function
+  ]
 }
