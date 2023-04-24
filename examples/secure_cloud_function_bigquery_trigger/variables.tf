@@ -24,7 +24,6 @@ variable "terraform_service_account" {
   type        = string
 }
 
-
 variable "org_id" {
   description = "The organization ID."
   type        = string

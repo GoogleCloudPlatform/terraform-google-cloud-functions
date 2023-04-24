@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-output "serverless_project_ids" {
-  value       = module.secure_harness.serverless_project_ids
+output "serverless_project_id" {
+  value       = module.secure_harness.serverless_project_ids[0]
   description = "The serverless project id."
 }
 
 output "serverless_project_number" {
-  value       = module.secure_harness.serverless_project_numbers
+  value       = module.secure_harness.serverless_project_numbers[0]
   description = "The serverless project number."
 }
 
@@ -41,7 +41,12 @@ output "network_project_id" {
 
 output "service_account_email" {
   value       = module.secure_harness.service_account_email
-  description = "The service account email created to be used by Cloud Run."
+  description = "The service account email created to be used by Cloud Function."
+}
+
+output "cloud_function_name" {
+  value       = module.secure_cloud_function.service_name
+  description = "The service account email created to be used by Cloud Function."
 }
 
 output "service_vpc_self_link" {
@@ -69,27 +74,17 @@ output "artifact_registry_repository_name" {
   description = "The Artifact Registry Repository last part of the repository name where the images should be stored."
 }
 
-output "restricted_service_perimeter_name" {
-  value       = module.secure_harness.restricted_service_perimeter_name
-  description = "Service Perimeter name."
-}
-
-output "restricted_access_level_name" {
-  value       = module.secure_harness.restricted_access_level_name
-  description = "Access level name."
-}
-
 output "connector_id" {
   value       = module.secure_cloud_function.connector_id
   description = "VPC serverless connector ID."
 }
 
 output "table_name" {
-  value = module.bigquery.table_ids[0]
+  value       = module.bigquery.table_ids[0]
   description = "Bigquery table id."
 }
 
 output "table_id" {
-  value = module.bigquery.bigquery_tables[local.table_name]["id"]
+  value       = module.bigquery.bigquery_tables[local.table_name]["id"]
   description = "Bigquery table."
 }

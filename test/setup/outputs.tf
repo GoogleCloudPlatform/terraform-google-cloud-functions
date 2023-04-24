@@ -22,3 +22,7 @@ output "sa_key" {
   value     = google_service_account_key.int_test.private_key
   sensitive = true
 }
+
+output "terraform_service_account" {
+  value = google_service_account.int_test.email
+}
