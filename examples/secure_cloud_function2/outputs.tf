@@ -79,7 +79,17 @@ output "restricted_access_level_name" {
   description = "Access level name."
 }
 
-# output "connector_id" {
-#   value       = module.secure_cloud_run.connector_id
-#   description = "VPC serverless connector ID."
-# }
+output "connector_id" {
+  value       = module.secure_cloud_function.connector_id
+  description = "VPC serverless connector ID."
+}
+
+output "table_name" {
+  value = module.bigquery.table_ids[0]
+  description = "Bigquery table id."
+}
+
+output "table_id" {
+  value = module.bigquery.bigquery_tables[local.table_name]["id"]
+  description = "Bigquery table."
+}

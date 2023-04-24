@@ -19,6 +19,7 @@ locals {
   location        = "us-west1"
   region          = "us-west1"
   repository_name = "rep-secure-cloud-function"
+  table_name      = "tbl_test"
 }
 resource "random_id" "random_folder_suffix" {
   byte_length = 2
@@ -93,7 +94,7 @@ module "bigquery" {
 
   tables = [
     {
-      table_id          = "tbl_test",
+      table_id          = local.table_name,
       schema            = file("${path.module}/templates/bigquery_schema.template")
       time_partitioning = null,
       range_partitioning = {
@@ -134,19 +135,34 @@ module "secure_cloud_function" {
   subnet_name           = module.secure_harness.service_subnet[0]
   create_subnet         = false
   shared_vpc_name       = module.secure_harness.service_vpc[0].network.name
+  prevent_destroy       = false
   ip_cidr_range         = "10.0.0.0/28"
   storage_source = {
     bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
     object = google_storage_bucket_object.cf_bigquery_source_zip.name
   }
 
+  environment_variables = {
+    PROJECT_ID = module.secure_harness.serverless_project_ids[0]
+    NAME       = "cloud function v2"
+  }
+
   event_trigger = {
-    event_type            = "google.cloud.bigquery.storage.v1.BigQueryWrite.AppendRows"
+    event_type            = "google.cloud.audit.log.v1.written"
     service_account_email = module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]
     retry_policy          = "RETRY_POLICY_RETRY"
     event_filters = [{
-      attribute       = "bigquery.googleapis.com"
-      attribute_value = module.bigquery.table_names[0]
+      attribute       = "serviceName"
+      attribute_value = "bigquery.googleapis.com"
+      },
+      {
+        attribute       = "methodName"
+        attribute_value = "google.cloud.bigquery.v2.JobService.InsertJob"
+      },
+      {
+        attribute       = "resourceName"
+        attribute_value = module.bigquery.bigquery_tables[local.table_name]["id"]
+        operator        = "match-path-pattern" # This allows path patterns to be used in the value field
     }]
   }
   runtime     = "go118"
