@@ -104,8 +104,7 @@ module "cloud_serverless_security" {
 }
 
 module "cloud_function_core" {
-  # source = "../secure-cloud-function-core"
-  source = "git::https://github.com/amandakarina/terraform-google-cloud-functions.git//modules/secure-cloud-function-core?ref=feat/adds-secure-cloud-function-core-module"
+  source = "../secure-cloud-function-core"
 
   function_name               = var.function_name
   function_description        = var.function_description
