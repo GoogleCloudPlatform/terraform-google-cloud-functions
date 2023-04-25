@@ -69,9 +69,7 @@ data "google_storage_project_service_account" "gcs_account" {
 }
 
 module "cloud_serverless_security" {
-  # source = "../secure-cloud-serverless-security"
-
-  source = "git::https://github.com/amandakarina/terraform-google-cloud-functions.git//modules/secure-cloud-serverless-security?ref=feat/adds-secure-cloud-function-security-module"
+  source = "../secure-cloud-serverless-security"
 
   kms_project_id        = var.kms_project_id
   location              = var.location
