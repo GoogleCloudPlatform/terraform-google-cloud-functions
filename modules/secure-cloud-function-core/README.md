@@ -68,8 +68,13 @@ module "secure_cloud_function_core" {
 
 | Name | Description |
 |------|-------------|
-| service\_name | Name of the created service. |
-| service\_url | The URL on which the deployed service is available. |
+| artifact\_registry\_repository\_id | The ID of the Artifact Registry created to store Cloud Function images. |
+| cloudbuild\_worker\_pool | The ID of the Cloud Build worker pool created to build Cloud Function images. |
+| cloudfunction\_bucket | The Cloud Function source bucket. |
+| cloudfunction\_bucket\_name | Name of the Cloud Function source bucket. |
+| cloudfunction\_name | Name of the created service. |
+| cloudfunction\_url | The URL on which the deployed service is available. |
+| eventarc\_google\_channel\_id | The ID of the Google Eventarc Channel. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
