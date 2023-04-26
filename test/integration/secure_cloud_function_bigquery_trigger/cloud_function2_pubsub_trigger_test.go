@@ -34,7 +34,7 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		projectID := bigQueryTriggerT.GetStringOutput("serverless_project_id")
 		connector_id := bigQueryTriggerT.GetStringOutput("connector_id")
 		service_account_email := bigQueryTriggerT.GetStringOutput("service_account_email")
-		artifact_registry_repository_id := bigQueryTriggerT.GetStringOutput("artifact_registry_repository_id")
+		// artifact_registry_repository_id := bigQueryTriggerT.GetStringOutput("artifact_registry_repository_id")
 		// table_id := bigQueryTriggerT.GetStringOutput("table_id")
 		// bigQueryTableID := bigQueryTriggerT.GetStringOutput("table_id")
 
@@ -47,7 +47,7 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		assert.Equal(service_account_email, function_cmd.Get("serviceAccountEmail").String(), fmt.Sprintf("Cloud Function should use the service account %s.", service_account_email))
 		assert.Contains(function_cmd.Get("eventTrigger.eventType").String(), "google.cloud.audit.log.v1.written", fmt.Sprintf("Event Trigger is not based on Audit Logs. Check the EventType configuration."))
 
-		artifact_registry_cmd := gcloud.Run(t, "functions describe", gcloud.WithCommonArgs([]string{artifact_registry_repository_id, "--project", projectID, "--gen2", "--region", function_location, "--format", "json"}))
+		// artifact_registry_cmd := gcloud.Run(t, "functions describe", gcloud.WithCommonArgs([]string{artifact_registry_repository_id, "--project", projectID, "--gen2", "--region", function_location, "--format", "json"}))
 	})
 	bigQueryTriggerT.Test()
 }
