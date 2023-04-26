@@ -16,6 +16,7 @@ package cloud_function2_bigquery_trigger
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
@@ -23,31 +24,52 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func GetLastSplitElement(value string, sep string) string {
+	splitted := strings.Split(value, sep)
+	return splitted[len(splitted)-1]
+}
+
+// GetOrgACMPolicyID gets the Organization Access Context Manager Policy ID
+func GetOrgACMPolicyID(t testing.TB, orgID string) string {
+	filter := fmt.Sprintf("parent:organizations/%s", orgID)
+	id := gcloud.Runf(t, "access-context-manager policies list --organization %s --filter %s --quiet", orgID, filter).Array()
+	if len(id) == 0 {
+		return ""
+	}
+	return GetLastSplitElement(id[0].Get("name").String(), "/")
+}
+
 func TestGCF2BigqueryTrigger(t *testing.T) {
-	bigQueryTriggerT := tft.NewTFBlueprintTest(t)
+	orgID := utils.ValFromEnv(t, "TF_VAR_org_id")
+	policyID := getPolicyID(t, orgID)
+	vars := map[string]string{
+		"access_context_manager_policy_id": policyID,
+	}
 
-	bigQueryTriggerT.DefineVerify(func(assert *assert.Assertions) {
-		bigQueryTriggerT.DefaultVerify(assert)
+	bqt := tft.NewTFBlueprintTest(t, tft.WithVars(vars))
 
-		function_location := "us-west1"
-		function_name := bigQueryTriggerT.GetStringOutput("cloud_function_name")
-		projectID := bigQueryTriggerT.GetStringOutput("serverless_project_id")
-		connector_id := bigQueryTriggerT.GetStringOutput("connector_id")
-		service_account_email := bigQueryTriggerT.GetStringOutput("service_account_email")
-		// artifact_registry_repository_id := bigQueryTriggerT.GetStringOutput("artifact_registry_repository_id")
-		// table_id := bigQueryTriggerT.GetStringOutput("table_id")
-		// bigQueryTableID := bigQueryTriggerT.GetStringOutput("table_id")
+	bqt.DefineVerify(func(assert *assert.Assertions) {
+		bqt.DefaultVerify(assert)
 
-		function_cmd := gcloud.Run(t, "functions describe", gcloud.WithCommonArgs([]string{function_name, "--project", projectID, "--gen2", "--region", function_location, "--format", "json"}))
+		location := "us-west1"
+		name := bqt.GetStringOutput("cloud_name")
+		projectID := bqt.GetStringOutput("serverless_project_id")
+		connectorID := bqt.GetStringOutput("connector_id")
+		saEmail := bqt.GetStringOutput("service_account_email")
+		// artifact_registry_repository_id := bqt.GetStringOutput("artifact_registry_repository_id")
+		// table_id := bqt.GetStringOutput("table_id")
+		// bigQueryTableID := bqt.GetStringOutput("table_id")
 
-		assert.Equal("ACTIVE", function_cmd.Get("state").String(), fmt.Sprintf("Should be ACTIVE. Cloud Function is not successfully deployed."))
-		assert.Equal(connector_id, function_cmd.Get("vpcConnector").String(), fmt.Sprintf("VPC Connector should be %s. Connector was not set.", connector_id))
-		assert.Equal("PRIVATE_RANGES_ONLY", function_cmd.Get("vpcConnectorEgressSettings").String(), fmt.Sprintf("Egress setting should be PRIVATE_RANGES_ONLY."))
-		assert.Equal("ALLOW_INTERNAL_AND_GCLB", function_cmd.Get("ingressSettings").String(), fmt.Sprintf("Ingress setting should be ALLOW_INTERNAL_AND_GCLB."))
-		assert.Equal(service_account_email, function_cmd.Get("serviceAccountEmail").String(), fmt.Sprintf("Cloud Function should use the service account %s.", service_account_email))
-		assert.Contains(function_cmd.Get("eventTrigger.eventType").String(), "google.cloud.audit.log.v1.written", fmt.Sprintf("Event Trigger is not based on Audit Logs. Check the EventType configuration."))
+		function_cmd := gcloud.Runf(t, "functions describe %s --project %s --gen2 --region %s", name, projectID, location)
 
-		// artifact_registry_cmd := gcloud.Run(t, "functions describe", gcloud.WithCommonArgs([]string{artifact_registry_repository_id, "--project", projectID, "--gen2", "--region", function_location, "--format", "json"}))
+		assert.Equal("ACTIVE", function_cmd.Get("state").String(), "Should be ACTIVE. Cloud Function is not successfully deployed.")
+		assert.Equal(connectorID, function_cmd.Get("serviceConfig.vpcConnector").String(), fmt.Sprintf("VPC Connector should be %s. Connector was not set.", connectorID))
+		assert.Equal("PRIVATE_RANGES_ONLY", function_cmd.Get("serviceConfig.vpcConnectorEgressSettings").String(), "Egress setting should be PRIVATE_RANGES_ONLY.")
+		assert.Equal("ALLOW_INTERNAL_AND_GCLB", function_cmd.Get("serviceConfig.ingressSettings").String(), "Ingress setting should be ALLOW_INTERNAL_AND_GCLB.")
+		assert.Equal(saEmail, function_cmd.Get("serviceAccountEmail").String(), fmt.Sprintf("Cloud Function should use the service account %s.", saEmail))
+		assert.Contains(function_cmd.Get("eventTrigger.eventType").String(), "google.cloud.audit.log.v1.written", "Event Trigger is not based on Audit Logs. Check the EventType configuration.")
+
+		// artifact_registry_cmd := gcloud.Run(t, "functions describe", gcloud.WithCommonArgs([]string{artifact_registry_repository_id, "--project", projectID, "--gen2", "--region", location, "--format", "json"}))
 	})
-	bigQueryTriggerT.Test()
+	bqt.Test()
 }
