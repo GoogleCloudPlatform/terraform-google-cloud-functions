@@ -35,5 +35,11 @@ module "project" {
     "artifactregistry.googleapis.com",
     "pubsub.googleapis.com",
     "eventarc.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "accesscontextmanager.googleapis.com",
+    "iam.googleapis.com",
+    "cloudbilling.googleapis.com",
+    "cloudkms.googleapis.com",
+    "bigquery.googleapis.com"
   ]
 }

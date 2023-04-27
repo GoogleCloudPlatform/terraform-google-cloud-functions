@@ -16,7 +16,21 @@
 
 locals {
   int_required_roles = [
-    "roles/owner"
+    "roles/owner",
+    "roles/iam.serviceAccountUser"
+  ]
+
+  folder_required_roles = [
+    "roles/resourcemanager.folderAdmin",
+    "roles/resourcemanager.projectCreator",
+    "roles/resourcemanager.projectDeleter",
+    "roles/compute.xpnAdmin",
+    "roles/iam.serviceAccountTokenCreator"
+  ]
+
+  org_required_roles = [
+    "roles/accesscontextmanager.policyAdmin",
+    "roles/orgpolicy.policyAdmin"
   ]
 }
 
@@ -34,6 +48,22 @@ resource "google_project_iam_member" "int_test" {
   member  = "serviceAccount:${google_service_account.int_test.email}"
 }
 
+resource "google_folder_iam_member" "folder_test" {
+  count = length(local.folder_required_roles)
+
+  folder = "folders/${var.folder_id}"
+  role   = local.folder_required_roles[count.index]
+  member = "serviceAccount:${google_service_account.int_test.email}"
+}
+
+
+resource "google_organization_iam_member" "org_member" {
+  count = length(local.org_required_roles)
+
+  org_id = var.org_id
+  role   = local.org_required_roles[count.index]
+  member = "serviceAccount:${google_service_account.int_test.email}"
+}
 resource "google_service_account_key" "int_test" {
   service_account_id = google_service_account.int_test.id
 }

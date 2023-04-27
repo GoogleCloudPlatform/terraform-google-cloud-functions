@@ -21,6 +21,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
+	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -41,8 +42,8 @@ func GetOrgACMPolicyID(t testing.TB, orgID string) string {
 
 func TestGCF2BigqueryTrigger(t *testing.T) {
 	orgID := utils.ValFromEnv(t, "TF_VAR_org_id")
-	policyID := getPolicyID(t, orgID)
-	vars := map[string]string{
+	policyID := GetOrgACMPolicyID(t, orgID)
+	vars := map[string]interface{}{
 		"access_context_manager_policy_id": policyID,
 	}
 
@@ -52,7 +53,7 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		bqt.DefaultVerify(assert)
 
 		location := "us-west1"
-		name := bqt.GetStringOutput("cloud_name")
+		name := bqt.GetStringOutput("cloud_function_name")
 		projectID := bqt.GetStringOutput("serverless_project_id")
 		connectorID := bqt.GetStringOutput("connector_id")
 		saEmail := bqt.GetStringOutput("service_account_email")
