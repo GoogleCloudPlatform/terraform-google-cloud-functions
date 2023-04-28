@@ -58,7 +58,7 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		connectorID := bqt.GetStringOutput("connector_id")
 		saEmail := bqt.GetStringOutput("service_account_email")
 		// artifact_registry_repository_id := bqt.GetStringOutput("artifact_registry_repository_id")
-		bqTableID := bqt.GetStringOutput("table_id")
+		// bqTableID := bqt.GetStringOutput("table_id")
 
 		function_cmd := gcloud.Runf(t, "functions describe %s --project %s --gen2 --region %s", name, projectID, location)
 

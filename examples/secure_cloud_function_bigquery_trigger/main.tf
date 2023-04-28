@@ -82,6 +82,10 @@ resource "google_storage_bucket_object" "cf_bigquery_source_zip" {
   ]
 }
 
+data "google_bigquery_default_service_account" "bq_sa" {
+  project = module.secure_harness.serverless_project_ids[0]
+}
+
 module "bigquery_kms" {
   source  = "terraform-google-modules/kms/google"
   version = "~> 2.2"
@@ -92,8 +96,8 @@ module "bigquery_kms" {
   keys                 = [local.kms_bigquery]
   set_decrypters_for   = [local.kms_bigquery]
   set_encrypters_for   = [local.kms_bigquery]
-  decrypters           = ["bq-${module.secure_harness.serverless_project_ids[0]}@bigquery-encryption.iam.gserviceaccount.com"]
-  encrypters           = ["bq-${module.secure_harness.serverless_project_ids[0]}@bigquery-encryption.iam.gserviceaccount.com"]
+  decrypters           = ["serviceAccount:${data.google_bigquery_default_service_account.bq_sa.email}"]
+  encrypters           = ["serviceAccount:${data.google_bigquery_default_service_account.bq_sa.email}"]
   prevent_destroy      = false
   key_rotation_period  = "2592000s"
   key_protection_level = "HSM"
