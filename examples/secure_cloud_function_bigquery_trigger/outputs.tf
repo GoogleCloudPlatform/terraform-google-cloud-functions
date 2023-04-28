@@ -63,17 +63,6 @@ output "service_vpc_subnet_name" {
   value       = module.secure_harness.service_subnet[0]
   description = "The sub-network name created in harness."
 }
-
-# output "artifact_registry_repository_id" {
-#   value       = module.secure_clou_run.artifact_registry_repository_id
-#   description = "The Artifact Registry Repository ID where the images should be stored."
-# }
-
-# output "cloudbuild_worker_pool_id" {
-#   value       = module.secure_cloud_function.cloudbuild_worker_pool_id
-#   description = "The ID of the Cloud Build worker pool created to build Cloud Function images."
-# }
-
 output "connector_id" {
   value       = module.secure_cloud_function.connector_id
   description = "VPC serverless connector ID."

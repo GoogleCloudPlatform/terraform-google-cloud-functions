@@ -272,6 +272,18 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 			assert.Equal(orgPolicy.allowedValues, opOrgPolicies[0].Get("listPolicy.allowedValues").String(), fmt.Sprintf("Constraint %s should have policy %s", orgPolicy.constraint, orgPolicy.allowedValues))
 		}
 
+		// Service account test
+		serviceAccountName := "sa-cloud-function"
+		serviceAccountEmail := fmt.Sprintf("%s@%s.iam.gserviceaccount.com", serviceAccountName, projectID)
+		serviceAccountID := fmt.Sprintf("projects/%s/serviceAccounts/%s", projectID, serviceAccountEmail)
+		serviceAccount := gcloud.Runf(t, "iam service-accounts describe %s", serviceAccountEmail)
+		assert.Equal(serviceAccountID, serviceAccount.Get("name").String(), fmt.Sprintf("Service Account %s should exist", serviceAccountID))
+
+		// Workerpool test
+		workerPoolName := "workerpool"
+		opWorkerPool := gcloud.Runf(t, "builds worker-pools describe %s --project %s --region %s", workerPoolName, projectID, location)
+		assert.Equal("NO_PUBLIC_EGRESS", opWorkerPool.Get("privatePoolV1Config.networkConfig.egressOption").String(), "Private Pool config should have NO_PUBLIC_EGRESS")
+
 		// Cloud Function test
 		function_cmd := gcloud.Runf(t, "functions describe %s --project %s --gen2 --region %s", name, projectID, location)
 		assert.Equal("ACTIVE", function_cmd.Get("state").String(), "Should be ACTIVE. Cloud Function is not successfully deployed.")
