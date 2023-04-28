@@ -29,7 +29,7 @@ variable "org_id" {
   type        = string
 }
 
-variable "parent_folder_id" {
+variable "folder_id" {
   description = "The ID of a folder to host the infrastructure created in this example."
   type        = string
   default     = ""
