@@ -36,7 +36,7 @@ module "secure_harness" {
   network_project_name                        = "prj-restricted-shared-tst"
   serverless_project_names                    = ["prj-secure-cloud-function"]
   org_id                                      = var.org_id
-  folder_id                            = var.folder_id
+  parent_folder_id                            = var.folder_id
   serverless_folder_suffix                    = random_id.random_folder_suffix.hex
   region                                      = local.region
   location                                    = local.location
