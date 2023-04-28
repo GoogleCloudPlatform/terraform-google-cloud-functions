@@ -40,7 +40,7 @@ output "network_project_id" {
 }
 
 output "service_account_email" {
-  value       = module.secure_harness.service_account_email
+  value       = module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]
   description = "The service account email created to be used by Cloud Function."
 }
 
@@ -82,6 +82,21 @@ output "connector_id" {
 output "table_id" {
   value       = module.bigquery.bigquery_tables[local.table_name]["id"]
   description = "Bigquery table name."
+}
+
+output "restricted_service_perimeter_name" {
+  value       = module.secure_harness.restricted_service_perimeter_name
+  description = "Service Perimeter name."
+}
+
+output "bigquery_kms_key" {
+  value       = module.bigquery_kms.keys[local.kms_bigquery]
+  description = "KMS Key used in the Bigquery dataset."
+}
+
+output "restricted_access_level_name" {
+  value       = module.secure_harness.restricted_access_level_name
+  description = "Access level name."
 }
 
 # output "cloudfunction_bucket_name" {
