@@ -29,7 +29,7 @@ output "artifact_registry_repository_id" {
   description = "The ID of the Artifact Registry created to store Cloud Function images."
 }
 
-output "cloudbuild_worker_pool" {
+output "cloudbuild_worker_pool_id" {
   value       = google_cloudbuild_worker_pool.pool.id
   description = "The ID of the Cloud Build worker pool created to build Cloud Function images."
 }

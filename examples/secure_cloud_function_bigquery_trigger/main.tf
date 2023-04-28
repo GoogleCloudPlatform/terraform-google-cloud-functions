@@ -20,6 +20,7 @@ locals {
   region          = "us-west1"
   repository_name = "rep-secure-cloud-function"
   table_name      = "tbl_test"
+  kms_bigquery    = "key-secure-bigquery"
 }
 resource "random_id" "random_folder_suffix" {
   byte_length = 2
@@ -81,6 +82,27 @@ resource "google_storage_bucket_object" "cf_bigquery_source_zip" {
   ]
 }
 
+module "bigquery_kms" {
+  source  = "terraform-google-modules/kms/google"
+  version = "~> 2.2"
+
+  project_id           = module.secure_harness.security_project_id
+  location             = local.location
+  keyring              = "krg-secure-bigquery"
+  keys                 = [local.kms_bigquery]
+  set_decrypters_for   = [local.kms_bigquery]
+  set_encrypters_for   = [local.kms_bigquery]
+  decrypters           = ["bq-${module.secure_harness.serverless_project_ids[0]}@bigquery-encryption.iam.gserviceaccount.com"]
+  encrypters           = ["bq-${module.secure_harness.serverless_project_ids[0]}@bigquery-encryption.iam.gserviceaccount.com"]
+  prevent_destroy      = false
+  key_rotation_period  = "2592000s"
+  key_protection_level = "HSM"
+
+  depends_on = [
+    module.secure_harness
+  ]
+}
+
 module "bigquery" {
   source  = "terraform-google-modules/bigquery/google"
   version = "~> 5.4"
@@ -91,6 +113,7 @@ module "bigquery" {
   project_id                  = module.secure_harness.serverless_project_ids[0]
   location                    = local.location
   default_table_expiration_ms = 3600000
+  encryption_key              = module.bigquery_kms.keys[local.kms_bigquery]
 
   tables = [
     {
@@ -112,6 +135,7 @@ module "bigquery" {
         billable = "true"
       }
   }]
+
   depends_on = [
     module.secure_harness
   ]

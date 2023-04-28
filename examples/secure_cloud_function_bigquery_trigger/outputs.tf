@@ -64,27 +64,37 @@ output "service_vpc_subnet_name" {
   description = "The sub-network name created in harness."
 }
 
-output "artifact_registry_repository_id" {
-  value       = module.secure_harness.artifact_registry_repository_id
-  description = "The Artifact Registry Repository ID where the images should be stored."
-}
+# output "artifact_registry_repository_id" {
+#   value       = module.secure_clou_run.artifact_registry_repository_id
+#   description = "The Artifact Registry Repository ID where the images should be stored."
+# }
 
-output "artifact_registry_repository_name" {
-  value       = module.secure_harness.artifact_registry_repository_name
-  description = "The Artifact Registry Repository last part of the repository name where the images should be stored."
-}
+# output "cloudbuild_worker_pool_id" {
+#   value       = module.secure_cloud_function.cloudbuild_worker_pool_id
+#   description = "The ID of the Cloud Build worker pool created to build Cloud Function images."
+# }
 
 output "connector_id" {
   value       = module.secure_cloud_function.connector_id
   description = "VPC serverless connector ID."
 }
 
-output "table_name" {
-  value       = module.bigquery.table_ids[0]
-  description = "Bigquery table id."
-}
-
 output "table_id" {
   value       = module.bigquery.bigquery_tables[local.table_name]["id"]
-  description = "Bigquery table."
+  description = "Bigquery table name."
 }
+
+# output "cloudfunction_bucket_name" {
+#   value       = module.secure_cloud_function.cloudfunction_bucket_name
+#   description = "Name of the Cloud Function source bucket."
+# }
+
+# output "cloudfunction_bucket" {
+#   value       = module.secure_cloud_function.cloudfunction_bucket
+#   description = "The Cloud Function source bucket."
+# }
+
+# output "cloudfunction_url" {
+#   value       = module.secure_cloud_function.cloudfunction_url
+#   description = "The URL on which the deployed service is available."
+# }

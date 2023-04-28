@@ -58,8 +58,7 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		connectorID := bqt.GetStringOutput("connector_id")
 		saEmail := bqt.GetStringOutput("service_account_email")
 		// artifact_registry_repository_id := bqt.GetStringOutput("artifact_registry_repository_id")
-		// table_id := bqt.GetStringOutput("table_id")
-		// bigQueryTableID := bqt.GetStringOutput("table_id")
+		bqTableID := bqt.GetStringOutput("table_id")
 
 		function_cmd := gcloud.Runf(t, "functions describe %s --project %s --gen2 --region %s", name, projectID, location)
 
@@ -70,7 +69,11 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		assert.Equal(saEmail, function_cmd.Get("serviceAccountEmail").String(), fmt.Sprintf("Cloud Function should use the service account %s.", saEmail))
 		assert.Contains(function_cmd.Get("eventTrigger.eventType").String(), "google.cloud.audit.log.v1.written", "Event Trigger is not based on Audit Logs. Check the EventType configuration.")
 
-		// artifact_registry_cmd := gcloud.Run(t, "functions describe", gcloud.WithCommonArgs([]string{artifact_registry_repository_id, "--project", projectID, "--gen2", "--region", location, "--format", "json"}))
+		opDataset := gcloud.Runf(t, "alpha bq tables describe tbl_test --dataset dst_secure_cloud_function --project %s", projectID)
+		fullTablePath := fmt.Sprintf("%s:dst_secure_cloud_function.tbl_test", projectID)
+		assert.Equal(fullTablePath, opDataset.Get("id").String(), fmt.Sprintf("Should have same id: %s", fullTablePath))
+		assert.Equal(location, opDataset.Get("location").String(), fmt.Sprintf("Should have same location: %s", location))
+
 	})
 	bqt.Test()
 }

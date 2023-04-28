@@ -69,7 +69,7 @@ module "secure_cloud_function_core" {
 | Name | Description |
 |------|-------------|
 | artifact\_registry\_repository\_id | The ID of the Artifact Registry created to store Cloud Function images. |
-| cloudbuild\_worker\_pool | The ID of the Cloud Build worker pool created to build Cloud Function images. |
+| cloudbuild\_worker\_pool\_id | The ID of the Cloud Build worker pool created to build Cloud Function images. |
 | cloudfunction\_bucket | The Cloud Function source bucket. |
 | cloudfunction\_bucket\_name | Name of the Cloud Function source bucket. |
 | cloudfunction\_name | Name of the created service. |

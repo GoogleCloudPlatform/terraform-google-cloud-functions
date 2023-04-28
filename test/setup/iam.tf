@@ -64,6 +64,13 @@ resource "google_organization_iam_member" "org_member" {
   role   = local.org_required_roles[count.index]
   member = "serviceAccount:${google_service_account.int_test.email}"
 }
+
+resource "google_billing_account_iam_member" "int_billing_admin" {
+  billing_account_id = var.billing_account
+  role               = "roles/billing.user"
+  member             = "serviceAccount:${google_service_account.int_test.email}"
+}
+
 resource "google_service_account_key" "int_test" {
   service_account_id = google_service_account.int_test.id
 }
