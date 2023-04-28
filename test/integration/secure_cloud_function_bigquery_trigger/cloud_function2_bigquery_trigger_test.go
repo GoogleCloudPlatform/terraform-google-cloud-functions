@@ -179,15 +179,15 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		location := "us-west1"
 		name := bqt.GetStringOutput("cloud_function_name")
 		projectID := bqt.GetStringOutput("serverless_project_id")
+		securityProjectID := bqt.GetStringOutput("security_project_id")
+		serverlessProjectNumber := bqt.GetStringOutput("serverless_project_number")
 		networkProjectID := bqt.GetStringOutput("network_project_id")
 		connectorID := bqt.GetStringOutput("connector_id")
 		saEmail := bqt.GetStringOutput("service_account_email")
-
-		serverlessProjectNumber := bqt.GetStringOutput("serverless_project_number")
-		securityProjectID := bqt.GetStringOutput("security_project_id")
 		networkName := bqt.GetStringOutput("service_vpc_name")
 		servicePerimeterLink := fmt.Sprintf("accessPolicies/%s/servicePerimeters/%s", policyID, bqt.GetStringOutput("restricted_service_perimeter_name"))
 		accessLevel := fmt.Sprintf("accessPolicies/%s/accessLevels/%s", policyID, bqt.GetStringOutput("restricted_access_level_name"))
+		cfKMSKey := fmt.Sprintf("projects/%s/locations/%s/keyRings/krg-secure-cloud-function/cryptoKeys/key-secure-cloud-function", securityProjectID, location)
 
 		// VPC-SC Tests
 		servicePerimeter := gcloud.Runf(t, "access-context-manager perimeters describe %s --policy %s", servicePerimeterLink, policyID)
@@ -198,8 +198,8 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		assert.Subset(listServices, restrictedServices, fmt.Sprintf("service perimeter %s should restrict %v", servicePerimeterLink, restrictedServices))
 
 		// Network test
-		opCloudRun := gcloud.Runf(t, "compute networks describe %s --project=%s", networkName, networkProjectID)
-		assert.Equal("GLOBAL", opCloudRun.Get("routingConfig.routingMode").String(), fmt.Sprint("Routing Mode should be GLOBAL."))
+		opNet := gcloud.Runf(t, "compute networks describe %s --project=%s", networkName, networkProjectID)
+		assert.Equal("GLOBAL", opNet.Get("routingConfig.routingMode").String(), fmt.Sprint("Routing Mode should be GLOBAL."))
 
 		// Sub-network test
 		subnetName := bqt.GetStringOutput("service_vpc_subnet_name")
@@ -267,48 +267,50 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 				allowedValues: "is:internal-and-cloud-load-balancing",
 			},
 		} {
-			orgArgs := gcloud.WithCommonArgs([]string{"--flatten", "listPolicy.allowedValues[]", "--format", "json"})
-			opOrgPolicies := gcloud.Run(t, fmt.Sprintf("resource-manager org-policies describe %s --project=%s", orgPolicy.constraint, projectID), orgArgs).Array()
+			opOrgPolicies := gcloud.Runf(t, "resource-manager org-policies describe %s --project=%s --flatten listPolicy.allowedValues[]", orgPolicy.constraint, projectID).Array()
 			assert.Equal(orgPolicy.allowedValues, opOrgPolicies[0].Get("listPolicy.allowedValues").String(), fmt.Sprintf("Constraint %s should have policy %s", orgPolicy.constraint, orgPolicy.allowedValues))
 		}
 
+		reqVPCCon := "constraints/cloudfunctions.requireVPCConnector"
+		opOrgPolBool := gcloud.Runf(t, "resource-manager org-policies describe %s --project=%s", reqVPCCon, projectID)
+		assert.Equal("true", opOrgPolBool.Get("booleanPolicy.enforced").String(), fmt.Sprintf("Constraint %s should be enforced.", reqVPCCon))
+
 		// Service account test
-		serviceAccountName := "sa-cloud-function"
-		serviceAccountEmail := fmt.Sprintf("%s@%s.iam.gserviceaccount.com", serviceAccountName, projectID)
+		cfSaName := "sa-cloud-function"
+		serviceAccountEmail := fmt.Sprintf("%s@%s.iam.gserviceaccount.com", cfSaName, projectID)
 		serviceAccountID := fmt.Sprintf("projects/%s/serviceAccounts/%s", projectID, serviceAccountEmail)
 		serviceAccount := gcloud.Runf(t, "iam service-accounts describe %s", serviceAccountEmail)
 		assert.Equal(serviceAccountID, serviceAccount.Get("name").String(), fmt.Sprintf("Service Account %s should exist", serviceAccountID))
 
-		// Workerpool test
+		// Workerpool testresource-manager org-policies describe
 		workerPoolName := "workerpool"
 		opWorkerPool := gcloud.Runf(t, "builds worker-pools describe %s --project %s --region %s", workerPoolName, projectID, location)
 		assert.Equal("NO_PUBLIC_EGRESS", opWorkerPool.Get("privatePoolV1Config.networkConfig.egressOption").String(), "Private Pool config should have NO_PUBLIC_EGRESS")
 
 		// Cloud Function test
-		function_cmd := gcloud.Runf(t, "functions describe %s --project %s --gen2 --region %s", name, projectID, location)
-		assert.Equal("ACTIVE", function_cmd.Get("state").String(), "Should be ACTIVE. Cloud Function is not successfully deployed.")
-		assert.Equal(connectorID, function_cmd.Get("serviceConfig.vpcConnector").String(), fmt.Sprintf("VPC Connector should be %s. Connector was not set.", connectorID))
-		assert.Equal("PRIVATE_RANGES_ONLY", function_cmd.Get("serviceConfig.vpcConnectorEgressSettings").String(), "Egress setting should be PRIVATE_RANGES_ONLY.")
-		assert.Equal("ALLOW_INTERNAL_AND_GCLB", function_cmd.Get("serviceConfig.ingressSettings").String(), "Ingress setting should be ALLOW_INTERNAL_AND_GCLB.")
-		assert.Equal(saEmail, function_cmd.Get("serviceConfig.serviceAccountEmail").String(), fmt.Sprintf("Cloud Function should use the service account %s.", saEmail))
-		assert.Contains(function_cmd.Get("eventTrigger.eventType").String(), "google.cloud.audit.log.v1.written", "Event Trigger is not based on Audit Logs. Check the EventType configuration.")
+		cf := gcloud.Runf(t, "functions describe %s --project %s --gen2 --region %s", name, projectID, location)
+		assert.Equal("ACTIVE", cf.Get("state").String(), "Should be ACTIVE. Cloud Function is not successfully deployed.")
+		assert.Equal(connectorID, cf.Get("serviceConfig.vpcConnector").String(), fmt.Sprintf("VPC Connector should be %s. Connector was not set.", connectorID))
+		assert.Equal("PRIVATE_RANGES_ONLY", cf.Get("serviceConfig.vpcConnectorEgressSettings").String(), "Egress setting should be PRIVATE_RANGES_ONLY.")
+		assert.Equal("ALLOW_INTERNAL_AND_GCLB", cf.Get("serviceConfig.ingressSettings").String(), "Ingress setting should be ALLOW_INTERNAL_AND_GCLB.")
+		assert.Equal(saEmail, cf.Get("serviceConfig.serviceAccountEmail").String(), fmt.Sprintf("Cloud Function should use the service account %s.", saEmail))
+		assert.Contains(cf.Get("eventTrigger.eventType").String(), "google.cloud.audit.log.v1.written", "Event Trigger is not based on Audit Logs. Check the EventType configuration.")
 
 		// Cloud Function Storage Bucket test
 		bucketSrcBucket := fmt.Sprintf("gcf-v2-sources-%s-%s", serverlessProjectNumber, location)
-		gcloudArgsBucketCF := gcloud.WithCommonArgs([]string{"--project", projectID, "--json"})
-		opSrcBucket := gcloud.Run(t, fmt.Sprintf("alpha storage ls --buckets gs://%s", bucketSrcBucket), gcloudArgsBucketCF).Array()
-		cfKMSKey := fmt.Sprintf("projects/%s/locations/%s/keyRings/krg-secure-cloud-function/cryptoKeys/key-secure-cloud-function", securityProjectID, location)
+		bktArgs := gcloud.WithCommonArgs([]string{"--project", projectID, "--json"})
+		opSrcBucket := gcloud.Run(t, fmt.Sprintf("alpha storage ls --buckets gs://%s", bucketSrcBucket), bktArgs).Array()
 		assert.Equal(cfKMSKey, opSrcBucket[0].Get("metadata.encryption.defaultKmsKeyName").String(), fmt.Sprintf("Should have same KMS key: %s", cfKMSKey))
 		assert.Equal("true", opSrcBucket[0].Get("metadata.iamConfiguration.bucketPolicyOnly.enabled").String(), "Should have Bucket Policy Only enabled.")
 
 		// Cloud Function Artifact Registry
 		arCF := fmt.Sprintf("rep-cloud-function-%s", name)
-		opAR := gcloud.Runf(t, "artifacts repositories describe %s --project %s --location %s --format json", arCF, projectID, location)
+		opAR := gcloud.Runf(t, "artifacts repositories describe %s --project %s --location %s", arCF, projectID, location)
 		assert.Equal(cfKMSKey, opAR.Get("kmsKeyName").String(), fmt.Sprintf("Should have KMS Key: %s", cfKMSKey))
 		assert.Equal("DOCKER", opAR.Get("format").String(), "Should have type: DOCKER")
 
 		// Cloud Function EventArc
-		opEventArc := gcloud.Runf(t, "eventarc google-channels describe --project %s --location %s --format json", projectID, location)
+		opEventArc := gcloud.Runf(t, "eventarc google-channels describe --project %s --location %s", projectID, location)
 		assert.Equal(cfKMSKey, opEventArc.Get("cryptoKeyName").String(), fmt.Sprintf("Should have KMS Key: %s", cfKMSKey))
 
 		// Bigquery test
