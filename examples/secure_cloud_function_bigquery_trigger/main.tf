@@ -146,11 +146,11 @@ module "bigquery" {
 }
 
 module "secure_cloud_function" {
-  source = "../../modules/secure-cloud-function"
-  # source = "git::https://github.com/amandakarina/terraform-google-cloud-functions.git//modules/secure-cloud-function?ref=feat/adds-secure-cloud-function-module"
+  # source = "../../modules/secure-cloud-function"
+  source = "git::https://github.com/amandakarina/terraform-google-cloud-functions.git//modules/secure-cloud-function?ref=feat/adds-secure-cloud-function-module"
 
   function_name         = "secure-cloud-function-bigquery"
-  function_description  = "Logs when there is a change in the BigQuery"
+  function_description  = "Logs when there is a new row in the BigQuery"
   location              = local.location
   region                = local.region
   serverless_project_id = module.secure_harness.serverless_project_ids[0]
