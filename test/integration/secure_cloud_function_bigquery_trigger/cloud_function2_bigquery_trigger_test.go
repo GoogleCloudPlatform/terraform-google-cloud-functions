@@ -23,11 +23,25 @@ import (
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/utils"
 	"github.com/stretchr/testify/assert"
+	"github.com/tidwall/gjson"
 )
+
+type Protocols struct {
+	Protocol string
+	Ports    []string
+}
 
 func GetLastSplitElement(value string, sep string) string {
 	splitted := strings.Split(value, sep)
 	return splitted[len(splitted)-1]
+}
+
+func GetResultFieldStrSlice(rs []gjson.Result, field string) []string {
+	s := make([]string, 0)
+	for _, r := range rs {
+		s = append(s, r.Get(field).String())
+	}
+	return s
 }
 
 // GetOrgACMPolicyID gets the Organization Access Context Manager Policy ID
@@ -320,6 +334,7 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		assert.Equal(fullTablePath, opDataset.Get("id").String(), fmt.Sprintf("Should have same id: %s", fullTablePath))
 		assert.Equal(location, opDataset.Get("location").String(), fmt.Sprintf("Should have same location: %s", location))
 		assert.Equal(bqKmsKey, opDataset.Get("encryptionConfiguration.kmsKeyName").String(), fmt.Sprintf("Should have the KMS Key: %s", bqKmsKey))
+
 	})
 	bqt.Test()
 }
