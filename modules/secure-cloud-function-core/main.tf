@@ -91,4 +91,8 @@ resource "google_cloudfunctions2_function_iam_member" "invokers" {
   cloud_function = module.cloud_function.function_name
   role           = "roles/cloudfunctions.invoker"
   member         = "serviceAccount:${var.event_trigger.service_account_email}"
+
+  depends_on = [
+    module.cloud_function
+  ]
 }
