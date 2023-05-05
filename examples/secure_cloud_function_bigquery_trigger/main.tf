@@ -146,8 +146,7 @@ module "bigquery" {
 }
 
 module "secure_cloud_function" {
-  # source = "../../modules/secure-cloud-function"
-  source = "git::https://github.com/amandakarina/terraform-google-cloud-functions.git//modules/secure-cloud-function?ref=feat/adds-secure-cloud-function-module"
+  source = "../../modules/secure-cloud-function"
 
   function_name         = "secure-cloud-function-bigquery"
   function_description  = "Logs when there is a new row in the BigQuery"

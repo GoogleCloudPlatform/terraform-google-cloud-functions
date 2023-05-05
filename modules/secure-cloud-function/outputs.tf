@@ -29,14 +29,14 @@ output "key_self_link" {
   description = "Name of the Cloud KMS crypto key."
 }
 
-output "service_name" {
-  value       = module.cloud_function_core.service_name
-  description = "ID of the created service."
+output "cloudfunction_name" {
+  value       = module.cloud_function_core.cloudfunction_name
+  description = "ID of the created Cloud Function."
 }
 
-output "service_url" {
-  value       = module.cloud_function_core.service_url
-  description = "Url of the created service."
+output "cloudfunction_url" {
+  value       = module.cloud_function_core.cloudfunction_url
+  description = "Url of the created Cloud Function."
 }
 
 output "gca_vpcaccess_sa" {

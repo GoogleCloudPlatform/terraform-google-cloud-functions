@@ -45,7 +45,7 @@ output "service_account_email" {
 }
 
 output "cloud_function_name" {
-  value       = module.secure_cloud_function.service_name
+  value       = module.secure_cloud_function.cloudfunction_name
   description = "The service account email created to be used by Cloud Function."
 }
 
