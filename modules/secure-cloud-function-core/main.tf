@@ -28,6 +28,34 @@ module "cloudfunction_bucket" {
   location      = var.location
   storage_class = "REGIONAL"
   force_destroy = var.force_destroy
+  cors = [
+    {
+      max_age_seconds = 0
+      method = [
+        "GET",
+      ]
+      origin = [
+        "https://*.cloud.google.com",
+        "https://*.corp.google.com",
+        "https://*.corp.google.com:*",
+        "https://*.cloud.google",
+        "https://*.byoid.goog",
+      ]
+      response_header = []
+    }
+  ]
+  lifecycle_rules = [{
+    action = {
+      type = "Delete"
+    }
+    condition = {
+      age                        = 0
+      days_since_custom_time     = 0
+      days_since_noncurrent_time = 0
+      num_newer_versions         = 3
+      with_state                 = "ARCHIVED"
+    }
+  }]
 
   encryption = {
     default_kms_key_name = var.encryption_key
