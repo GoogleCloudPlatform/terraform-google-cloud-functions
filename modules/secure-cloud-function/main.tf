@@ -16,8 +16,9 @@
 
 
 module "cloud_serverless_network" {
-  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-cloud-serverless-net"
-  version = "~> 0.6"
+  # source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-cloud-serverless-net"
+  # version = "~> 0.6"
+  source = "git::https://github.com/GoogleCloudPlatform/terraform-google-cloud-run.git//modules/secure-serverless-net?ref=main"
 
   connector_name            = var.connector_name
   subnet_name               = var.subnet_name
@@ -29,6 +30,7 @@ module "cloud_serverless_network" {
   ip_cidr_range             = var.ip_cidr_range
   create_subnet             = var.create_subnet
   resource_names_suffix     = var.resource_names_suffix
+  serverless_type           = "CLOUD_FUNCTION"
 
   serverless_service_identity_email = google_project_service_identity.cloudfunction_sa.email
 }

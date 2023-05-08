@@ -29,7 +29,7 @@ resource "random_id" "random_folder_suffix" {
 module "secure_harness" {
   # source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
   # version = "~> 0.7"
-  source = "git::https://github.com/amandakarina/terraform-google-cloud-run.git//modules/secure-serverless-harness?ref=feat/adds-support-to-multiple-services-project-and-shared-vpc"
+  source = "git::https://github.com/GoogleCloudPlatform/terraform-google-cloud-run//modules/secure-serverless-harness?ref=main"
   # source = "../../../terraform-google-cloud-run/modules/secure-serverless-harness"
 
   billing_account                             = var.billing_account
