@@ -29,7 +29,7 @@ output "key_self_link" {
   description = "Name of the Cloud KMS crypto key."
 }
 
-output "service_name" {
+output "cloudfunction_name" {
   value       = module.cloud_function_core.service_name
   description = "ID of the created service."
 }

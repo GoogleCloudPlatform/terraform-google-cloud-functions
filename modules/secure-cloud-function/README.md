@@ -137,12 +137,12 @@ module "secure_cloud_run" {
 | Name | Description |
 |------|-------------|
 | cloud\_services\_sa | Service Account for Cloud Function. |
+| cloudfunction\_name | ID of the created service. |
 | connector\_id | VPC serverless connector ID. |
 | gca\_vpcaccess\_sa | Service Account for VPC Access. |
 | key\_self\_link | Name of the Cloud KMS crypto key. |
 | keyring\_self\_link | Name of the Cloud KMS keyring. |
 | serverless\_identity\_services\_sa | Service Identity to serverless services. |
-| service\_name | ID of the created service. |
 | service\_url | Url of the created service. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
