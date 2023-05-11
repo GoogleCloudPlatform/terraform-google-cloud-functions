@@ -19,11 +19,6 @@ variable "location" {
   type        = string
 }
 
-variable "region" {
-  description = "Location for load balancer and Cloud Run resources."
-  type        = string
-}
-
 variable "serverless_project_id" {
   description = "The project to deploy the cloud run service."
   type        = string

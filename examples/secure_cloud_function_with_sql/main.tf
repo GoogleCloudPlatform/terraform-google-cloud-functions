@@ -16,12 +16,12 @@
 
 
 locals {
-  location        = "us-west1"
-  region          = "us-west1"
-  region_sql      = "us-central1"
+  location        = "us-central1"
+  region          = "us-central1"
   zone_sql        = "us-central1-a"
   repository_name = "rep-secure-cloud-function"
-  kms_bigquery    = "key-secure-bigquery"
+  db_name         = "db-application"
+
 }
 resource "random_id" "random_folder_suffix" {
   byte_length = 2
@@ -30,9 +30,8 @@ resource "random_id" "random_folder_suffix" {
 module "secure_harness" {
   # source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
   # version = "~> 0.7"
-  source = "git::https://github.com/amandakarina/terraform-google-cloud-run//modules/secure-serverless-harness?ref=fix/adds-missing-api-on-network-project"
-  # amandakarina:fix/adds-missing-api-on-network-project
-  # source = "../../../terraform-google-cloud-run/modules/secure-serverless-harness"
+  # source = "git::https://github.com/amandakarina/terraform-google-cloud-run//modules/secure-serverless-harness?ref=fix/adds-missing-api-on-network-project"
+  source = "../../../terraform-google-cloud-run/modules/secure-serverless-harness"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-security"
@@ -58,27 +57,15 @@ module "secure_harness" {
   serverless_type                             = "CLOUD_FUNCTION"
   use_shared_vpc                              = true
 
+  serverless_project_extra_apis = {
+    "prj-secure-cloud-function" = ["servicenetworking.googleapis.com", "sql-component.googleapis.com", "sqladmin.googleapis.com"],
+    "prj-secure-cloud-sql"      = ["sqladmin.googleapis.com"]
+  }
   service_account_project_roles = {
     "prj-secure-cloud-function" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
     "prj-secure-cloud-sql"      = []
   }
 
-}
-
-module "cloud_sql_subnet" {
-  source  = "terraform-google-modules/network/google//modules/subnets"
-  version = "~> 7.0"
-
-  project_id   = module.secure_harness.network_project_id[0]
-  network_name = module.secure_harness.service_vpc[0].network.name
-
-  subnets = [
-    {
-      subnet_name   = "sb-${local.region_sql}-cloud-sql"
-      subnet_ip     = "10.0.1.0/24"
-      subnet_region = local.region_sql
-    }
-  ]
 }
 
 module "cloud_sql_private_service_access" {
@@ -92,13 +79,14 @@ module "safer_mysql_db" {
   source               = "GoogleCloudPlatform/sql-db/google//modules/safer_mysql"
   version              = "~> 15.0"
   name                 = "csql-test"
+  db_name              = local.db_name
   random_instance_name = true
   project_id           = module.secure_harness.serverless_project_ids[1]
 
   deletion_protection = false
 
   database_version = "MYSQL_5_6"
-  region           = local.region_sql
+  region           = local.region
   zone             = local.zone_sql
   tier             = "db-n1-standard-1"
 
@@ -114,11 +102,11 @@ module "safer_mysql_db" {
     }
   ]
 
-  assign_public_ip   = "true"
+  assign_public_ip   = "false"
   vpc_network        = module.secure_harness.service_vpc[0].network.id
   allocated_ip_range = module.cloud_sql_private_service_access.google_compute_global_address_name
 
-  depends_on = [ module.cloud_sql_private_service_access ]
+  depends_on = [module.cloud_sql_private_service_access]
 }
 
 data "archive_file" "cf_bigquery_source" {
@@ -141,8 +129,36 @@ resource "google_storage_bucket_object" "cf_bigquery_source_zip" {
   ]
 }
 
-data "google_bigquery_default_service_account" "bq_sa" {
+resource "google_project_iam_member" "cloud_sql_roles" {
+  for_each = toset(["roles/cloudsql.client", "roles/cloudsql.instanceUser"])
+
+  project = module.secure_harness.serverless_project_ids[1]
+  role    = each.value
+  member  = "serviceAccount:${module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]}"
+}
+
+resource "google_project_service_identity" "pubsub_sa" {
+  provider = google-beta
+
   project = module.secure_harness.serverless_project_ids[0]
+  service = "pubsub.googleapis.com"
+}
+
+module "topic_kms" {
+  source  = "terraform-google-modules/kms/google"
+  version = "~> 2.2"
+
+  project_id           = module.secure_harness.security_project_id
+  location             = local.location
+  keyring              = "krg-topic"
+  keys                 = ["key-topic"]
+  set_decrypters_for   = ["key-topic"]
+  set_encrypters_for   = ["key-topic"]
+  decrypters           = ["serviceAccount:${google_project_service_identity.pubsub_sa.email}"]
+  encrypters           = ["serviceAccount:${google_project_service_identity.pubsub_sa.email}"]
+  prevent_destroy      = false
+  key_rotation_period  = "2592000s"
+  key_protection_level = "HSM"
 }
 
 
@@ -150,17 +166,17 @@ module "pubsub" {
   source  = "terraform-google-modules/pubsub/google"
   version = "~> 5.0"
 
-  topic      = "function2-topic"
-  project_id = module.secure_harness.serverless_project_ids[0]
+  topic              = "function2-topic"
+  project_id         = module.secure_harness.serverless_project_ids[0]
+  topic_kms_key_name = module.topic_kms.keys["key-topic"]
 }
 
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
 
-  function_name         = "secure-cloud-function-bigquery"
-  function_description  = "Logs when there is a new row in the BigQuery"
+  function_name         = "secure-cloud-function-cloud-sql"
+  function_description  = "Read from Cloud SQL"
   location              = local.location
-  region                = local.region
   serverless_project_id = module.secure_harness.serverless_project_ids[0]
   vpc_project_id        = module.secure_harness.network_project_id[0]
   kms_project_id        = module.secure_harness.security_project_id
@@ -172,22 +188,24 @@ module "secure_cloud_function" {
   create_subnet         = false
   shared_vpc_name       = module.secure_harness.service_vpc[0].network.name
   prevent_destroy       = false
-  ip_cidr_range         = "10.0.0.0/28"
+  ip_cidr_range         = "10.0.1.0/28"
   storage_source = {
     bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
     object = google_storage_bucket_object.cf_bigquery_source_zip.name
   }
 
   environment_variables = {
-    PROJECT_ID = module.secure_harness.serverless_project_ids[0]
-    NAME       = "cloud function v2"
+    INSTANCE_PROJECT_ID = module.secure_harness.serverless_project_ids[1]
+    INSTANCE_USER       = "app"
+    INSTANCE_PWD        = "PaSsWoRd"
+    INSTANCE_LOCATION   = local.region
+    INSTANCE_NAME       = module.safer_mysql_db.instance_name
+    DATABASE_NAME       = local.db_name
   }
 
   event_trigger = {
-    trigger_region        = "us-central1"
+    trigger_region        = local.location
     event_type            = "google.cloud.pubsub.topic.v1.messagePublished"
-    service_account_email = null
-    trigger_region        = local.region
     pubsub_topic          = module.pubsub.id
     retry_policy          = "RETRY_POLICY_RETRY"
     event_filters         = null

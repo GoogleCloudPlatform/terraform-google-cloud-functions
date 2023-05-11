@@ -16,11 +16,13 @@
 
 
 module "cloud_serverless_network" {
-  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-cloud-serverless-net"
-  version = "~> 0.6"
+  # source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-cloud-serverless-net"
+  # version = "~> 0.6"
+  source = "../../../terraform-google-cloud-run/modules/secure-serverless-net"
 
   connector_name            = var.connector_name
   subnet_name               = var.subnet_name
+  serverless_type           = "CLOUD_FUNCTION"
   location                  = var.location
   vpc_project_id            = var.vpc_project_id
   serverless_project_id     = var.serverless_project_id
@@ -108,7 +110,7 @@ module "cloud_function_core" {
   function_description        = var.function_description
   project_id                  = var.serverless_project_id
   labels                      = var.labels
-  location                    = var.region
+  location                    = var.location
   runtime                     = var.runtime
   entry_point                 = var.entry_point
   repo_source                 = var.repo_source

@@ -12,132 +12,96 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// [START cloudrun_helloworld_service]
-// [START run_helloworld_service]
-
-// Sample run-helloworld is a minimal Cloud Run service.
-package helloworld
+package cloudsql
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
+	"net"
 	"os"
-	"time"
 
-	"cloud.google.com/go/storage"
+	"cloud.google.com/go/cloudsqlconn"
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 	"github.com/cloudevents/sdk-go/v2/event"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/compute/v1"
-	"google.golang.org/api/iterator"
+	"github.com/go-sql-driver/mysql"
 )
 
 func init() {
-	functions.CloudEvent("HelloCloudFunction", helloPubSub)
+	functions.CloudEvent("HelloCloudFunction", connect)
 }
 
-// MessagePublishedData contains the full Pub/Sub message
-// See the documentation for more details:
-// https://cloud.google.com/eventarc/docs/cloudevents#pubsub
-type MessagePublishedData struct {
-	Message PubSubMessage
-}
+func connect(ctx context.Context, e event.Event) error {
+	instanceProjectID := os.Getenv("INSTANCE_PROJECT_ID")
+	instanceUser := os.Getenv("INSTANCE_USER")
+	instancePWD := os.Getenv("INSTANCE_PWD")
+	instanceLocation := os.Getenv("INSTANCE_LOCATION")
+	instanceName := os.Getenv("INSTANCE_NAME")
+	databaseName := os.Getenv("DATABASE_NAME")
 
-// PubSubMessage is the payload of a Pub/Sub event.
-// See the documentation for more details:
-// https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage
-type PubSubMessage struct {
-	Data []byte `json:"data"`
-}
-
-func helloPubSub(ctx context.Context, e event.Event) error {
-	name := os.Getenv("NAME")
-	if name == "" {
-		name = "World"
-	}
-	regions, err := listComputeRegions()
+	d, err := cloudsqlconn.NewDialer(
+		ctx,
+		cloudsqlconn.WithDefaultDialOptions(
+			cloudsqlconn.WithPrivateIP(),
+		),
+	)
 	if err != nil {
-		log.Printf("Error listing compute regions: %s.", err.Error())
-		fmt.Errorf(err.Error())
+		log.Fatal(err)
+		fmt.Errorf("Error creating new Dialer", err)
 	}
-	log.Println("Regions: %v!\n", regions)
-	buckets, err := listBuckets()
+
+	instanceConnectionName := fmt.Sprintf("%s:%s:%s", instanceProjectID, instanceLocation, instanceName)
+
+	fmt.Println("Registering Driver.")
+	mysql.RegisterDialContext("cloudsqlconn",
+		func(ctx context.Context, addr string) (net.Conn, error) {
+			return d.Dial(ctx, instanceConnectionName)
+		})
+
+	fmt.Println("Open connection.")
+	db, err := sql.Open(
+		"mysql",
+		fmt.Sprintf("%s:%s@cloudsqlconn(%s)/%s", instanceUser, instancePWD, instanceConnectionName, databaseName),
+	)
 	if err != nil {
-		log.Printf("Error listing project buckets: %s.", err.Error())
-		fmt.Errorf(err.Error())
+		log.Fatal(err)
+		fmt.Errorf("Error connecting to data base.", err)
 	}
-
-	log.Println("Buckets: %v!\n", buckets)
-	return nil
-}
-
-// [END run_helloworld_service]
-
-// [START storage_list_buckets]
-// listBuckets lists buckets in the project.
-func listBuckets() ([]string, error) {
-	projectID := os.Getenv("PROJECT_ID")
-	ctx := context.Background()
-	log.Println("Creating Client for Storage.")
-	client, err := storage.NewClient(ctx)
+	err = db.Ping()
 	if err != nil {
-		return nil, fmt.Errorf("storage.NewClient: %v", err)
+		log.Fatal(err)
+		fmt.Errorf("Error during ping.", err)
 	}
-	defer client.Close()
 
-	ctx, cancel := context.WithTimeout(ctx, time.Second*30)
-	defer cancel()
-
-	var buckets []string
-	log.Println("Getting buckets in project.")
-	it := client.Buckets(ctx, projectID)
-	for {
-		battrs, err := it.Next()
-		if err == iterator.Done {
-			break
-		}
+	fmt.Println("Creating table.")
+	_, err = db.ExecContext(ctx, "CREATE TABLE tbl_test (id INT, name VARCHAR(255))")
+	if err != nil {
+		fmt.Errorf("Table already exists.", err)
+	} else {
+		fmt.Println("Inserting rows.")
+		_, err = db.ExecContext(ctx, "INSERT INTO tbl_test VALUES (1, 'USER TEST 1') (2, 'USER TEST 2')")
 		if err != nil {
-			return nil, err
+			log.Fatal(err)
+			fmt.Errorf("Error during insert.", err)
 		}
-		buckets = append(buckets, battrs.Name)
-	}
-	return buckets, nil
-}
-
-func listComputeRegions() ([]string, error) {
-	ctx := context.Background()
-
-	log.Println("Creating Default Client for Compute client.")
-	c, err := google.DefaultClient(ctx)
-	if err != nil {
-		log.Fatal(err)
 	}
 
-	log.Println("Creating service for Compute client.")
-	computeService, err := compute.New(c)
-	if err != nil {
-		log.Fatal(err)
-	}
+	var (
+		id   int
+		name string
+	)
 
-	// Project ID for this request.
-	project := os.Getenv("PROJECT_ID")
-	var regions []string
-	log.Println("Getting compute regions.")
-	req := computeService.Regions.List(project)
-	if err := req.Pages(ctx, func(page *compute.RegionList) error {
-		for _, region := range page.Items {
-			// TODO: Change code below to process each `region` resource:
-			regions = append(regions, region.Name)
+	fmt.Println("Select from table.")
+	res, err := db.Query("SELECT * FROM  tbl_test")
+
+	for res.Next() {
+		err := res.Scan(&id, &name)
+		if err != nil {
+			log.Fatal(err)
 		}
-		return nil
-	}); err != nil {
-		log.Fatal(err)
-		return nil, err
+		fmt.Println(fmt.Sprintf("%v: %s", id, name))
 	}
-	return regions, nil
+
+	return err
 }
-
-// [END storage_list_buckets]
-
-// [END cloudrun_helloworld_service]

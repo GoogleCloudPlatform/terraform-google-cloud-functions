@@ -63,6 +63,7 @@ output "service_vpc_subnet_name" {
   value       = module.secure_harness.service_subnet[0]
   description = "The sub-network name created in harness."
 }
+
 output "connector_id" {
   value       = module.secure_cloud_function.connector_id
   description = "VPC serverless connector ID."
