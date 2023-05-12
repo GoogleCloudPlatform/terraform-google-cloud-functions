@@ -58,14 +58,13 @@ module "secure_harness" {
   use_shared_vpc                              = true
 
   serverless_project_extra_apis = {
-    "prj-secure-cloud-function" = ["servicenetworking.googleapis.com", "sql-component.googleapis.com", "sqladmin.googleapis.com"],
-    "prj-secure-cloud-sql"      = ["sqladmin.googleapis.com", "servicenetworking.googleapis.com"]
+    "prj-secure-cloud-function" = ["servicenetworking.googleapis.com","sqladmin.googleapis.com"],
+    "prj-secure-cloud-sql"      = ["sqladmin.googleapis.com", "sql-component.googleapis.com", "servicenetworking.googleapis.com"]
   }
   service_account_project_roles = {
     "prj-secure-cloud-function" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
     "prj-secure-cloud-sql"      = []
   }
-
 }
 
 module "cloud_sql_private_service_access" {
@@ -83,6 +82,7 @@ module "safer_mysql_db" {
   db_name              = local.db_name
   random_instance_name = true
   project_id           = module.secure_harness.serverless_project_ids[1]
+  encryption_key_name  = module.topic_kms.keys["key-sql"]
 
   deletion_protection = false
 
@@ -148,6 +148,14 @@ resource "google_project_service_identity" "pubsub_sa" {
   depends_on = [module.secure_harness]
 }
 
+resource "google_project_service_identity" "cloudsql_sa" {
+  provider = google-beta
+
+  project    = module.secure_harness.serverless_project_ids[1]
+  service    = "sqladmin.googleapis.com"
+  depends_on = [module.secure_harness]
+}
+
 module "topic_kms" {
   source  = "terraform-google-modules/kms/google"
   version = "~> 2.2"
@@ -155,11 +163,11 @@ module "topic_kms" {
   project_id           = module.secure_harness.security_project_id
   location             = local.location
   keyring              = "krg-topic"
-  keys                 = ["key-topic"]
-  set_decrypters_for   = ["key-topic"]
-  set_encrypters_for   = ["key-topic"]
-  decrypters           = ["serviceAccount:${google_project_service_identity.pubsub_sa.email}"]
-  encrypters           = ["serviceAccount:${google_project_service_identity.pubsub_sa.email}"]
+  keys                 = ["key-topic", "key-sql"]
+  set_decrypters_for   = ["key-topic", "key-sql"]
+  set_encrypters_for   = ["key-topic", "key-sql"]
+  decrypters           = ["serviceAccount:${google_project_service_identity.pubsub_sa.email}", "serviceAccount:${google_project_service_identity.cloudsql_sa.email}"]
+  encrypters           = ["serviceAccount:${google_project_service_identity.pubsub_sa.email}", "serviceAccount:${google_project_service_identity.cloudsql_sa.email}"]
   prevent_destroy      = false
   key_rotation_period  = "2592000s"
   key_protection_level = "HSM"
