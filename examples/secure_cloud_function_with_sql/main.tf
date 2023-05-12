@@ -30,8 +30,8 @@ resource "random_id" "random_folder_suffix" {
 module "secure_harness" {
   # source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
   # version = "~> 0.7"
-  # source = "git::https://github.com/amandakarina/terraform-google-cloud-run//modules/secure-serverless-harness?ref=fix/adds-missing-api-on-network-project"
-  source = "../../../terraform-google-cloud-run/modules/secure-serverless-harness"
+  source = "git::https://github.com/amandakarina/terraform-google-cloud-run//modules/secure-serverless-harness?ref=fix/adds-missing-api-on-network-project"
+  # source = "../../../terraform-google-cloud-run/modules/secure-serverless-harness"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-security"
@@ -59,7 +59,7 @@ module "secure_harness" {
 
   serverless_project_extra_apis = {
     "prj-secure-cloud-function" = ["servicenetworking.googleapis.com", "sql-component.googleapis.com", "sqladmin.googleapis.com"],
-    "prj-secure-cloud-sql"      = ["sqladmin.googleapis.com"]
+    "prj-secure-cloud-sql"      = ["sqladmin.googleapis.com", "servicenetworking.googleapis.com"]
   }
   service_account_project_roles = {
     "prj-secure-cloud-function" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
@@ -73,6 +73,7 @@ module "cloud_sql_private_service_access" {
   version     = "~> 15.0"
   project_id  = module.secure_harness.network_project_id[0]
   vpc_network = module.secure_harness.service_vpc[0].network.name
+  depends_on  = [module.secure_harness]
 }
 
 module "safer_mysql_db" {
@@ -125,23 +126,26 @@ resource "google_storage_bucket_object" "cf_bigquery_source_zip" {
   bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
 
   depends_on = [
-    data.archive_file.cf_bigquery_source
+    data.archive_file.cf_bigquery_source,
+    module.secure_harness
   ]
 }
 
 resource "google_project_iam_member" "cloud_sql_roles" {
   for_each = toset(["roles/cloudsql.client", "roles/cloudsql.instanceUser"])
 
-  project = module.secure_harness.serverless_project_ids[1]
-  role    = each.value
-  member  = "serviceAccount:${module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]}"
+  project    = module.secure_harness.serverless_project_ids[1]
+  role       = each.value
+  member     = "serviceAccount:${module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]}"
+  depends_on = [module.secure_harness]
 }
 
 resource "google_project_service_identity" "pubsub_sa" {
   provider = google-beta
 
-  project = module.secure_harness.serverless_project_ids[0]
-  service = "pubsub.googleapis.com"
+  project    = module.secure_harness.serverless_project_ids[0]
+  service    = "pubsub.googleapis.com"
+  depends_on = [module.secure_harness]
 }
 
 module "topic_kms" {
@@ -159,6 +163,7 @@ module "topic_kms" {
   prevent_destroy      = false
   key_rotation_period  = "2592000s"
   key_protection_level = "HSM"
+  depends_on           = [module.secure_harness]
 }
 
 
@@ -169,6 +174,7 @@ module "pubsub" {
   topic              = "function2-topic"
   project_id         = module.secure_harness.serverless_project_ids[0]
   topic_kms_key_name = module.topic_kms.keys["key-topic"]
+  depends_on         = [module.secure_harness]
 }
 
 module "secure_cloud_function" {
