@@ -58,7 +58,7 @@ module "secure_harness" {
   use_shared_vpc                              = true
 
   serverless_project_extra_apis = {
-    "prj-secure-cloud-function" = ["servicenetworking.googleapis.com","sqladmin.googleapis.com"],
+    "prj-secure-cloud-function" = ["servicenetworking.googleapis.com", "sqladmin.googleapis.com", "cloudscheduler.googleapis.com"],
     "prj-secure-cloud-sql"      = ["sqladmin.googleapis.com", "sql-component.googleapis.com", "servicenetworking.googleapis.com"]
   }
   service_account_project_roles = {
@@ -146,6 +146,19 @@ resource "google_project_service_identity" "pubsub_sa" {
   project    = module.secure_harness.serverless_project_ids[0]
   service    = "pubsub.googleapis.com"
   depends_on = [module.secure_harness]
+}
+
+resource "google_cloud_scheduler_job" "job" {
+  project     = module.secure_harness.serverless_project_ids[0]
+  region      = local.region
+  name        = "csch-job"
+  description = "Secure Cloud Function with Cloud SQL example"
+  schedule    = "*/2 * * * *"
+
+  pubsub_target {
+    topic_name = module.pubsub.id
+    data       = base64encode("{'cloud_function' : 'true'}")
+  }
 }
 
 resource "google_project_service_identity" "cloudsql_sa" {
