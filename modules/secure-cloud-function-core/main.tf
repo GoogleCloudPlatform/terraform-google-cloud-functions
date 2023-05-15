@@ -50,6 +50,23 @@ resource "google_artifact_registry_repository" "cloudfunction_repo" {
   kms_key_name  = var.encryption_key
 }
 
+resource "google_project_service" "container_scanning_api" {
+  project    = var.project_id
+  service    = "containerscanning.googleapis.com"
+  depends_on = [module.pubsub]
+}
+
+module "pubsub" {
+  for_each = toset(["container-analysis-notes-v1", "container-analysis-notes-v1beta1", "container-analysis-occurrences-v1", "container-analysis-occurrences-v1beta1"])
+
+  source  = "terraform-google-modules/pubsub/google"
+  version = "~> 5.0"
+
+  topic              = each.value
+  project_id         = var.project_id
+  topic_kms_key_name = var.encryption_key
+}
+
 resource "google_cloudbuild_worker_pool" "pool" {
   name     = "workerpool"
   location = var.location
@@ -80,7 +97,8 @@ module "cloud_function" {
 
   depends_on = [
     module.cloudfunction_bucket,
-    google_eventarc_google_channel_config.primary
+    google_eventarc_google_channel_config.primary,
+    google_project_service.container_scanning_api
   ]
 }
 

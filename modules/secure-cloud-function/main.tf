@@ -70,6 +70,13 @@ data "google_storage_project_service_account" "gcs_account" {
   project = var.serverless_project_id
 }
 
+resource "google_project_service_identity" "pubsub_sa" {
+  provider = google-beta
+
+  project = var.serverless_project_id
+  service = "pubsub.googleapis.com"
+}
+
 module "cloud_serverless_security" {
   source = "../secure-cloud-serverless-security"
 
@@ -91,7 +98,8 @@ module "cloud_serverless_security" {
     "serviceAccount:${var.service_account_email}",
     "serviceAccount:${google_project_service_identity.artifact_sa.email}",
     "serviceAccount:${google_project_service_identity.eventarc_sa.email}",
-    "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"
+    "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}",
+    "serviceAccount:${google_project_service_identity.pubsub_sa.email}"
   ]
 
   decrypters = [
@@ -99,7 +107,8 @@ module "cloud_serverless_security" {
     "serviceAccount:${var.service_account_email}",
     "serviceAccount:${google_project_service_identity.artifact_sa.email}",
     "serviceAccount:${google_project_service_identity.eventarc_sa.email}",
-    "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"
+    "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}",
+    "serviceAccount:${google_project_service_identity.pubsub_sa.email}"
   ]
 }
 

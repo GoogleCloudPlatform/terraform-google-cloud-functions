@@ -52,6 +52,7 @@ The resources/services/activations/deletions that this module will create/trigge
     * **Warning:** If there is another CMEK configured for the same region, it will be overwritten.
   * Creates a private worker pool for Cloud Build configured to not use External IP.
   * Grants Cloud Functions Invoker to EventArc Trigger Service Account.
+  * Enables Container Scanning.
 
 ## Usage
 
@@ -117,7 +118,6 @@ module "secure_cloud_run" {
 | organization\_id | The organization ID to apply the policy to. | `string` | `""` | no |
 | policy\_for | Policy Root: set one of the following values to determine where the policy is applied. Possible values: ["project", "folder", "organization"]. | `string` | `"project"` | no |
 | prevent\_destroy | Set the `prevent_destroy` lifecycle attribute on the Cloud KMS key. | `bool` | `true` | no |
-| region | Location for load balancer and Cloud Run resources. | `string` | n/a | yes |
 | repo\_source | The source repository where the Cloud Function Source is stored. Do not use combined with source\_path. | <pre>object({<br>    project_id   = optional(string)<br>    repo_name    = string<br>    branch_name  = string<br>    dir          = optional(string)<br>    tag_name     = optional(string)<br>    commit_sha   = optional(string)<br>    invert_regex = optional(bool, false)<br>  })</pre> | `null` | no |
 | resource\_names\_suffix | A suffix to concat in the end of the network resources names being created. | `string` | `null` | no |
 | runtime | The runtime in which the function will be executed. | `string` | n/a | yes |

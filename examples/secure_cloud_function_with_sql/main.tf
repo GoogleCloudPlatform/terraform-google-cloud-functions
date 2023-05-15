@@ -97,7 +97,7 @@ module "safer_mysql_db" {
     {
       name            = "app"
       password        = "PaSsWoRd"
-      host            = "localhost"
+      host            = "tcp"
       type            = "BUILT_IN"
       random_password = false
     }

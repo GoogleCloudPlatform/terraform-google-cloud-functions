@@ -10,6 +10,7 @@ The resources/services/activations/deletions that this module will create/trigge
   * **Warning:** If there is another CMEK configured for the same region, it will be overwritten.
 * Creates a private worker pool for Cloud Build configured to not use External IP.
 * Grants Cloud Functions Invoker to EventArc Trigger Service Account.
+* Enables Container Scanning.
 
 ## Usage
 
