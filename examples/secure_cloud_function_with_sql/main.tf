@@ -35,7 +35,7 @@ module "secure_harness" {
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-security"
-  network_project_name                        = "prj-restricted-shared-tst"
+  network_project_name                        = "prj-restricted-shared"
   serverless_project_names                    = ["prj-secure-cloud-function", "prj-secure-cloud-sql"]
   org_id                                      = var.org_id
   parent_folder_id                            = var.folder_id
