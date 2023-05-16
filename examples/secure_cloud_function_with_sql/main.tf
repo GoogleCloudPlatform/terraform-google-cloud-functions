@@ -21,6 +21,7 @@ locals {
   zone_sql        = "us-central1-a"
   repository_name = "rep-secure-cloud-function"
   db_name         = "db-application"
+  secret_name     = "sct-sql-password"
 
 }
 resource "random_id" "random_folder_suffix" {
@@ -182,7 +183,7 @@ resource "google_project_iam_member" "cloud_sql_roles" {
 }
 
 resource "google_secret_manager_secret" "password_secret" {
-  secret_id = "sct-sql-password"
+  secret_id = local.secret_name
   labels    = { environment = "dev" }
   project   = module.secure_harness.security_project_id
 
@@ -229,7 +230,7 @@ module "pubsub" {
   source  = "terraform-google-modules/pubsub/google"
   version = "~> 5.0"
 
-  topic              = "function2-topic"
+  topic              = "tpc-cloud-function-sql"
   project_id         = module.secure_harness.serverless_project_ids[0]
   topic_kms_key_name = module.kms_keys.keys["key-topic"]
   depends_on         = [module.secure_harness]
@@ -269,7 +270,7 @@ module "secure_cloud_function" {
   secret_environment_variables = [{
     key_name   = "INSTANCE_PWD"
     project_id = module.secure_harness.security_project_id
-    secret     = "sct-sql-password"
+    secret     = local.secret_name
     version    = google_secret_manager_secret_version.secret_version.version
   }]
 

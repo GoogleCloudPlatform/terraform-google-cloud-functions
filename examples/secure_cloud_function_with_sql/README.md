@@ -89,6 +89,9 @@ The resources/services/activations/deletions that this example will create/trigg
 | Name | Description |
 |------|-------------|
 | cloud\_function\_name | The service account email created to be used by Cloud Function. |
+| cloud\_sql\_kms\_key | The KMS Key create to encrypt Cloud SQL |
+| cloudfunction\_url | The URL on which the deployed service is available. |
+| cloudsql\_project\_id | The Cloud SQL project id. |
 | connector\_id | VPC serverless connector ID. |
 | mysql\_conn | The connection name of the master instance to be used in connection strings |
 | mysql\_name | The name for Cloud SQL instance |
@@ -97,6 +100,11 @@ The resources/services/activations/deletions that this example will create/trigg
 | network\_project\_id | The network project id. |
 | restricted\_access\_level\_name | Access level name. |
 | restricted\_service\_perimeter\_name | Service Perimeter name. |
+| scheduler\_name | Cloud Scheduler Job name. |
+| secret\_kms\_key | The KMS Key create to encrypt Secrets |
+| secret\_manager\_id | Secret Manager id created to store Database password. |
+| secret\_manager\_name | Secret Manager name created to store Database password. |
+| secret\_manager\_version | Secret Manager version created to store Database password. |
 | security\_project\_id | The security project id. |
 | security\_project\_number | The security project number. |
 | serverless\_project\_id | The serverless project id. |
@@ -105,6 +113,8 @@ The resources/services/activations/deletions that this example will create/trigg
 | service\_vpc\_name | The Network self-link created in harness. |
 | service\_vpc\_self\_link | The Network self-link created in harness. |
 | service\_vpc\_subnet\_name | The sub-network name created in harness. |
+| topic\_id | The Pub/Sub topic which will trigger Cloud Function. |
+| topic\_kms\_key | The KMS Key create to encrypt Pub/Sub Topic messages |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 

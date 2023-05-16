@@ -24,6 +24,11 @@ output "serverless_project_number" {
   description = "The serverless project number."
 }
 
+output "cloudsql_project_id" {
+  value       = module.secure_harness.serverless_project_ids[1]
+  description = "The Cloud SQL project id."
+}
+
 output "security_project_id" {
   value       = module.secure_harness.security_project_id
   description = "The security project id."
@@ -57,6 +62,26 @@ output "service_vpc_self_link" {
 output "service_vpc_name" {
   value       = module.secure_harness.service_vpc[0].network_name
   description = "The Network self-link created in harness."
+}
+
+output "secret_manager_name" {
+  value       = local.secret_name
+  description = "Secret Manager name created to store Database password."
+}
+
+output "scheduler_name" {
+  value       = google_cloud_scheduler_job.job.name
+  description = "Cloud Scheduler Job name."
+}
+
+output "secret_manager_id" {
+  value       = google_secret_manager_secret.password_secret.id
+  description = "Secret Manager id created to store Database password."
+}
+
+output "secret_manager_version" {
+  value       = google_secret_manager_secret_version.secret_version.version
+  description = "Secret Manager version created to store Database password."
 }
 
 output "service_vpc_subnet_name" {
@@ -97,6 +122,21 @@ output "mysql_public_ip_address" {
 output "mysql_private_ip_address" {
   description = "The first private (PRIVATE) IPv4 address assigned for the master instance"
   value       = module.safer_mysql_db.private_ip_address
+}
+
+output "cloud_sql_kms_key" {
+  description = "The KMS Key create to encrypt Cloud SQL"
+  value       = module.kms_keys.keys["key-sql"]
+}
+
+output "topic_kms_key" {
+  description = "The KMS Key create to encrypt Pub/Sub Topic messages"
+  value       = module.kms_keys.keys["key-topic"]
+}
+
+output "secret_kms_key" {
+  description = "The KMS Key create to encrypt Secrets"
+  value       = module.kms_keys.keys["key-secret"]
 }
 
 # output "cloudfunction_bucket_name" {

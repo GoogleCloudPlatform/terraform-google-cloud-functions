@@ -33,9 +33,13 @@ func TestGCF2CloudSQL(t *testing.T) {
 		location := "us-central1"
 		connectorID := cf2SQL.GetStringOutput("connector_id")
 		saEmail := cf2SQL.GetStringOutput("service_account_email")
-		// mysqlName := cf2SQL.GetStringOutput("mysql_name")
+		mysqlName := cf2SQL.GetStringOutput("mysql_name")
 		projectID := cf2SQL.GetStringOutput("serverless_project_id")
+		sqlProjectID := cf2SQL.GetStringOutput("cloudsql_project_id")
 		topicID := cf2SQL.GetStringOutput("topic_id")
+		topicKMS := cf2SQL.GetStringOutput("topic_kms_key")
+		sqlKMS := cf2SQL.GetStringOutput("cloud_sql_kms_key")
+		scrName := cf2SQL.GetStringOutput("secret_manager_name")
 
 		cf := gcloud.Runf(t, "functions describe %s --project %s --gen2 --region %s", name, projectID, location)
 		assert.Equal("ACTIVE", cf.Get("state").String(), "Should be ACTIVE. Cloud Function is not successfully deployed.")
@@ -44,7 +48,17 @@ func TestGCF2CloudSQL(t *testing.T) {
 		assert.Equal("ALLOW_INTERNAL_AND_GCLB", cf.Get("serviceConfig.ingressSettings").String(), "Ingress setting should be ALLOW_INTERNAL_AND_GCLB.")
 		assert.Equal(saEmail, cf.Get("serviceConfig.serviceAccountEmail").String(), fmt.Sprintf("Cloud Function should use the service account %s.", saEmail))
 		assert.Contains(cf.Get("eventTrigger.eventType").String(), "google.cloud.pubsub.topic.v1.messagePublished", "Event Trigger is not a message published on topic.")
-		assert.Contains(cf.Get("eventTrigger.pubsubTopic").String(), topicID, fmt.Sprintf("Event Trigger topic is not %s.", topicID))
+		assert.Equal(cf.Get("eventTrigger.pubsubTopic").String(), topicID, fmt.Sprintf("Event Trigger topic is not %s.", topicID))
+		assert.Equal(cf.Get("secretEnvironmentVariables.0.key").String(), "INSTANCE_PWD", "Should have secret environment key INSTANCE_PWD")
+		assert.Equal(cf.Get("secretEnvironmentVariables.0.secret").String(), scrName, fmt.Sprintf("Should have secret environment key %s", scrName))
+
+		cf = gcloud.Runf(t, "sql instances describe %s --project %s", mysqlName, sqlProjectID)
+		assert.Equal("RUNNABLE", cf.Get("state").String(), "Should be RUNNABLE. Cloud SQL is not successfully deployed.")
+		assert.Equal("PRIVATE", cf.Get("ipAddresses.0.type").String(), "Should be PRIVATE. Cloud SQL should have only PRIVATE IPs.")
+		assert.Equal(sqlKMS, cf.Get("diskEncryptionConfiguration.kmsKeyName").String(), fmt.Sprintf("Cloud SQL should be encrypting disk with %s", sqlKMS))
+
+		cf = gcloud.Runf(t, "pubsub topics describe %s", topicID)
+		assert.Equal(topicKMS, cf.Get("kmsKeyName").String(), fmt.Sprintf("Pub/Sub topic should be encrypting messages with %s", topicKMS))
 
 	})
 	cf2SQL.Test()
