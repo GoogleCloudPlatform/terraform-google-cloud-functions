@@ -99,7 +99,6 @@ output "mysql_private_ip_address" {
   value       = module.safer_mysql_db.private_ip_address
 }
 
-
 # output "cloudfunction_bucket_name" {
 #   value       = module.secure_cloud_function.cloudfunction_bucket_name
 #   description = "Name of the Cloud Function source bucket."
@@ -110,7 +109,12 @@ output "mysql_private_ip_address" {
 #   description = "The Cloud Function source bucket."
 # }
 
-# output "cloudfunction_url" {
-#   value       = module.secure_cloud_function.cloudfunction_url
-#   description = "The URL on which the deployed service is available."
-# }
+output "cloudfunction_url" {
+  value       = module.secure_cloud_function.service_url
+  description = "The URL on which the deployed service is available."
+}
+
+output "topic_id" {
+  value       = module.pubsub.id
+  description = "The Pub/Sub topic which will trigger Cloud Function."
+}

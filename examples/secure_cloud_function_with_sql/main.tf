@@ -65,6 +65,60 @@ module "secure_harness" {
     "prj-secure-cloud-function" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
     "prj-secure-cloud-sql"      = []
   }
+
+  security_project_extra_apis = ["secretmanager.googleapis.com"]
+}
+
+
+
+resource "google_project_service_identity" "pubsub_sa" {
+  provider = google-beta
+
+  project    = module.secure_harness.serverless_project_ids[0]
+  service    = "pubsub.googleapis.com"
+  depends_on = [module.secure_harness]
+}
+
+resource "google_project_service_identity" "cloudsql_sa" {
+  provider = google-beta
+
+  project    = module.secure_harness.serverless_project_ids[1]
+  service    = "sqladmin.googleapis.com"
+  depends_on = [module.secure_harness]
+}
+
+resource "google_project_service_identity" "secrets_sa" {
+  provider = google-beta
+
+  project    = module.secure_harness.security_project_id
+  service    = "secretmanager.googleapis.com"
+  depends_on = [module.secure_harness]
+}
+
+module "kms_keys" {
+  source  = "terraform-google-modules/kms/google"
+  version = "~> 2.2"
+
+  project_id         = module.secure_harness.security_project_id
+  location           = local.location
+  keyring            = "krg-topic"
+  keys               = ["key-topic", "key-sql", "key-secret"]
+  set_decrypters_for = ["key-topic", "key-sql", "key-secret"]
+  set_encrypters_for = ["key-topic", "key-sql", "key-secret"]
+  decrypters = [
+    "serviceAccount:${google_project_service_identity.pubsub_sa.email}",
+    "serviceAccount:${google_project_service_identity.cloudsql_sa.email}",
+    "serviceAccount:${google_project_service_identity.secrets_sa.email}"
+  ]
+  encrypters = [
+    "serviceAccount:${google_project_service_identity.pubsub_sa.email}",
+    "serviceAccount:${google_project_service_identity.cloudsql_sa.email}",
+    "serviceAccount:${google_project_service_identity.secrets_sa.email}"
+  ]
+  prevent_destroy      = false
+  key_rotation_period  = "2592000s"
+  key_protection_level = "HSM"
+  depends_on           = [module.secure_harness]
 }
 
 module "cloud_sql_private_service_access" {
@@ -82,27 +136,14 @@ module "safer_mysql_db" {
   db_name              = local.db_name
   random_instance_name = true
   project_id           = module.secure_harness.serverless_project_ids[1]
-  encryption_key_name  = module.topic_kms.keys["key-sql"]
+  encryption_key_name  = module.kms_keys.keys["key-sql"]
 
   deletion_protection = false
 
-  database_version = "MYSQL_5_6"
-  region           = local.region
-  zone             = local.zone_sql
-  tier             = "db-n1-standard-1"
-
-  // By default, all users will be permitted to connect only via the
-  // Cloud SQL proxy.
-  additional_users = [
-    {
-      name            = "app"
-      password        = "PaSsWoRd"
-      host            = "tcp"
-      type            = "BUILT_IN"
-      random_password = false
-    }
-  ]
-
+  database_version   = "MYSQL_5_6"
+  region             = local.region
+  zone               = local.zone_sql
+  tier               = "db-n1-standard-1"
   assign_public_ip   = "false"
   vpc_network        = module.secure_harness.service_vpc[0].network.id
   allocated_ip_range = module.cloud_sql_private_service_access.google_compute_global_address_name
@@ -140,12 +181,35 @@ resource "google_project_iam_member" "cloud_sql_roles" {
   depends_on = [module.secure_harness]
 }
 
-resource "google_project_service_identity" "pubsub_sa" {
-  provider = google-beta
+resource "google_secret_manager_secret" "password_secret" {
+  secret_id = "sct-sql-password"
+  labels    = { environment = "dev" }
+  project   = module.secure_harness.security_project_id
 
-  project    = module.secure_harness.serverless_project_ids[0]
-  service    = "pubsub.googleapis.com"
-  depends_on = [module.secure_harness]
+  replication {
+    user_managed {
+      replicas {
+        location = local.location
+        customer_managed_encryption {
+          kms_key_name = module.kms_keys.keys["key-secret"]
+        }
+      }
+    }
+  }
+  depends_on = [module.kms_keys]
+}
+
+resource "google_secret_manager_secret_version" "secret_version" {
+  secret      = google_secret_manager_secret.password_secret.id
+  secret_data = module.safer_mysql_db.generated_user_password
+  enabled     = true
+}
+
+resource "google_secret_manager_secret_iam_member" "member" {
+  project   = google_secret_manager_secret.password_secret.project
+  secret_id = google_secret_manager_secret.password_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]}"
 }
 
 resource "google_cloud_scheduler_job" "job" {
@@ -161,40 +225,13 @@ resource "google_cloud_scheduler_job" "job" {
   }
 }
 
-resource "google_project_service_identity" "cloudsql_sa" {
-  provider = google-beta
-
-  project    = module.secure_harness.serverless_project_ids[1]
-  service    = "sqladmin.googleapis.com"
-  depends_on = [module.secure_harness]
-}
-
-module "topic_kms" {
-  source  = "terraform-google-modules/kms/google"
-  version = "~> 2.2"
-
-  project_id           = module.secure_harness.security_project_id
-  location             = local.location
-  keyring              = "krg-topic"
-  keys                 = ["key-topic", "key-sql"]
-  set_decrypters_for   = ["key-topic", "key-sql"]
-  set_encrypters_for   = ["key-topic", "key-sql"]
-  decrypters           = ["serviceAccount:${google_project_service_identity.pubsub_sa.email}", "serviceAccount:${google_project_service_identity.cloudsql_sa.email}"]
-  encrypters           = ["serviceAccount:${google_project_service_identity.pubsub_sa.email}", "serviceAccount:${google_project_service_identity.cloudsql_sa.email}"]
-  prevent_destroy      = false
-  key_rotation_period  = "2592000s"
-  key_protection_level = "HSM"
-  depends_on           = [module.secure_harness]
-}
-
-
 module "pubsub" {
   source  = "terraform-google-modules/pubsub/google"
   version = "~> 5.0"
 
   topic              = "function2-topic"
   project_id         = module.secure_harness.serverless_project_ids[0]
-  topic_kms_key_name = module.topic_kms.keys["key-topic"]
+  topic_kms_key_name = module.kms_keys.keys["key-topic"]
   depends_on         = [module.secure_harness]
 }
 
@@ -223,12 +260,18 @@ module "secure_cloud_function" {
 
   environment_variables = {
     INSTANCE_PROJECT_ID = module.secure_harness.serverless_project_ids[1]
-    INSTANCE_USER       = "app"
-    INSTANCE_PWD        = "PaSsWoRd"
+    INSTANCE_USER       = "default"
     INSTANCE_LOCATION   = local.region
     INSTANCE_NAME       = module.safer_mysql_db.instance_name
     DATABASE_NAME       = local.db_name
   }
+
+  secret_environment_variables = [{
+    key_name   = "INSTANCE_PWD"
+    project_id = module.secure_harness.security_project_id
+    secret     = "sct-sql-password"
+    version    = google_secret_manager_secret_version.secret_version.version
+  }]
 
   event_trigger = {
     trigger_region        = local.location
@@ -238,11 +281,13 @@ module "secure_cloud_function" {
     event_filters         = null
     service_account_email = module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]
   }
+
   runtime     = "go118"
   entry_point = "HelloCloudFunction"
 
   depends_on = [
     module.secure_harness,
-    google_storage_bucket_object.cf_bigquery_source_zip
+    google_storage_bucket_object.cf_bigquery_source_zip,
+    google_secret_manager_secret_iam_member.member
   ]
 }
