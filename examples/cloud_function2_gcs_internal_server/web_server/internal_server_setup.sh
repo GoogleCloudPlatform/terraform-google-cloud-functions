@@ -15,18 +15,21 @@
 # limitations under the License.
 #
 
-# sudo apt update
-# sudo apt upgrade
+cd /tmp/
 
-# sudo apt install golang-go
-# add logs to redirect the requests to a file
+touch /tmp/request_logs.txt
+chmod 777 /tmp/request_logs.txt
+
+sudo tee -a /tmp/index.html <<'EOF'
+----------- hello world --------------
+EOF
 
 sudo tee -a /tmp/webserver.py <<'EOF'
 import http.server
 import socketserver
 import datetime
 
-PORT = 8080
+PORT = 8000
 LOG_FILE = "/tmp/request_logs.txt"
 
 class RequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -45,5 +48,5 @@ with socketserver.TCPServer(("", PORT), RequestHandler) as httpd:
     httpd.serve_forever()
 EOF
 
-chmod +x /tmp/webserver.py
-python3 /tmp/webserver.py
+chmod 777 /tmp/webserver.py
+python3 /tmp/webserver.py --directory /tmp/

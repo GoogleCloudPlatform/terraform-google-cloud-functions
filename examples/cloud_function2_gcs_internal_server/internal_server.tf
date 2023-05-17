@@ -14,37 +14,30 @@
  * limitations under the License.
  */
 
-locals {
-  network_ip         = "10.0.8.3"
-  subnetwork_name    = "subnet2" #set as variable
-  webserver_instance = "webserver"
-}
-
-
 resource "google_project_service_identity" "compute_identity_sa" {
   provider = google-beta
 
-  project = var.project_id
+  project = module.secure_harness.serverless_project_ids[0]
   service = "compute.googleapis.com"
 }
 
 module "compute_service_account" {
   source  = "terraform-google-modules/service-accounts/google"
   version = "~> 3.0"
-  project_id = var.project_id
+  project_id = module.secure_harness.serverless_project_ids[0]
   names      = ["sa-compute-instance"]
 }
 
 resource "google_project_iam_member" "service_account_roles" {
-  project = var.project_id
+  project = module.secure_harness.serverless_project_ids[0]
   member  = "serviceAccount:${module.compute_service_account.email}"
   role    = "roles/compute.instanceAdmin.v1"
 
   depends_on = [module.compute_service_account]
 }
 
-data "google_project" "serverless_project_id" { #change name
-  project_id = var.project_id
+data "google_project" "serverless_project_id" {
+  project_id = module.secure_harness.serverless_project_ids[0]
 }
 
 resource "google_service_account_iam_member" "service_account_user" {
@@ -55,6 +48,7 @@ resource "google_service_account_iam_member" "service_account_user" {
   depends_on = [google_project_iam_member.service_account_roles]
 }
 
+#move firewall rules from script to here
 resource "null_resource" "open_firewall" {
   triggers = {
     always_run = "${timestamp()}"
@@ -62,14 +56,14 @@ resource "null_resource" "open_firewall" {
   provisioner "local-exec" {
     command = <<EOF
  ${abspath(path.module)}/web_server/open_firewall.sh \
-    ${var.project_id}
+    ${module.secure_harness.network_project_id[0]}
 EOF
   }
 }
 
 resource "google_compute_instance" "internal_server" {
   name = local.webserver_instance
-  project        = var.project_id
+  project = module.secure_harness.serverless_project_ids[0]
   zone           = var.zone
   machine_type   = "n1-standard-1" #change to micro
   can_ip_forward = true
@@ -83,9 +77,9 @@ resource "google_compute_instance" "internal_server" {
   metadata_startup_script = file("${abspath(path.module)}/web_server/internal_server_setup.sh")
 
   network_interface {
-    subnetwork = local.subnetwork_name
+    subnetwork = module.secure_harness.service_subnet[0]
     network_ip = local.network_ip
-    subnetwork_project = var.project_id
+    subnetwork_project = module.secure_harness.network_project_id[0]
   }
 
   service_account {
@@ -95,22 +89,7 @@ resource "google_compute_instance" "internal_server" {
 
   depends_on = [
     google_service_account_iam_member.service_account_user,
+    module.secure_harness,
     null_resource.open_firewall
   ]
 }
-
-# resource "null_resource" "close_firewall" {
-#   triggers = {
-#     always_run = "${timestamp()}"
-#   }
-#   provisioner "local-exec" {
-#     command = <<EOF
-#  ${abspath(path.module)}/web_server/close_firewall.sh \
-#     ${var.project_id} \
-#     ${local.webserver_instance}
-# EOF
-#   }
-#   depends_on = [
-#     google_compute_instance.internal_server
-#   ]
-# }

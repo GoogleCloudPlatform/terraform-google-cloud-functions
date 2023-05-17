@@ -3,7 +3,6 @@ package helloworld
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
@@ -14,19 +13,23 @@ func init() {
 }
 
 func helloHTTP(w http.ResponseWriter, r *http.Request) {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "http://10.0.8.3:8080", nil)
+	url := "http://10.0.0.3:8000/index.html"
+
+	// Send GET request to the server
+	response, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Failed to send GET request: %s\n", err)
+		return
 	}
-	resp, err := client.Do(req)
+	defer response.Body.Close()
+
+	// Read the response body
+	content, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Failed to read response body: %s\n", err)
+		return
 	}
-	defer resp.Body.Close()
-	bodyText, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
+
+	// Print the content
+	fmt.Println(string(content))
 }

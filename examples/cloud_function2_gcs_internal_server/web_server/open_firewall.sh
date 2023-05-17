@@ -16,26 +16,25 @@
 #
 
 project=${1}
-#proxy_ip_cidr_range=${2}
 
-firewall_rules=$(gcloud compute firewall-rules list --project="${project}" |grep allow-ssh  |awk -F ' ' '{print $1}')
+firewall_rules=$(gcloud compute firewall-rules list --project="${project}" |grep allow-web-server  |awk -F ' ' '{print $1}')
 
-if [ "${firewall_rules}" == "allow-ssh" ]
+if [ "${firewall_rules}" == "allow-web-server" ]
 then
     echo ""
     echo "-------------------------- Enabling Firewall rules -----------------------"
 
-    gcloud compute firewall-rules update allow-web-server  --no-disabled --project="${project}" --quiet
+    gcloud compute firewall-rules update allow-web-server --no-disabled --project="${project}" --quiet
 
     gcloud compute firewall-rules update allow-ssh  --no-disabled --project="${project}" --quiet
 else
     echo "----------------------Creating firewall rules for proxy instance ----------------------"
     echo ""
 
-#alterar --network para receber variavel
-    gcloud compute firewall-rules create allow-web-server --network teste1 --action=ALLOW --rules=tcp:8080 --project="${project}"
+#change network name for variable
 
-    gcloud compute firewall-rules create allow-ssh --network teste1 --direction ingress --action=ALLOW --rules=tcp:22 --rules all --project="${project}"
+    gcloud compute firewall-rules create allow-web-server --network vpc-secure-cloud-function --direction=EGRESS --target-tags=vpc-connector --action=ALLOW --rules=tcp:8000  --project="${project}"
 
-    #gcloud compute firewall-rules create allow-ssh --network teste1 --direction ingress --action=ALLOW --rules=tcp:22 --rules all --destination-ranges "${proxy_ip_cidr_range}" --project="${project}"
+    gcloud compute firewall-rules create allow-ssh --network vpc-secure-cloud-function	 --direction ingress --action=ALLOW --rules=tcp:22 --rules all --project="${project}"
+
 fi
