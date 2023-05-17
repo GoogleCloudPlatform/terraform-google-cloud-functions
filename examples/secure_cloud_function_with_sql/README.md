@@ -12,7 +12,7 @@ The resources/services/activations/deletions that this example will create/trigg
     * Deny all Egress Rule
     * Allow Internal APIs Firewall Rule
     * Configure Private Connect
-  * Creates Cloud function project
+  * Creates Cloud Function project
   * Creates Cloud SQL project
 
 * secure-serverless-network module will apply:
@@ -58,16 +58,20 @@ The resources/services/activations/deletions that this example will create/trigg
     * **Warning:** If there is another CMEK configured for the same region, it will be overwritten.
   * Creates a private worker pool for Cloud Build configured to not use External IP.
   * Grants Cloud Functions Invoker to EventArc Trigger Service Account.
-  * Enables Container Scanning.
+  * Enables Container Registry Automatic Scanning.
 
 * The Example will create besides all secure-cloud-function resources:
   * Cloud SQL Private Access
   * Cloud SQL Instance
   * Cloud SQL MYSQL database
   * Storage Bucket to store Cloud Function source Code
+  * KMS Keys to be used by:
+    * Pub/Sub
+    * Cloud SQL
+    * Secret Manager
   * Cloud Scheduler
   * Pub/Sub Topic
-  * Pub/Sub KMS Key
+  * Secret Manager
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
