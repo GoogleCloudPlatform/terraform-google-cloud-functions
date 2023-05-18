@@ -16,8 +16,8 @@
 
 
 module "cloud_serverless_network" {
-  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-cloud-serverless-net"
-  version = "~> 0.6"
+  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-net"
+  version = "~> 0.7"
 
   connector_name            = var.connector_name
   subnet_name               = var.subnet_name
@@ -29,6 +29,7 @@ module "cloud_serverless_network" {
   ip_cidr_range             = var.ip_cidr_range
   create_subnet             = var.create_subnet
   resource_names_suffix     = var.resource_names_suffix
+  serverless_type           = "CLOUD_FUNCTION"
 
   serverless_service_identity_email = google_project_service_identity.cloudfunction_sa.email
 }
@@ -117,6 +118,8 @@ module "cloud_function_core" {
   event_trigger               = var.event_trigger
   force_destroy               = !var.prevent_destroy
   encryption_key              = module.cloud_serverless_security.key_self_link
+  bucket_lifecycle_rules      = var.bucket_lifecycle_rules
+  bucket_cors                 = var.bucket_cors
 
   service_config = {
     max_instance_count             = var.max_scale_instances

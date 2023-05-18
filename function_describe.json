@@ -1,0 +1,69 @@
+{
+  "buildConfig": {
+    "build": "projects/97410184241/locations/us-west1/builds/f52182e4-a155-41e4-8c51-cf26f6b4b489",
+    "dockerRepository": "projects/prj-secure-cloud-function-25de/locations/us-west1/repositories/rep-cloud-function-secure-cloud-function-bigquery",
+    "entryPoint": "HelloCloudFunction",
+    "runtime": "go118",
+    "source": {
+      "storageSource": {
+        "bucket": "gcf-v2-sources-97410184241-us-west1",
+        "object": "secure-cloud-function-bigquery/function-source.zip"
+      }
+    },
+    "sourceProvenance": {
+      "resolvedStorageSource": {
+        "bucket": "gcf-v2-sources-97410184241-us-west1",
+        "generation": "1682514355580422",
+        "object": "secure-cloud-function-bigquery/function-source.zip"
+      }
+    }
+  },
+  "description": "Logs when there is a change in the BigQuery",
+  "environment": "GEN_2",
+  "eventTrigger": {
+    "eventFilters": [
+      {
+        "attribute": "methodName",
+        "value": "google.cloud.bigquery.v2.JobService.InsertJob"
+      },
+      {
+        "attribute": "serviceName",
+        "value": "bigquery.googleapis.com"
+      },
+      {
+        "attribute": "resourceName",
+        "operator": "match-path-pattern",
+        "value": "projects/prj-secure-cloud-function-25de/datasets/dst_secure_cloud_function/tables/tbl_test"
+      }
+    ],
+    "eventType": "google.cloud.audit.log.v1.written",
+    "pubsubTopic": "projects/prj-secure-cloud-function-25de/topics/eventarc-us-west1-secure-cloud-function-bigquery-750063-469",
+    "retryPolicy": "RETRY_POLICY_RETRY",
+    "serviceAccountEmail": "sa-cloud-function@prj-secure-cloud-function-25de.iam.gserviceaccount.com",
+    "trigger": "projects/prj-secure-cloud-function-25de/locations/us-west1/triggers/secure-cloud-function-bigquery-750063",
+    "triggerRegion": "us-west1"
+  },
+  "name": "projects/prj-secure-cloud-function-25de/locations/us-west1/functions/secure-cloud-function-bigquery",
+  "serviceConfig": {
+    "allTrafficOnLatestRevision": true,
+    "availableCpu": "0.1666",
+    "availableMemory": "256Mi",
+    "environmentVariables": {
+      "NAME": "cloud function v2",
+      "PROJECT_ID": "prj-secure-cloud-function-25de"
+    },
+    "ingressSettings": "ALLOW_INTERNAL_AND_GCLB",
+    "maxInstanceCount": 2,
+    "maxInstanceRequestConcurrency": 1,
+    "minInstanceCount": 1,
+    "revision": "secure-cloud-function-bigquery-00001-yov",
+    "service": "projects/prj-secure-cloud-function-25de/locations/us-west1/services/secure-cloud-function-bigquery",
+    "serviceAccountEmail": "sa-cloud-function@prj-secure-cloud-function-25de.iam.gserviceaccount.com",
+    "timeoutSeconds": 120,
+    "uri": "https://secure-cloud-function-bigquery-62nzr3fd7q-uw.a.run.app",
+    "vpcConnector": "projects/prj-secure-cloud-function-25de/locations/us-west1/connectors/con-secure-cloud-function",
+    "vpcConnectorEgressSettings": "PRIVATE_RANGES_ONLY"
+  },
+  "state": "ACTIVE",
+  "updateTime": "2023-04-26T13:08:44.128134334Z"
+}
