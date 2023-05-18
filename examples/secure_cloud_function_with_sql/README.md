@@ -95,6 +95,8 @@ The resources/services/activations/deletions that this example will create/trigg
 |------|-------------|
 | cloud\_function\_name | The service account email created to be used by Cloud Function. |
 | cloud\_sql\_kms\_key | The KMS Key create to encrypt Cloud SQL |
+| cloudfunction\_bucket | The Cloud Function source bucket. |
+| cloudfunction\_bucket\_name | Name of the Cloud Function source bucket. |
 | cloudfunction\_url | The URL on which the deployed service is available. |
 | cloudsql\_project\_id | The Cloud SQL project id. |
 | connector\_id | VPC serverless connector ID. |
