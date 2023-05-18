@@ -43,6 +43,5 @@ module "project" {
     "bigquery.googleapis.com",
     "sql-component.googleapis.com",
     "sqladmin.googleapis.com",
-    "servicenetworking.googleapis.com"
   ]
 }

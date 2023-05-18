@@ -30,13 +30,23 @@ output "key_self_link" {
 }
 
 output "cloudfunction_name" {
-  value       = module.cloud_function_core.service_name
-  description = "ID of the created service."
+  value       = module.cloud_function_core.cloudfunction_name
+  description = "ID of the created Cloud Function."
 }
 
-output "service_url" {
-  value       = module.cloud_function_core.service_url
-  description = "Url of the created service."
+output "cloudfunction_url" {
+  value       = module.cloud_function_core.cloudfunction_url
+  description = "Url of the created Cloud Function."
+}
+
+output "cloudfunction_bucket_name" {
+  value       = module.cloud_function_core.cloudfunction_bucket_name
+  description = "The Cloud Function source bucket."
+}
+
+output "cloudfunction_bucket" {
+  value       = module.cloud_function_core.cloudfunction_bucket
+  description = "The Cloud Function source bucket."
 }
 
 output "gca_vpcaccess_sa" {

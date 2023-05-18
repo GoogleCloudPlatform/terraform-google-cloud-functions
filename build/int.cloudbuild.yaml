@@ -14,42 +14,41 @@
 
 timeout: 3600s
 steps:
-  - id: prepare
-    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
-    args:
-      [
-        "/bin/bash",
-        "-c",
-        "source /usr/local/bin/task_helper_functions.sh && prepare_environment",
-      ]
-    env:
-      - "TF_VAR_org_id=$_ORG_ID"
-      - "TF_VAR_folder_id=$_FOLDER_ID"
-      - "TF_VAR_billing_account=$_BILLING_ACCOUNT"
-  - id: cloud-func-init
-    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
-    args: ["/bin/bash", "-c", "cft test run all --stage init --verbose"]
-    env:
-      - "TF_VAR_org_id=$_ORG_ID"
-      - "TF_VAR_folder_id=$_FOLDER_ID"
-      - "TF_VAR_billing_account=$_BILLING_ACCOUNT"
-  - id: cloud-func-apply
-    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
-    args: ["/bin/bash", "-c", "cft test run all --stage apply --verbose"]
-    env:
-      - "TF_VAR_org_id=$_ORG_ID"
-      - "TF_VAR_folder_id=$_FOLDER_ID"
-      - "TF_VAR_billing_account=$_BILLING_ACCOUNT"
-  - id: cloud-func-verify
-    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
-    args: ["/bin/bash", "-c", "cft test run all --stage verify --verbose"]
-  - id: cloud-func-teardown
-    name: "gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS"
-    args: ["/bin/bash", "-c", "cft test run all --stage teardown --verbose"]
-    env:
-      - "TF_VAR_org_id=$_ORG_ID"
-      - "TF_VAR_folder_id=$_FOLDER_ID"
-      - "TF_VAR_billing_account=$_BILLING_ACCOUNT"
+- id: prepare
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'source /usr/local/bin/task_helper_functions.sh && prepare_environment']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+- id: cloud-func-init
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run all --stage init --verbose']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+- id: cloud-func-apply
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run all --stage apply --verbose']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+- id: cloud-func-verify
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run all --stage verify --verbose']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+- id: cloud-func-teardown
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run all --stage teardown --verbose']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
 tags:
   - "ci"
   - "integration"

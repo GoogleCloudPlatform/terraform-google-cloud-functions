@@ -127,6 +127,8 @@ module "cloud_function_core" {
   event_trigger               = var.event_trigger
   force_destroy               = !var.prevent_destroy
   encryption_key              = module.cloud_serverless_security.key_self_link
+  bucket_lifecycle_rules      = var.bucket_lifecycle_rules
+  bucket_cors                 = var.bucket_cors
 
   service_config = {
     max_instance_count             = var.max_scale_instances
