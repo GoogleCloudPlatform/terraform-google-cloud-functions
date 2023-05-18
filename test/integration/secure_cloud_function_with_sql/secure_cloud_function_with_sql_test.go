@@ -34,7 +34,9 @@ func TestGCF2CloudSQL(t *testing.T) {
 		connectorID := cf2SQL.GetStringOutput("connector_id")
 		saEmail := cf2SQL.GetStringOutput("service_account_email")
 		mysqlName := cf2SQL.GetStringOutput("mysql_name")
+		mySQLPrivIP := cf2SQL.GetStringOutput("mysql_private_ip_address")
 		projectID := cf2SQL.GetStringOutput("serverless_project_id")
+		netProjectID := cf2SQL.GetStringOutput("network_project_id")
 		sqlProjectID := cf2SQL.GetStringOutput("cloudsql_project_id")
 		secProjectID := cf2SQL.GetStringOutput("security_project_id")
 		topicID := cf2SQL.GetStringOutput("topic_id")
@@ -78,6 +80,17 @@ func TestGCF2CloudSQL(t *testing.T) {
 		assert.Equal(secretKMS, cf.Get("replication.userManaged.replicas.0.customerManagedEncryption.kmsKeyName").String(), fmt.Sprintf("Secret should have KMS key configured %s", secretKMS))
 		cf = gcloud.Runf(t, "secrets versions describe %s --secret  %s --project %s", secretVersion, secretName, secProjectID)
 		assert.Equal(sctVersionFull, cf.Get("replicationStatus.userManaged.replicas.0.customerManagedEncryption.kmsKeyVersionName").String(), fmt.Sprintf("Secret should have KMS key configured %s", secretKMS))
+
+		allowTCP3307 := "fw-allow-tcp-3307-egress-to-sql-private-ip"
+		allowTCP3307Rule := gcloud.Runf(t, "compute firewall-rules describe %s --project %s", allowTCP3307, netProjectID)
+		assert.Equal(allowTCP3307, allowTCP3307Rule.Get("name").String(), fmt.Sprintf("firewall rule %s should exist", allowTCP3307))
+		assert.Equal("EGRESS", allowTCP3307Rule.Get("direction").String(), fmt.Sprintf("firewall rule %s direction should be EGRESS", allowTCP3307))
+		assert.True(allowTCP3307Rule.Get("logConfig.enable").Bool(), fmt.Sprintf("firewall rule %s should have log configuration enabled", allowTCP3307))
+		assert.Equal(mySQLPrivIP, allowTCP3307Rule.Get("destinationRanges").Array()[0].String(), fmt.Sprintf("firewall rule %s destination ranges should be %s", allowTCP3307, mySQLPrivIP))
+		assert.Equal(1, len(allowTCP3307Rule.Get("allowed").Array()), fmt.Sprintf("firewall rule %s should have only one allowed", allowTCP3307))
+		assert.Equal(1, len(allowTCP3307Rule.Get("allowed.0.ports").Array()), fmt.Sprintf("firewall rule %s should allow only one protocol and one port", allowTCP3307))
+		assert.Equal("tcp", allowTCP3307Rule.Get("allowed.0.IPProtocol").String(), fmt.Sprintf("firewall rule %s should allow only TCP protocols", allowTCP3307))
+		assert.Equal("3307", allowTCP3307Rule.Get("allowed.0.ports.0").String(), fmt.Sprintf("firewall rule %s should allow only port 3307", allowTCP3307))
 
 	})
 	cf2SQL.Test()
