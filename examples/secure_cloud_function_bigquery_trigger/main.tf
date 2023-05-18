@@ -27,14 +27,12 @@ resource "random_id" "random_folder_suffix" {
 }
 
 module "secure_harness" {
-  # source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  # version = "~> 0.7"
-  source = "git::https://github.com/GoogleCloudPlatform/terraform-google-cloud-run//modules/secure-serverless-harness?ref=main"
-  # source = "../../../terraform-google-cloud-run/modules/secure-serverless-harness"
+  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
+  version = "~> 0.7"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-security"
-  network_project_name                        = "prj-restricted-shared-tst"
+  network_project_name                        = "prj-restricted-shared"
   serverless_project_names                    = ["prj-secure-cloud-function"]
   org_id                                      = var.org_id
   parent_folder_id                            = var.folder_id
