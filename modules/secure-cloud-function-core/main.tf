@@ -22,40 +22,14 @@ module "cloudfunction_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
   version = "~>4.0"
 
-  project_id    = var.project_id
-  labels        = var.labels
-  name          = "gcf-v2-sources-${data.google_project.project.number}-${var.location}"
-  location      = var.location
-  storage_class = "REGIONAL"
-  force_destroy = var.force_destroy
-  cors = [
-    {
-      max_age_seconds = 0
-      method = [
-        "GET",
-      ]
-      origin = [
-        "https://*.cloud.google.com",
-        "https://*.corp.google.com",
-        "https://*.corp.google.com:*",
-        "https://*.cloud.google",
-        "https://*.byoid.goog",
-      ]
-      response_header = []
-    }
-  ]
-  lifecycle_rules = [{
-    action = {
-      type = "Delete"
-    }
-    condition = {
-      age                        = 0
-      days_since_custom_time     = 0
-      days_since_noncurrent_time = 0
-      num_newer_versions         = 3
-      with_state                 = "ARCHIVED"
-    }
-  }]
+  project_id      = var.project_id
+  labels          = var.labels
+  name            = "gcf-v2-sources-${data.google_project.project.number}-${var.location}"
+  location        = var.location
+  storage_class   = "REGIONAL"
+  force_destroy   = var.force_destroy
+  cors            = var.bucket_cors
+  lifecycle_rules = var.bucket_lifecycle_rules
 
   encryption = {
     default_kms_key_name = var.encryption_key
@@ -105,6 +79,8 @@ module "cloud_function" {
   storage_source      = var.storage_source
   service_config      = var.service_config
   docker_repository   = google_artifact_registry_repository.cloudfunction_repo.id
+
+  ## THIS SHOULD BE UNCOMMENTED WHEN SECURE WEB PROXY IS READY, TO ALLOW THE PRIVATE POOL USAGE.
   # worker_pool         = google_cloudbuild_worker_pool.pool.id
 
   depends_on = [

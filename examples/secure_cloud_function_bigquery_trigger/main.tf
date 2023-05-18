@@ -133,7 +133,7 @@ module "bigquery" {
       expiration_time = 2524604400000, # 2050/01/01
       clustering      = [],
       labels = {
-        env      = "production"
+        env      = "development"
         billable = "true"
       }
   }]
@@ -162,6 +162,10 @@ module "secure_cloud_function" {
   shared_vpc_name       = module.secure_harness.service_vpc[0].network.name
   prevent_destroy       = false
   ip_cidr_range         = "10.0.0.0/28"
+  labels = {
+    env      = "development"
+    billable = "true"
+  }
   storage_source = {
     bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
     object = google_storage_bucket_object.cf_bigquery_source_zip.name
