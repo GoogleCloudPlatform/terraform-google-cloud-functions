@@ -15,11 +15,11 @@
 #  */
 
 locals {
-  location        = "us-west1"
-  region          = "us-west1"
-  repository_name = "rep-secure-cloud-function"
-   network_ip         = "10.0.0.3"
-   webserver_instance = "webserver"
+  location           = "us-west1"
+  region             = "us-west1"
+  repository_name    = "rep-secure-cloud-function"
+  network_ip         = "10.0.0.3"
+  webserver_instance = "webserver"
 }
 resource "random_id" "random_folder_suffix" {
   byte_length = 2
@@ -56,37 +56,42 @@ module "secure_harness" {
   use_shared_vpc                              = true
 
   service_account_project_roles = {
-    "prj-secure-cloud-function" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
+    "prj-secure-cloud-function" = [
+      "roles/eventarc.eventReceiver",
+      "roles/viewer",
+      "roles/compute.networkViewer",
+      "roles/run.invoker"
+    ]
   }
 }
 
-data "archive_file" "source" {
+data "archive_file" "cf-internal-server-source" {
   type        = "zip"
   source_dir  = "${path.module}/function"
   output_path = "function/cloudfunction-${random_id.random_folder_suffix.hex}.zip"
 }
 
 resource "google_storage_bucket_object" "function-source" {
-  source       = data.archive_file.source.output_path
+  source       = data.archive_file.cf-internal-server-source.output_path
   content_type = "application/zip"
 
   # Append to the MD5 checksum of the files's content
   # to force the zip to be updated as soon as a change occurs
-  name   = "src-${data.archive_file.source.output_md5}.zip"
+  name   = "src-${data.archive_file.cf-internal-server-source.output_md5}.zip"
   bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
 
   depends_on = [
-    data.archive_file.source
+    data.archive_file.cf-internal-server-source
   ]
 }
 
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
-  
-  function_name             = "function2-gcs-webserver-go" #secure-cloud-function-webserver
-  function_description      = "Secure cloud function example"
-  location                  = local.location
-  region                    = local.region
+
+  function_name         = "function2-gcs-webserver"
+  function_description  = "Secure cloud function example"
+  location              = local.location
+  region                = local.region
   serverless_project_id = module.secure_harness.serverless_project_ids[0]
   vpc_project_id        = module.secure_harness.network_project_id[0]
   kms_project_id        = module.secure_harness.security_project_id
@@ -115,15 +120,13 @@ module "secure_cloud_function" {
     retry_policy          = "RETRY_POLICY_RETRY"
     event_filters = [{
       attribute       = "bucket"
-      #attribute_value = google_storage_bucket_object.function-source.name
       attribute_value = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
     }]
   }
   runtime     = "go118"
   entry_point = "helloHTTP"
 
-    depends_on = [
-    #module.secure_harness,
+  depends_on = [
     google_compute_instance.internal_server,
     google_storage_bucket_object.function-source
   ]

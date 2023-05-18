@@ -26,15 +26,15 @@ then
 
     gcloud compute firewall-rules update allow-web-server --no-disabled --project="${project}" --quiet
 
+#ssh rule is temporary
     gcloud compute firewall-rules update allow-ssh  --no-disabled --project="${project}" --quiet
 else
     echo "----------------------Creating firewall rules for proxy instance ----------------------"
     echo ""
 
-#change network name for variable
+    gcloud compute firewall-rules create allow-web-server --network vpc-secure-cloud-function --direction=EGRESS --target-tags=vpc-connector --action=ALLOW --rules=tcp:8000  --enable-logging --project="${project}"
 
-    gcloud compute firewall-rules create allow-web-server --network vpc-secure-cloud-function --direction=EGRESS --target-tags=vpc-connector --action=ALLOW --rules=tcp:8000  --project="${project}"
-
-    gcloud compute firewall-rules create allow-ssh --network vpc-secure-cloud-function	 --direction ingress --action=ALLOW --rules=tcp:22 --rules all --project="${project}"
+#ssh rule is temporary
+    gcloud compute firewall-rules create allow-ssh --network vpc-secure-cloud-function	 --direction ingress --action=ALLOW --rules=tcp:22 --rules all --enable-logging --project="${project}"
 
 fi

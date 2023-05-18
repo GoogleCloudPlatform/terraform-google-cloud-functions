@@ -15,22 +15,25 @@
 # limitations under the License.
 #
 
-cd /tmp/
-
 touch /tmp/request_logs.txt
-chmod 777 /tmp/request_logs.txt
+chmod 666 /tmp/request_logs.txt
 
-sudo tee -a /tmp/index.html <<'EOF'
+tee -a /tmp/index.html <<'EOF'
 ----------- hello world --------------
 EOF
 
-sudo tee -a /tmp/webserver.py <<'EOF'
+tee -a /tmp/webserver.py <<'EOF'
 import http.server
 import socketserver
 import datetime
+import os
 
 PORT = 8000
 LOG_FILE = "/tmp/request_logs.txt"
+DIRECTORY = "/tmp"
+
+# Change the current working directory to the desired directory
+os.chdir(DIRECTORY)
 
 class RequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -44,9 +47,9 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
 
 # Create the server with the custom request handler
 with socketserver.TCPServer(("", PORT), RequestHandler) as httpd:
-    print("Serving at port", PORT)
+    print(f"Serving at port {PORT} from directory {DIRECTORY}")
     httpd.serve_forever()
 EOF
 
-chmod 777 /tmp/webserver.py
-python3 /tmp/webserver.py --directory /tmp/
+chmod +x /tmp/webserver.py
+python3 /tmp/webserver.py

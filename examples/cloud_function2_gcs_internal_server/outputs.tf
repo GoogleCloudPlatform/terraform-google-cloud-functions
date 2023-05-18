@@ -92,4 +92,3 @@ output "restricted_access_level_name" {
 #   value       = module.secure_cloud_function.cloudfunction_url
 #   description = "The URL on which the deployed service is available."
 # }
-

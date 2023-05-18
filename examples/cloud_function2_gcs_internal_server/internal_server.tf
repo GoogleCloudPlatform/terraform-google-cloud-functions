@@ -22,8 +22,8 @@ resource "google_project_service_identity" "compute_identity_sa" {
 }
 
 module "compute_service_account" {
-  source  = "terraform-google-modules/service-accounts/google"
-  version = "~> 3.0"
+  source     = "terraform-google-modules/service-accounts/google"
+  version    = "~> 3.0"
   project_id = module.secure_harness.serverless_project_ids[0]
   names      = ["sa-compute-instance"]
 }
@@ -48,7 +48,7 @@ resource "google_service_account_iam_member" "service_account_user" {
   depends_on = [google_project_iam_member.service_account_roles]
 }
 
-#move firewall rules from script to here
+#temporary solution. The cloud function module is not reading the local network module
 resource "null_resource" "open_firewall" {
   triggers = {
     always_run = "${timestamp()}"
@@ -62,10 +62,10 @@ EOF
 }
 
 resource "google_compute_instance" "internal_server" {
-  name = local.webserver_instance
-  project = module.secure_harness.serverless_project_ids[0]
+  name           = local.webserver_instance
+  project        = module.secure_harness.serverless_project_ids[0]
   zone           = var.zone
-  machine_type   = "n1-standard-1" #change to micro
+  machine_type   = "e2-small"
   can_ip_forward = true
 
   boot_disk {
@@ -77,8 +77,8 @@ resource "google_compute_instance" "internal_server" {
   metadata_startup_script = file("${abspath(path.module)}/web_server/internal_server_setup.sh")
 
   network_interface {
-    subnetwork = module.secure_harness.service_subnet[0]
-    network_ip = local.network_ip
+    subnetwork         = module.secure_harness.service_subnet[0]
+    network_ip         = local.network_ip
     subnetwork_project = module.secure_harness.network_project_id[0]
   }
 
@@ -90,6 +90,6 @@ resource "google_compute_instance" "internal_server" {
   depends_on = [
     google_service_account_iam_member.service_account_user,
     module.secure_harness,
-    null_resource.open_firewall
+    null_resource.open_firewall #temporary solution. The cloud function module is not reading the local network module
   ]
 }
