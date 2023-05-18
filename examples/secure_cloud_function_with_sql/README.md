@@ -72,6 +72,7 @@ The resources/services/activations/deletions that this example will create/trigg
   * Cloud Scheduler
   * Pub/Sub Topic
   * Secret Manager
+  * Firewall rule to allow to connect on Cloud SQL using Private IP
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
