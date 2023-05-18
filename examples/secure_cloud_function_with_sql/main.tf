@@ -68,8 +68,6 @@ module "secure_harness" {
   security_project_extra_apis = ["secretmanager.googleapis.com"]
 }
 
-
-
 resource "google_project_service_identity" "pubsub_sa" {
   provider = google-beta
 
@@ -139,7 +137,7 @@ module "safer_mysql_db" {
 
   deletion_protection = false
 
-  database_version   = "MYSQL_5_6"
+  database_version   = "MYSQL_8_0"
   region             = local.region
   zone               = local.zone_sql
   tier               = "db-n1-standard-1"
@@ -150,23 +148,85 @@ module "safer_mysql_db" {
   depends_on = [module.cloud_sql_private_service_access]
 }
 
-data "archive_file" "cf_bigquery_source" {
-  type        = "zip"
-  source_dir  = "${path.module}/functions/bq-to-cf/"
-  output_path = "functions/cloudfunction-bq-source-${random_id.random_folder_suffix.hex}.zip"
+module "cloud_sql_firewall_rule" {
+  source       = "terraform-google-modules/network/google//modules/firewall-rules"
+  version      = "~> 7.0"
+  project_id   = module.secure_harness.network_project_id[0]
+  network_name = module.secure_harness.service_vpc[0].network.name
+
+  rules = [{
+    name        = "fw-allow-tcp-3307-egress-to-sql-private-ip"
+    description = "Allow Cloud Function to connect in Cloud SQL using the private IP"
+    direction   = "EGRESS"
+    priority    = 100
+    ranges      = [module.safer_mysql_db.private_ip_address]
+    source_tags = []
+    allow = [{
+      protocol = "tcp"
+      ports    = ["3307"]
+    }]
+    deny = []
+    log_config = {
+      metadata = "INCLUDE_ALL_METADATA"
+    }
+  }]
 }
 
-resource "google_storage_bucket_object" "cf_bigquery_source_zip" {
-  source       = data.archive_file.cf_bigquery_source.output_path
+resource "google_storage_bucket_iam_member" "object_admin" {
+  bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[1]].name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${module.safer_mysql_db.instance_service_account_email_address}"
+}
+
+resource "google_storage_bucket_object" "cloud_sql_dump_file" {
+  source       = "${path.module}/assets/sample-db-data.sql"
+  content_type = "text/plain; charset=utf-8"
+
+  # Append to the MD5 checksum of the files's content
+  # to force the zip to be updated as soon as a change occurs
+  name   = "assets/sample-db-data.sql"
+  bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[1]].name
+
+  depends_on = [
+    module.secure_harness
+  ]
+}
+
+resource "null_resource" "create_and_populate_db" {
+
+  provisioner "local-exec" {
+    command = <<EOT
+    gcloud sql import sql ${module.safer_mysql_db.instance_name} \
+    --project ${module.secure_harness.serverless_project_ids[1]} \
+    gs://${module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[1]].name}/${google_storage_bucket_object.cloud_sql_dump_file.name} \
+    --database=${local.db_name} --impersonate-service-account=${var.terraform_service_account} -q
+    EOT
+  }
+
+  depends_on = [
+    google_storage_bucket_object.cloud_sql_dump_file,
+    module.safer_mysql_db,
+    google_storage_bucket_iam_member.object_admin
+  ]
+}
+
+data "archive_file" "cf_cloudsql_source" {
+  type        = "zip"
+  source_dir  = "${path.module}/functions/cf-to-sql/"
+  output_path = "functions/cloudfunction-sql-source-${random_id.random_folder_suffix.hex}.zip"
+}
+
+resource "google_storage_bucket_object" "cf_cloudsql_source_zip" {
+  source       = data.archive_file.cf_cloudsql_source.output_path
   content_type = "application/zip"
 
   # Append to the MD5 checksum of the files's content
   # to force the zip to be updated as soon as a change occurs
-  name   = "src-${data.archive_file.cf_bigquery_source.output_md5}.zip"
+  name   = "src-${data.archive_file.cf_cloudsql_source.output_md5}.zip"
   bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
 
   depends_on = [
-    data.archive_file.cf_bigquery_source,
+    data.archive_file.cf_cloudsql_source,
     module.secure_harness
   ]
 }
@@ -254,7 +314,7 @@ module "secure_cloud_function" {
   ip_cidr_range         = "10.0.1.0/28"
   storage_source = {
     bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
-    object = google_storage_bucket_object.cf_bigquery_source_zip.name
+    object = google_storage_bucket_object.cf_cloudsql_source_zip.name
   }
 
   environment_variables = {
@@ -286,7 +346,8 @@ module "secure_cloud_function" {
 
   depends_on = [
     module.secure_harness,
-    google_storage_bucket_object.cf_bigquery_source_zip,
-    google_secret_manager_secret_iam_member.member
+    google_storage_bucket_object.cf_cloudsql_source_zip,
+    google_secret_manager_secret_iam_member.member,
+    null_resource.create_and_populate_db
   ]
 }
