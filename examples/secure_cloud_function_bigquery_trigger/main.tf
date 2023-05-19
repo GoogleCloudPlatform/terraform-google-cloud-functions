@@ -162,13 +162,10 @@ module "secure_cloud_function" {
   shared_vpc_name       = module.secure_harness.service_vpc[0].network.name
   prevent_destroy       = false
   ip_cidr_range         = "10.0.0.0/28"
-<<<<<<< HEAD
-=======
   labels = {
     env      = "development"
     billable = "true"
   }
->>>>>>> main
   storage_source = {
     bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
     object = google_storage_bucket_object.cf_bigquery_source_zip.name
