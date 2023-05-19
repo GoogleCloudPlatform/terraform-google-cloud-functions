@@ -15,9 +15,6 @@
 # limitations under the License.
 #
 
-touch /tmp/request_logs.txt
-chmod 666 /tmp/request_logs.txt
-
 tee -a /tmp/index.html <<'EOF'
 ----------- hello world --------------
 EOF
@@ -29,7 +26,7 @@ import datetime
 import os
 
 PORT = 8000
-LOG_FILE = "/tmp/request_logs.txt"
+LOG_FILE = "/tmp/request_logs.log"
 DIRECTORY = "/tmp"
 
 # Change the current working directory to the desired directory

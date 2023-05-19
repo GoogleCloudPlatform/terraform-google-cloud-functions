@@ -70,23 +70,6 @@ module "network" {
 
       ranges      = [module.private_service_connect.private_service_connect_ip]
       target_tags = ["allow-google-apis", "vpc-connector"]
-    },
-    {
-      name      = "fw-e-shared-restricted-internal-server"
-      direction = "EGRESS"
-      priority  = 1000
-
-      log_config = {
-        metadata = "INCLUDE_ALL_METADATA"
-      }
-      deny = []
-      allow = [{
-        protocol = "tcp"
-        ports    = ["8000"]
-      }]
-
-      ranges      = ["0.0.0.0/0"]
-      target_tags = ["allow-google-apis", "vpc-connector"]
     }
   ]
 }

@@ -48,19 +48,6 @@ resource "google_service_account_iam_member" "service_account_user" {
   depends_on = [google_project_iam_member.service_account_roles]
 }
 
-#temporary solution. The cloud function module is not reading the local network module
-resource "null_resource" "open_firewall" {
-  triggers = {
-    always_run = "${timestamp()}"
-  }
-  provisioner "local-exec" {
-    command = <<EOF
- ${abspath(path.module)}/web_server/open_firewall.sh \
-    ${module.secure_harness.network_project_id[0]}
-EOF
-  }
-}
-
 resource "google_compute_instance" "internal_server" {
   name           = local.webserver_instance
   project        = module.secure_harness.serverless_project_ids[0]
@@ -89,7 +76,6 @@ resource "google_compute_instance" "internal_server" {
 
   depends_on = [
     google_service_account_iam_member.service_account_user,
-    module.secure_harness,
-    null_resource.open_firewall #temporary solution. The cloud function module is not reading the local network module
+    module.secure_harness
   ]
 }

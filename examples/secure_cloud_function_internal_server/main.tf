@@ -26,10 +26,6 @@ resource "random_id" "random_folder_suffix" {
 }
 
 module "secure_harness" {
-  # # source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  # # version = "~> 0.7"
-  # source = "git::https://github.com/GoogleCloudPlatform/terraform-google-cloud-run//modules/secure-serverless-harness?ref=main"
-  # # source = "../../../terraform-google-cloud-run/modules/secure-serverless-harness"
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
   version = "~> 0.7"
 
@@ -87,10 +83,36 @@ resource "google_storage_bucket_object" "function-source" {
   ]
 }
 
+module "internal_server_firewall_rule" {
+  source       = "terraform-google-modules/network/google//modules/firewall-rules"
+  version      = "~> 7.0"
+  project_id   = module.secure_harness.network_project_id[0]
+  network_name = module.secure_harness.service_vpc[0].network.name
+
+  rules = [{
+    name        = "fw-e-shared-restricted-internal-server"
+    description = "Allow Cloud Function to connect in Internal Server using the private IP"
+    direction   = "EGRESS"
+    priority    = 100
+
+    log_config = {
+      metadata = "INCLUDE_ALL_METADATA"
+    }
+    deny = []
+    allow = [{
+      protocol = "tcp"
+      ports    = ["8000"]
+    }]
+
+    ranges      = ["10.0.0.0/28"]
+    target_tags = ["allow-google-apis", "vpc-connector"]
+  }]
+}
+
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
 
-  function_name         = "function2-gcs-webserver"
+  function_name         = "secure-function2-internal-server"
   function_description  = "Secure cloud function example"
   location              = local.location
   region                = local.region
@@ -106,6 +128,7 @@ module "secure_cloud_function" {
   shared_vpc_name       = module.secure_harness.service_vpc[0].network.name
   prevent_destroy       = false
   ip_cidr_range         = "10.0.0.0/28"
+
   storage_source = {
     bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
     object = google_storage_bucket_object.function-source.name
@@ -114,6 +137,7 @@ module "secure_cloud_function" {
   environment_variables = {
     PROJECT_ID = module.secure_harness.serverless_project_ids[0]
     NAME       = "cloud function v2"
+    TARGET_IP  = local.network_ip
   }
 
   event_trigger = {
@@ -130,6 +154,7 @@ module "secure_cloud_function" {
 
   depends_on = [
     google_compute_instance.internal_server,
-    google_storage_bucket_object.function-source
+    google_storage_bucket_object.function-source,
+    module.internal_server_firewall_rule
   ]
 }
