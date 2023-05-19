@@ -80,7 +80,7 @@ output "secret_manager_id" {
 }
 
 output "secret_manager_version" {
-  value       = google_secret_manager_secret_version.secret_version.version
+  value       = data.google_secret_manager_secret_version.latest_version.version
   description = "Secret Manager version created to store Database password."
 }
 

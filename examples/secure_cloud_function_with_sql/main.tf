@@ -21,8 +21,9 @@ locals {
   zone_sql        = "us-central1-a"
   repository_name = "rep-secure-cloud-function"
   db_name         = "db-application"
+  db_user         = "app"
+  db_host         = "%"
   secret_name     = "sct-sql-password"
-
 }
 resource "random_id" "random_folder_suffix" {
   byte_length = 2
@@ -172,6 +173,49 @@ module "cloud_sql_firewall_rule" {
   }]
 }
 
+resource "null_resource" "create_user_pwd" {
+
+  triggers = {
+    instance_name             = module.safer_mysql_db.instance_name,
+    instance_project_id       = module.secure_harness.serverless_project_ids[1]
+    secret_name               = google_secret_manager_secret.password_secret.id
+    security_project_id       = module.secure_harness.security_project_id
+    db_user                   = local.db_user
+    db_host                   = local.db_host
+    terraform_service_account = var.terraform_service_account
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+    cd ${path.module}/helpers && chmod u+x create_db_user.sh && ./create_db_user.sh \
+      ${var.terraform_service_account} \
+      ${module.safer_mysql_db.instance_name} \
+      ${module.secure_harness.serverless_project_ids[1]} \
+      ${google_secret_manager_secret.password_secret.id} \
+      ${module.secure_harness.security_project_id} \
+      ${local.db_user} \
+      ${local.db_host}
+    EOF
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = <<EOF
+    cd ${path.module}/helpers && chmod u+x destroy_db_user.sh && ./destroy_db_user.sh \
+      ${self.triggers.terraform_service_account} \
+      ${self.triggers.instance_name} \
+      ${self.triggers.instance_project_id} \
+      ${self.triggers.db_user} \
+      ${self.triggers.db_host}
+    EOF
+  }
+
+  depends_on = [
+    module.safer_mysql_db,
+    google_secret_manager_secret.password_secret
+  ]
+}
+
 resource "google_storage_bucket_iam_member" "object_admin" {
   bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[1]].name
   role   = "roles/storage.objectAdmin"
@@ -193,6 +237,11 @@ resource "google_storage_bucket_object" "cloud_sql_dump_file" {
 }
 
 resource "null_resource" "create_and_populate_db" {
+
+  triggers = {
+    instance  = module.safer_mysql_db.instance_name,
+    file_name = "${module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[1]].name}/${google_storage_bucket_object.cloud_sql_dump_file.name}"
+  }
 
   provisioner "local-exec" {
     command = <<EOT
@@ -258,12 +307,6 @@ resource "google_secret_manager_secret" "password_secret" {
   depends_on = [module.kms_keys]
 }
 
-resource "google_secret_manager_secret_version" "secret_version" {
-  secret      = google_secret_manager_secret.password_secret.id
-  secret_data = module.safer_mysql_db.generated_user_password
-  enabled     = true
-}
-
 resource "google_secret_manager_secret_iam_member" "member" {
   project   = google_secret_manager_secret.password_secret.project
   secret_id = google_secret_manager_secret.password_secret.secret_id
@@ -294,6 +337,12 @@ module "pubsub" {
   depends_on         = [module.secure_harness]
 }
 
+data "google_secret_manager_secret_version" "latest_version" {
+  project    = module.secure_harness.security_project_id
+  secret     = local.secret_name
+  depends_on = [null_resource.create_user_pwd]
+}
+
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
 
@@ -319,7 +368,7 @@ module "secure_cloud_function" {
 
   environment_variables = {
     INSTANCE_PROJECT_ID = module.secure_harness.serverless_project_ids[1]
-    INSTANCE_USER       = "default"
+    INSTANCE_USER       = local.db_user
     INSTANCE_LOCATION   = local.region
     INSTANCE_NAME       = module.safer_mysql_db.instance_name
     DATABASE_NAME       = local.db_name
@@ -329,7 +378,7 @@ module "secure_cloud_function" {
     key_name   = "INSTANCE_PWD"
     project_id = module.secure_harness.security_project_id
     secret     = local.secret_name
-    version    = google_secret_manager_secret_version.secret_version.version
+    version    = data.google_secret_manager_secret_version.latest_version.version
   }]
 
   event_trigger = {
@@ -348,6 +397,7 @@ module "secure_cloud_function" {
     module.secure_harness,
     google_storage_bucket_object.cf_cloudsql_source_zip,
     google_secret_manager_secret_iam_member.member,
-    null_resource.create_and_populate_db
+    null_resource.create_and_populate_db,
+    null_resource.create_user_pwd
   ]
 }
