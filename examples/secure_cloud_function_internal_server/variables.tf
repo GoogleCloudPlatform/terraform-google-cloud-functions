@@ -19,11 +19,6 @@ variable "zone" {
   type        = string
 }
 
-variable "network_ip" {
-  description = "The IP address used by webserver vm."
-  type        = string
-}
-
 variable "billing_account" {
   description = "The ID of the billing account to associate this project with."
   type        = string
