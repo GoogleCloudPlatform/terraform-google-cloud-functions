@@ -39,6 +39,16 @@ output "cloudfunction_url" {
   description = "Url of the created Cloud Function."
 }
 
+output "cloudfunction_bucket_name" {
+  value       = module.cloud_function_core.cloudfunction_bucket_name
+  description = "The Cloud Function source bucket."
+}
+
+output "cloudfunction_bucket" {
+  value       = module.cloud_function_core.cloudfunction_bucket
+  description = "The Cloud Function source bucket."
+}
+
 output "gca_vpcaccess_sa" {
   value       = module.cloud_serverless_network.gca_vpcaccess_sa
   description = "Service Account for VPC Access."
