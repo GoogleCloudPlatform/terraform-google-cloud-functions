@@ -16,18 +16,40 @@ package secure_cloud_function_with_sql
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
+	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
+// GetOrgACMPolicyID gets the Organization Access Context Manager Policy ID
+func GetOrgACMPolicyID(t testing.TB, orgID string) string {
+	filter := fmt.Sprintf("parent:organizations/%s", orgID)
+	id := gcloud.Runf(t, "access-context-manager policies list --organization %s --filter %s --quiet", orgID, filter).Array()
+	if len(id) == 0 {
+		return ""
+	}
+	return GetLastSplitElement(id[0].Get("name").String(), "/")
+}
+
+func GetLastSplitElement(value string, sep string) string {
+	splitted := strings.Split(value, sep)
+	return splitted[len(splitted)-1]
+}
+
 func TestGCF2CloudSQL(t *testing.T) {
-	cf2SQL := tft.NewTFBlueprintTest(t)
+	orgID := utils.ValFromEnv(t, "TF_VAR_org_id")
+	policyID := GetOrgACMPolicyID(t, orgID)
+	vars := map[string]interface{}{
+		"access_context_manager_policy_id": policyID,
+	}
+	cf2SQL := tft.NewTFBlueprintTest(t, tft.WithVars(vars))
 
 	cf2SQL.DefineVerify(func(assert *assert.Assertions) {
-		// cf2SQL.DefaultVerify(assert)
+		cf2SQL.DefaultVerify(assert)
 
 		name := cf2SQL.GetStringOutput("cloud_function_name")
 		location := "us-central1"
