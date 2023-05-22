@@ -32,7 +32,7 @@ destroy_user() {
     --instance "${instance_name}" \
     --impersonate-service-account="${terraform_service_account}" \
     --host="${host}" \
-    --project="${instance_project_id}"
+    --project="${instance_project_id}" -q
 }
 
 destroy_user

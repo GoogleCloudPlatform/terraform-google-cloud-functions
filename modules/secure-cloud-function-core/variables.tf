@@ -20,6 +20,12 @@ variable "project_id" {
   type        = string
 }
 
+variable "project_number" {
+  description = "The project number to deploy to."
+  type        = number
+  default     = null
+}
+
 variable "encryption_key" {
   description = "The KMS Key to Encrypt Event Arc, source Bucket, docker repository."
   type        = string

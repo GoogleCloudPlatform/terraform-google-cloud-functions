@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 # Important information for understanding the script:
-# https://cloud.google.com/kms/docs/encrypt-decrypt
 # https://cloud.google.com/secret-manager/docs/creating-and-accessing-secrets
 
 set -e
@@ -41,8 +40,7 @@ create_user_and_save_pwd_in_secret() {
     --project="${instance_project_id}"
 
 
-    echo "${password}" | \
-    gcloud secrets versions add "${secret_name}" \
+    echo "${password}" | gcloud secrets versions add "${secret_name}" \
     --data-file=- \
     --impersonate-service-account="${terraform_service_account}" \
     --project="${secret_project_id}"
