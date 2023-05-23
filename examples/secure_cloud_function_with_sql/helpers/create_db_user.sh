@@ -30,7 +30,7 @@ host=${7}
 create_user_and_save_pwd_in_secret() {
 
     pwd=$(echo $RANDOM | md5sum | head -c 20; echo;)
-    password=$(echo ${pwd} | base64)
+    password=$(echo "${pwd}" | base64)
 
     gcloud sql users create "${user_name}" \
     --instance "${instance_name}" \
