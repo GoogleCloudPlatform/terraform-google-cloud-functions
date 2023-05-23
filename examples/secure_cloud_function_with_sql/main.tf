@@ -22,7 +22,7 @@ locals {
   repository_name = "rep-secure-cloud-function"
   db_name         = "db-application"
   db_user         = "app"
-  db_host         = "%"
+  db_host         = "cloudsqlproxy~%"
   secret_name     = "sct-sql-password"
   labels          = { "env" = "dev" }
 }
