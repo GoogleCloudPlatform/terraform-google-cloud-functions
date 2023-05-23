@@ -74,33 +74,21 @@ func connect(ctx context.Context, e event.Event) error {
 		fmt.Errorf("Error during ping.", err)
 	}
 
-	fmt.Println("Creating table.")
-	_, err = db.ExecContext(ctx, "CREATE TABLE tbl_test (id INT, name VARCHAR(255))")
-	if err != nil {
-		fmt.Errorf("Table already exists.", err)
-	} else {
-		fmt.Println("Inserting rows.")
-		_, err = db.ExecContext(ctx, "INSERT INTO tbl_test VALUES (1, 'USER TEST 1') (2, 'USER TEST 2')")
-		if err != nil {
-			log.Fatal(err)
-			fmt.Errorf("Error during insert.", err)
-		}
-	}
-
 	var (
-		id   int
-		name string
+		id          int
+		name        string
+		performance string
 	)
 
 	fmt.Println("Select from table.")
-	res, err := db.Query("SELECT * FROM  tbl_test")
+	res, err := db.Query("SELECT * FROM characters")
 
 	for res.Next() {
-		err := res.Scan(&id, &name)
+		err := res.Scan(&id, &name, &performance)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(fmt.Sprintf("%v: %s", id, name))
+		fmt.Println(fmt.Sprintf("%v: %s: %s", id, name, performance))
 	}
 
 	return err
