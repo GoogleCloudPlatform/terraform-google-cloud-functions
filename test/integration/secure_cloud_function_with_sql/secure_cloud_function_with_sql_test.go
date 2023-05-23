@@ -56,6 +56,7 @@ func TestGCF2CloudSQL(t *testing.T) {
 		connectorID := cf2SQL.GetStringOutput("connector_id")
 		saEmail := cf2SQL.GetStringOutput("service_account_email")
 		mysqlName := cf2SQL.GetStringOutput("mysql_name")
+		mysqlUser := cf2SQL.GetStringOutput("mysql_user")
 		mySQLPrivIP := cf2SQL.GetStringOutput("mysql_private_ip_address")
 		projectID := cf2SQL.GetStringOutput("serverless_project_id")
 		netProjectID := cf2SQL.GetStringOutput("network_project_id")
@@ -84,7 +85,7 @@ func TestGCF2CloudSQL(t *testing.T) {
 		assert.Equal("db-application", cf.Get("serviceConfig.environmentVariables.DATABASE_NAME").String(), "SShould have env var DATABASE_NAME with value db-application")
 		assert.Equal(location, cf.Get("serviceConfig.environmentVariables.INSTANCE_LOCATION").String(), fmt.Sprintf("Should have env var INSTANCE_LOCATION with value %s", location))
 		assert.Equal(mysqlName, cf.Get("serviceConfig.environmentVariables.INSTANCE_NAME").String(), fmt.Sprintf("Should have env var INSTANCE_NAME with value %s", mysqlName))
-		assert.Equal("default", cf.Get("serviceConfig.environmentVariables.INSTANCE_USER").String(), "Should have environment var INSTANCE_USER with value default")
+		assert.Equal(mysqlUser, cf.Get("serviceConfig.environmentVariables.INSTANCE_USER").String(), fmt.Sprintf("Should have environment var INSTANCE_USER with value %s", mysqlUser))
 		assert.Equal(sqlProjectID, cf.Get("serviceConfig.environmentVariables.INSTANCE_PROJECT_ID").String(), fmt.Sprintf("Should have environment var with value %s", sqlProjectID))
 
 		cf = gcloud.Runf(t, "sql instances describe %s --project %s", mysqlName, sqlProjectID)

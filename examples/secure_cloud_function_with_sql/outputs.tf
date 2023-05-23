@@ -105,37 +105,42 @@ output "restricted_access_level_name" {
 }
 
 output "mysql_name" {
-  description = "The name for Cloud SQL instance"
+  description = "The name for Cloud SQL instance."
   value       = module.safer_mysql_db.instance_name
 }
 
 output "mysql_conn" {
   value       = module.safer_mysql_db.instance_connection_name
-  description = "The connection name of the master instance to be used in connection strings"
+  description = "The connection name of the master instance to be used in connection strings."
 }
 
 output "mysql_public_ip_address" {
-  description = "The first public (PRIMARY) IPv4 address assigned for the master instance"
+  description = "The first public (PRIMARY) IPv4 address assigned for the master instance."
   value       = module.safer_mysql_db.public_ip_address
 }
 
 output "mysql_private_ip_address" {
-  description = "The first private (PRIVATE) IPv4 address assigned for the master instance"
+  description = "The first private (PRIVATE) IPv4 address assigned for the master instance."
   value       = module.safer_mysql_db.private_ip_address
 }
 
+output "mysql_user" {
+  description = "The user created in database instance."
+  value       = local.db_user
+}
+
 output "cloud_sql_kms_key" {
-  description = "The KMS Key create to encrypt Cloud SQL"
+  description = "The KMS Key create to encrypt Cloud SQL."
   value       = module.kms_keys.keys["key-sql"]
 }
 
 output "topic_kms_key" {
-  description = "The KMS Key create to encrypt Pub/Sub Topic messages"
+  description = "The KMS Key create to encrypt Pub/Sub Topic messages."
   value       = module.kms_keys.keys["key-topic"]
 }
 
 output "secret_kms_key" {
-  description = "The KMS Key create to encrypt Secrets"
+  description = "The KMS Key create to encrypt Secrets."
   value       = module.kms_keys.keys["key-secret"]
 }
 
