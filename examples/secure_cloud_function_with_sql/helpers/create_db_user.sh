@@ -29,18 +29,19 @@ host=${7}
 
 create_user_and_save_pwd_in_secret() {
 
-    password=$(echo $RANDOM | md5sum | head -c 20; echo;)
+    pwd=$(echo $RANDOM | md5sum | head -c 20; echo;)
+    password=$(echo ${pwd} | base64)
 
     gcloud sql users create "${user_name}" \
     --instance "${instance_name}" \
     --impersonate-service-account="${terraform_service_account}" \
-    --password="${password}" \
-    --host="${host}" \
+    --password="${password}" --host="${host}" \
     --type="BUILT_IN" \
     --project="${instance_project_id}"
 
 
-    echo "${password}" | gcloud secrets versions add "${secret_name}" \
+    printf "%s" "${password}" | \
+    gcloud secrets versions add "${secret_name}" \
     --data-file=- \
     --impersonate-service-account="${terraform_service_account}" \
     --project="${secret_project_id}"
