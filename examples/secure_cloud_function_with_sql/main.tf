@@ -22,8 +22,9 @@ locals {
   repository_name = "rep-secure-cloud-function"
   db_name         = "db-application"
   db_user         = "app"
-  db_host         = "%"
+  db_host         = "cloudsqlproxy~%"
   secret_name     = "sct-sql-password"
+  labels          = { "env" = "dev" }
 }
 resource "random_id" "random_folder_suffix" {
   byte_length = 2
@@ -255,7 +256,8 @@ resource "null_resource" "create_and_populate_db" {
   depends_on = [
     google_storage_bucket_object.cloud_sql_dump_file,
     module.safer_mysql_db,
-    google_storage_bucket_iam_member.object_admin
+    google_storage_bucket_iam_member.object_admin,
+    null_resource.create_user_pwd
   ]
 }
 
@@ -291,7 +293,7 @@ resource "google_project_iam_member" "cloud_sql_roles" {
 
 resource "google_secret_manager_secret" "password_secret" {
   secret_id = local.secret_name
-  labels    = { environment = "dev" }
+  labels    = local.labels
   project   = module.secure_harness.security_project_id
 
   replication {
@@ -346,21 +348,23 @@ data "google_secret_manager_secret_version" "latest_version" {
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
 
-  function_name         = "secure-cloud-function-cloud-sql"
-  function_description  = "Read from Cloud SQL"
-  location              = local.location
-  serverless_project_id = module.secure_harness.serverless_project_ids[0]
-  vpc_project_id        = module.secure_harness.network_project_id[0]
-  kms_project_id        = module.secure_harness.security_project_id
-  key_name              = "key-secure-cloud-function"
-  keyring_name          = "krg-secure-cloud-function"
-  service_account_email = module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]
-  connector_name        = "con-secure-cloud-function"
-  subnet_name           = module.secure_harness.service_subnet[0]
-  create_subnet         = false
-  shared_vpc_name       = module.secure_harness.service_vpc[0].network.name
-  prevent_destroy       = false
-  ip_cidr_range         = "10.0.1.0/28"
+  function_name             = "secure-cloud-function-cloud-sql"
+  function_description      = "Read from Cloud SQL"
+  location                  = local.location
+  serverless_project_id     = module.secure_harness.serverless_project_ids[0]
+  serverless_project_number = module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]
+  vpc_project_id            = module.secure_harness.network_project_id[0]
+  labels                    = local.labels
+  kms_project_id            = module.secure_harness.security_project_id
+  key_name                  = "key-secure-cloud-function"
+  keyring_name              = "krg-secure-cloud-function"
+  service_account_email     = module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]
+  connector_name            = "con-secure-cloud-function"
+  subnet_name               = module.secure_harness.service_subnet[0]
+  create_subnet             = false
+  shared_vpc_name           = module.secure_harness.service_vpc[0].network.name
+  prevent_destroy           = false
+  ip_cidr_range             = "10.0.1.0/28"
   storage_source = {
     bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
     object = google_storage_bucket_object.cf_cloudsql_source_zip.name

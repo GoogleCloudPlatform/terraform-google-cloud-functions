@@ -117,6 +117,7 @@ module "cloud_function_core" {
   function_name               = var.function_name
   function_description        = var.function_description
   project_id                  = var.serverless_project_id
+  project_number              = var.serverless_project_number
   labels                      = var.labels
   location                    = var.location
   runtime                     = var.runtime

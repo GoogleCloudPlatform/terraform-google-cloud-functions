@@ -125,7 +125,8 @@ module "secure_cloud_run" {
 | runtime | The runtime in which the function will be executed. | `string` | n/a | yes |
 | secret\_environment\_variables | A list of maps which contains key, project\_id, secret\_name (not the full secret id) and version to assign to the function as a set of secret environment variables. | <pre>set(object({<br>    key_name   = string<br>    project_id = optional(string)<br>    secret     = string<br>    version    = string<br>  }))</pre> | `null` | no |
 | secret\_volumes | [Beta] Environment variables (Secret Manager). | <pre>set(object({<br>    mount_path = string<br>    project_id = optional(string)<br>    secret     = string<br>    versions = set(object({<br>      version = string<br>      path    = string<br>    }))<br>  }))</pre> | `null` | no |
-| serverless\_project\_id | The project to deploy the cloud run service. | `string` | n/a | yes |
+| serverless\_project\_id | The project to deploy the cloud function service. | `string` | n/a | yes |
+| serverless\_project\_number | The project number to deploy to. | `number` | `null` | no |
 | service\_account\_email | Service account to be used on Cloud Function. | `string` | n/a | yes |
 | shared\_vpc\_name | Shared VPC name which is going to be re-used to create Serverless Connector. | `string` | n/a | yes |
 | storage\_source | Get the source from this location in Google Cloud Storage. | <pre>object({<br>    bucket     = string<br>    object     = string<br>    generation = optional(string, null)<br>  })</pre> | `null` | no |

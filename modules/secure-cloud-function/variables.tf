@@ -20,8 +20,14 @@ variable "location" {
 }
 
 variable "serverless_project_id" {
-  description = "The project to deploy the cloud run service."
+  description = "The project to deploy the cloud function service."
   type        = string
+}
+
+variable "serverless_project_number" {
+  description = "The project number to deploy to."
+  type        = number
+  default     = null
 }
 
 variable "vpc_project_id" {

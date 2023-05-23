@@ -94,21 +94,22 @@ The resources/services/activations/deletions that this example will create/trigg
 | Name | Description |
 |------|-------------|
 | cloud\_function\_name | The service account email created to be used by Cloud Function. |
-| cloud\_sql\_kms\_key | The KMS Key create to encrypt Cloud SQL |
+| cloud\_sql\_kms\_key | The KMS Key create to encrypt Cloud SQL. |
 | cloudfunction\_bucket | The Cloud Function source bucket. |
 | cloudfunction\_bucket\_name | Name of the Cloud Function source bucket. |
 | cloudfunction\_url | The URL on which the deployed service is available. |
 | cloudsql\_project\_id | The Cloud SQL project id. |
 | connector\_id | VPC serverless connector ID. |
-| mysql\_conn | The connection name of the master instance to be used in connection strings |
-| mysql\_name | The name for Cloud SQL instance |
-| mysql\_private\_ip\_address | The first private (PRIVATE) IPv4 address assigned for the master instance |
-| mysql\_public\_ip\_address | The first public (PRIMARY) IPv4 address assigned for the master instance |
+| mysql\_conn | The connection name of the master instance to be used in connection strings. |
+| mysql\_name | The name for Cloud SQL instance. |
+| mysql\_private\_ip\_address | The first private (PRIVATE) IPv4 address assigned for the master instance. |
+| mysql\_public\_ip\_address | The first public (PRIMARY) IPv4 address assigned for the master instance. |
+| mysql\_user | The user created in database instance. |
 | network\_project\_id | The network project id. |
 | restricted\_access\_level\_name | Access level name. |
 | restricted\_service\_perimeter\_name | Service Perimeter name. |
 | scheduler\_name | Cloud Scheduler Job name. |
-| secret\_kms\_key | The KMS Key create to encrypt Secrets |
+| secret\_kms\_key | The KMS Key create to encrypt Secrets. |
 | secret\_manager\_id | Secret Manager id created to store Database password. |
 | secret\_manager\_name | Secret Manager name created to store Database password. |
 | secret\_manager\_version | Secret Manager version created to store Database password. |
@@ -121,7 +122,7 @@ The resources/services/activations/deletions that this example will create/trigg
 | service\_vpc\_self\_link | The Network self-link created in harness. |
 | service\_vpc\_subnet\_name | The sub-network name created in harness. |
 | topic\_id | The Pub/Sub topic which will trigger Cloud Function. |
-| topic\_kms\_key | The KMS Key create to encrypt Pub/Sub Topic messages |
+| topic\_kms\_key | The KMS Key create to encrypt Pub/Sub Topic messages. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
