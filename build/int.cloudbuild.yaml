@@ -32,16 +32,16 @@ steps:
   waitFor:
   - prepare
 
-# - id: cloud-func-gcs-source
-#   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-#   args: ['/bin/bash', '-c', 'cft test run TestGCF2GCSSource --stage apply --verbose']
-#   waitFor:
-#   - cloud-func-init
-# - id: cloud-func-gcs-source-verify
-#   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-#   args: ['/bin/bash', '-c', 'cft test run TestGCF2GCSSource --stage verify --verbose']
-#   waitFor:
-#   - cloud-func-gcs-source
+- id: cloud-func-gcs-source
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2GCSSource --stage apply --verbose']
+  waitFor:
+  - cloud-func-init
+- id: cloud-func-gcs-source-verify
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2GCSSource --stage verify --verbose']
+  waitFor:
+  - cloud-func-gcs-source
 
 - id: secure-cloud-func-sql
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
@@ -62,16 +62,16 @@ steps:
   waitFor:
   - secure-cloud-func-sql
 
-# - id: cloud-func-pubsub-trigger
-#   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-#   args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage apply --verbose']
-#   waitFor:
-#   - cloud-func-init
-# - id: cloud-func-pubsub-trigger-verify
-#   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-#   args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage verify --verbose']
-#   waitFor:
-#   - cloud-func-pubsub-trigger
+- id: cloud-func-pubsub-trigger
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage apply --verbose']
+  waitFor:
+  - cloud-func-init
+- id: cloud-func-pubsub-trigger-verify
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage verify --verbose']
+  waitFor:
+  - cloud-func-pubsub-trigger
 
 - id: secure-cloud-func-bigquery
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
@@ -82,7 +82,7 @@ steps:
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
   - cloud-func-init
-- id: secure-cloud-func-bq-trigger-verify
+- id: secure-cloud-func-bigquery-verify
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestGCF2BigqueryTrigger --stage verify --verbose']
   env:
@@ -101,9 +101,9 @@ steps:
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
   - secure-cloud-func-sql-verify
-  - secure-cloud-func-bq-trigger-verify
-  # - cloud-func-gcs-source-verify
-  # - cloud-func-pubsub-trigger-verify
+  - secure-cloud-func-bigquery-verify
+  - cloud-func-gcs-source-verify
+  - cloud-func-pubsub-trigger-verify
 tags:
   - "ci"
   - "integration"
