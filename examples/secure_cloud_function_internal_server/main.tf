@@ -17,6 +17,7 @@
 locals {
   location           = "us-west1"
   region             = "us-west1"
+  zone               = "us-west1-b"
   repository_name    = "rep-secure-cloud-function"
   network_ip         = "10.0.0.3"
   webserver_instance = "webserver"

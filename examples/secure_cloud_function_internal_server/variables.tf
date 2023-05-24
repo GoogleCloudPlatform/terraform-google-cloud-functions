@@ -14,11 +14,6 @@
 #  * limitations under the License.
 #  */
 
-variable "zone" {
-  description = "The zone where Webserver VM is going to be deployed."
-  type        = string
-}
-
 variable "billing_account" {
   description = "The ID of the billing account to associate this project with."
   type        = string

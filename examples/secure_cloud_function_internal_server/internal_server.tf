@@ -51,7 +51,7 @@ resource "google_service_account_iam_member" "service_account_user" {
 resource "google_compute_instance" "internal_server" {
   name           = local.webserver_instance
   project        = module.secure_harness.serverless_project_ids[0]
-  zone           = var.zone
+  zone           = local.zone
   machine_type   = "e2-small"
   can_ip_forward = true
 
