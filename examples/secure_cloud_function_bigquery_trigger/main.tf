@@ -145,7 +145,7 @@ module "bigquery" {
 
 module "secure_web_proxy" {
   source = "git::https://github.com/Samir-Cit/terraform-google-cloud-functions.git//modules/secure-web-proxy?ref=feat/add-secure-web-proxy"
-  # source = "../..git /modules/secure-web-proxy"
+  # source = "../../modules/secure-web-proxy"
 
   project_id       = module.secure_harness.network_project_id[0]
   region           = local.region
