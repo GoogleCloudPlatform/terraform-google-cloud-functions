@@ -150,8 +150,15 @@ module "secure_web_proxy" {
   project_id       = module.secure_harness.network_project_id[0]
   region           = local.region
   network_id       = module.secure_harness.service_vpc[0].network.id
-  url_lists        = var.swp_url_lists
   certificate_path = var.swp_certificate_path
+
+  url_lists = [
+    "*google.com/go*",
+    "*github.com/GoogleCloudPlatform*",
+    "*github.com/cloudevents*",
+    "*golang.org/x*",
+    "*google.golang.org/api"
+  ]
 }
 
 module "secure_cloud_function" {

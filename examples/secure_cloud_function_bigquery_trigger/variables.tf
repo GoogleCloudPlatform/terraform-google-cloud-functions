@@ -51,12 +51,6 @@ variable "access_level_members" {
   type        = list(string)
 }
 
-variable "swp_url_lists" {
-  description = "A [URL list](https://cloud.google.com/secure-web-proxy/docs/url-list-syntax-reference) to allow access during Cloud Function build time."
-  type        = list(string)
-  default     = []
-}
-
 variable "swp_certificate_path" {
   description = "Full path of the folder where the certificate is located (key and cert)."
   type        = string
