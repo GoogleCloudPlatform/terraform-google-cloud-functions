@@ -73,19 +73,20 @@ func TestCFInternalServer(t *testing.T) {
 		saEmail := cf_internal_server.GetStringOutput("service_account_email")
 
 		cf := gcloud.Runf(t, "functions describe %s --project %s --gen2 --region %s", functionName, projectID, location)
+		cfTrigger := cf.Get("eventTrigger.trigger")
 		assert.Equal("ACTIVE", cf.Get("state").String(), "Should be ACTIVE. Cloud Function is not successfully deployed.")
 		assert.Equal(connectorID, cf.Get("serviceConfig.vpcConnector").String(), fmt.Sprintf("VPC Connector should be %s. Connector was not set.", connectorID))
 		assert.Equal("PRIVATE_RANGES_ONLY", cf.Get("serviceConfig.vpcConnectorEgressSettings").String(), "Egress setting should be PRIVATE_RANGES_ONLY.")
 		assert.Equal("ALLOW_INTERNAL_AND_GCLB", cf.Get("serviceConfig.ingressSettings").String(), "Ingress setting should be ALLOW_INTERNAL_AND_GCLB.")
 		assert.Equal(saEmail, cf.Get("serviceConfig.serviceAccountEmail").String(), fmt.Sprintf("Cloud Function should use the service account %s.", saEmail))
 		assert.Equal("google.cloud.storage.object.v1.finalized", cf.Get("eventTrigger.eventType").String(), "Cloud Function EventType should be google.cloud.storage.object.v1.finalized.")
-		cfTrigger := cf.Get("eventTrigger.trigger")
 		assert.NotNil(t, cfTrigger, "Trigger should exist.")
 
 		gcloudArgsBucket := gcloud.WithCommonArgs([]string{"--project", projectID, "--json"})
 		bucketName := cf_internal_server.GetStringOutput("cloudfunction_bucket_name")
 		opBucket := gcloud.Run(t, fmt.Sprintf("alpha storage ls --buckets gs://%s", bucketName), gcloudArgsBucket).Array()
 		assert.Equal(bucketName, opBucket[0].Get("metadata.name").String(), fmt.Sprintf("The bucket name should be %s.", bucketName))
+		assert.True(opBucket[0].Exists(), "Bucket %s should exist.", bucketName)
 
 		instanceName := "webserver"
 		instanceZone := fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/zones/us-west1-b", projectID)
