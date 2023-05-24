@@ -23,6 +23,9 @@ This example illustrates how to use the `cloud-functions` module.
 | Name | Description |
 |------|-------------|
 | cloud\_function\_name | The service account email created to be used by Cloud Function. |
+| cloudfunction\_bucket | The Cloud Function source bucket. |
+| cloudfunction\_bucket\_name | Name of the Cloud Function source bucket. |
+| cloudfunction\_url | The URL on which the deployed service is available. |
 | connector\_id | VPC serverless connector ID. |
 | network\_project\_id | The network project id. |
 | restricted\_access\_level\_name | Access level name. |
