@@ -143,6 +143,17 @@ module "bigquery" {
   ]
 }
 
+module "secure_web_proxy" {
+  # source = "git::https://github.com/cit-alpha-team/sbp-serverless-blueprint.git//modules/secure-web-proxy?ref=feat/add-secure-web-proxy"
+  source = "../../../sbp-serverless-blueprint/modules/secure-web-proxy"
+
+  project_id       = module.secure_harness.network_project_id[0]
+  region           = local.region
+  network_id       = module.secure_harness.service_vpc[0].network.id
+  url_lists        = var.swp_url_lists
+  certificate_path = var.swp_certificate_path
+}
+
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
 

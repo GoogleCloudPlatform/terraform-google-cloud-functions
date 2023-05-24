@@ -51,6 +51,17 @@ variable "access_level_members" {
   type        = list(string)
 }
 
+variable "swp_url_lists" {
+  description = "A [URL list](https://cloud.google.com/secure-web-proxy/docs/url-list-syntax-reference) to allow access during Cloud Function build time."
+  type        = list(string)
+  default     = []
+}
+
+variable "swp_certificate_path" {
+  description = "Full path of the folder where the certificate is located (key and cert)."
+  type        = string
+}
+
 variable "egress_policies" {
   description = "A list of all [egress policies](https://cloud.google.com/vpc-service-controls/docs/ingress-egress-rules#egress-rules-reference), each list object has a `from` and `to` value that describes egress_from and egress_to.\n\nExample: `[{ from={ identities=[], identity_type=\"ID_TYPE\" }, to={ resources=[], operations={ \"SRV_NAME\"={ OP_TYPE=[] }}}}]`\n\nValid Values:\n`ID_TYPE` = `null` or `IDENTITY_TYPE_UNSPECIFIED` (only allow indentities from list); `ANY_IDENTITY`; `ANY_USER_ACCOUNT`; `ANY_SERVICE_ACCOUNT`\n`SRV_NAME` = \"`*`\" (allow all services) or [Specific Services](https://cloud.google.com/vpc-service-controls/docs/supported-products#supported_products)\n`OP_TYPE` = [methods](https://cloud.google.com/vpc-service-controls/docs/supported-method-restrictions) or [permissions](https://cloud.google.com/vpc-service-controls/docs/supported-method-restrictions)."
   type = list(object({
