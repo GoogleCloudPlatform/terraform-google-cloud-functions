@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-timeout: 3600s
+timeout: 7200s
 steps:
 - id: prepare
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
@@ -21,6 +21,7 @@ steps:
   - 'TF_VAR_org_id=$_ORG_ID'
   - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+
 - id: cloud-func-init
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run all --stage init --verbose']
@@ -28,20 +29,69 @@ steps:
   - 'TF_VAR_org_id=$_ORG_ID'
   - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
-- id: cloud-func-apply
+  waitFor:
+  - prepare
+
+- id: cloud-func-gcs-source
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run all --stage apply --verbose']
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2GCSSource --stage apply --verbose']
+  waitFor:
+  - cloud-func-init
+- id: cloud-func-gcs-source-verify
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2GCSSource --stage verify --verbose']
+  waitFor:
+  - cloud-func-gcs-source
+
+- id: secure-cloud-func-internal-server
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestCFInternalServer --stage apply --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
   - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
-- id: cloud-func-verify
+  waitFor:
+  - cloud-func-init
+- id: secure-cloud-func-internal-server-verify
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run all --stage verify --verbose']
+  args: ['/bin/bash', '-c', 'cft test run TestCFInternalServer --stage verify --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
   - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+  waitFor:
+  - secure-cloud-func-internal-server
+
+- id: cloud-func-pubsub-trigger
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage apply --verbose']
+  waitFor:
+  - cloud-func-init
+- id: cloud-func-pubsub-trigger-verify
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage verify --verbose']
+  waitFor:
+  - cloud-func-pubsub-trigger
+
+- id: secure-cloud-func-bigquery
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2BigqueryTrigger --stage apply --verbose']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+  waitFor:
+  - cloud-func-init
+- id: secure-cloud-func-bigquery-verify
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2BigqueryTrigger --stage verify --verbose']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+  waitFor:
+  - secure-cloud-func-bigquery
+
 - id: cloud-func-teardown
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run all --stage teardown --verbose']
@@ -49,9 +99,14 @@ steps:
   - 'TF_VAR_org_id=$_ORG_ID'
   - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+  waitFor:
+  - secure-cloud-func-internal-server-verify
+  - secure-cloud-func-bigquery-verify
+  - cloud-func-gcs-source-verify
+  - cloud-func-pubsub-trigger-verify
 tags:
-- 'ci'
-- 'integration'
+  - "ci"
+  - "integration"
 substitutions:
-  _DOCKER_IMAGE_DEVELOPER_TOOLS: 'cft/developer-tools'
-  _DOCKER_TAG_VERSION_DEVELOPER_TOOLS: '1.12'
+  _DOCKER_IMAGE_DEVELOPER_TOOLS: "cft/developer-tools"
+  _DOCKER_TAG_VERSION_DEVELOPER_TOOLS: "1.12"
