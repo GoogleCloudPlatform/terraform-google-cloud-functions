@@ -58,6 +58,12 @@ module "secure_harness" {
     "prj-secure-cloud-function" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
   }
 
+  network_project_extra_apis = ["certificatemanager.googleapis.com", "networkservices.googleapis.com", "networksecurity.googleapis.com"]
+
+  serverless_project_extra_apis = {
+    "prj-secure-cloud-function" = ["networksecurity.googleapis.com"]
+  }
+
 }
 
 data "archive_file" "cf_bigquery_source" {
@@ -180,10 +186,17 @@ module "secure_cloud_function" {
   shared_vpc_name       = module.secure_harness.service_vpc[0].network.name
   prevent_destroy       = false
   ip_cidr_range         = "10.0.0.0/28"
+
+  build_environment_variables = {
+    HTTP_PROXY  = "http://10.0.0.10:443"
+    HTTPS_PROXY = "http://10.0.0.10:443"
+  }
+
   labels = {
     env      = "development"
     billable = "true"
   }
+
   storage_source = {
     bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
     object = google_storage_bucket_object.cf_bigquery_source_zip.name
@@ -219,6 +232,7 @@ module "secure_cloud_function" {
   depends_on = [
     module.secure_harness,
     module.bigquery,
-    google_storage_bucket_object.cf_bigquery_source_zip
+    google_storage_bucket_object.cf_bigquery_source_zip,
+    module.secure_web_proxy
   ]
 }

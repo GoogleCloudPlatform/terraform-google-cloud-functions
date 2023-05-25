@@ -20,6 +20,16 @@ variable "project_id" {
   type        = string
 }
 
+variable "vpc_project_id" {
+  description = "The host project for the shared vpc."
+  type        = string
+}
+
+variable "shared_vpc_name" {
+  description = "Shared VPC name which is going to be used to connect the WorkerPool."
+  type        = string
+}
+
 variable "encryption_key" {
   description = "The KMS Key to Encrypt Event Arc, source Bucket, docker repository."
   type        = string
