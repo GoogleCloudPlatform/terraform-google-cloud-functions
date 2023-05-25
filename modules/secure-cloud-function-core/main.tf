@@ -79,7 +79,6 @@ module "cloud_function" {
   storage_source      = var.storage_source
   service_config      = var.service_config
   docker_repository   = google_artifact_registry_repository.cloudfunction_repo.id
-  # worker_pool         = google_cloudbuild_worker_pool.pool.id
 
   ## THIS SHOULD BE UNCOMMENTED WHEN SECURE WEB PROXY IS READY, TO ALLOW THE PRIVATE POOL USAGE.
   # worker_pool         = google_cloudbuild_worker_pool.pool.id
