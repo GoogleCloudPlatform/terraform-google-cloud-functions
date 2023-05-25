@@ -61,16 +61,16 @@ func TestCFInternalServer(t *testing.T) {
 		"access_context_manager_policy_id": policyID,
 	}
 
-	cf_internal_server := tft.NewTFBlueprintTest(t, tft.WithVars(vars))
+	cft := tft.NewTFBlueprintTest(t, tft.WithVars(vars))
 
-	cf_internal_server.DefineVerify(func(assert *assert.Assertions) {
+	cft.DefineVerify(func(assert *assert.Assertions) {
 
 		location := "us-west1"
-		networkProjectID := cf_internal_server.GetStringOutput("network_project_id")
-		projectID := cf_internal_server.GetStringOutput("serverless_project_id")
-		functionName := cf_internal_server.GetStringOutput("cloud_function_name")
-		connectorID := cf_internal_server.GetStringOutput("connector_id")
-		saEmail := cf_internal_server.GetStringOutput("service_account_email")
+		networkProjectID := cft.GetStringOutput("network_project_id")
+		projectID := cft.GetStringOutput("serverless_project_id")
+		functionName := cft.GetStringOutput("cloud_function_name")
+		connectorID := cft.GetStringOutput("connector_id")
+		saEmail := cft.GetStringOutput("service_account_email")
 
 		cf := gcloud.Runf(t, "functions describe %s --project %s --gen2 --region %s", functionName, projectID, location)
 		cfTrigger := cf.Get("eventTrigger.trigger")
@@ -83,7 +83,7 @@ func TestCFInternalServer(t *testing.T) {
 		assert.NotNil(t, cfTrigger, "Trigger should exist.")
 
 		gcloudArgsBucket := gcloud.WithCommonArgs([]string{"--project", projectID, "--json"})
-		bucketName := cf_internal_server.GetStringOutput("cloudfunction_bucket_name")
+		bucketName := cft.GetStringOutput("cloudfunction_bucket_name")
 		opBucket := gcloud.Run(t, fmt.Sprintf("alpha storage ls --buckets gs://%s", bucketName), gcloudArgsBucket).Array()
 		assert.Equal(bucketName, opBucket[0].Get("metadata.name").String(), fmt.Sprintf("The bucket name should be %s.", bucketName))
 		assert.True(opBucket[0].Exists(), "Bucket %s should exist.", bucketName)
@@ -103,5 +103,5 @@ func TestCFInternalServer(t *testing.T) {
 		assert.Equal("8000", denyAllEgressRule.Get("allowed.0.ports.0").String(), fmt.Sprintf("firewall rule %s should allow port 8000", denyAllEgressName))
 
 	})
-	cf_internal_server.Test()
+	cft.Test()
 }
