@@ -61,14 +61,14 @@ func helloPubSub(ctx context.Context, e event.Event) error {
 		log.Printf("Error listing compute regions: %s.", err.Error())
 		fmt.Errorf(err.Error())
 	}
-	log.Println("Regions: %v!\n", regions)
+	log.Printf("Regions: %v!\n", regions)
 	buckets, err := listBuckets()
 	if err != nil {
 		log.Printf("Error listing project buckets: %s.", err.Error())
 		fmt.Errorf(err.Error())
 	}
 
-	log.Println("Buckets: %v!\n", buckets)
+	log.Printf("Buckets: %v!\n", buckets)
 	return nil
 }
 
