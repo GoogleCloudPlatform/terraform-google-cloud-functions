@@ -51,8 +51,8 @@ variable "access_level_members" {
   type        = list(string)
 }
 
-variable "swp_certificate_path" {
-  description = "Full path of the folder where the certificate is located (key and cert)."
+variable "swp_certificate_id" {
+  description = "The certificate id to be used on the Secure Web Proxy Gateway."
   type        = string
 }
 

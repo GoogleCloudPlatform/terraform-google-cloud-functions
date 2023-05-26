@@ -40,6 +40,20 @@ module "project" {
     "iam.googleapis.com",
     "cloudbilling.googleapis.com",
     "cloudkms.googleapis.com",
-    "bigquery.googleapis.com"
+    "bigquery.googleapis.com",
+    "certificatemanager.googleapis.com"
   ]
+}
+
+resource "google_certificate_manager_certificate" "swp_certificate" {
+  name        = "swp-certificate"
+  description = "Secure Web Proxy provided certificate."
+  project     = module.project.project_id
+  location    = "us-west1"
+  self_managed {
+    pem_private_key = file("certificate/key.pem")
+    pem_certificate = file("certificate/cert.pem")
+  }
+
+  depends_on = [ module.project ]
 }
