@@ -1,6 +1,6 @@
 # Secure Cloud Function With Internal Server Example
 
-This examples shows how to Secure Cloud Function (2nd Gen) communicates with an internal webserver using a Shared VPC and multiple projects.
+This example shows how to deploy a Secure Cloud Function (2nd Gen) that communicates with an internal webserver using Shared VPC and multiple projects.
 
 The resources/services/activations/deletions that this example will create/trigger are:
 
