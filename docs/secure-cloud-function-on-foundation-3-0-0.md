@@ -235,7 +235,7 @@ This is necessary for the serverless VPC access configuration.
 This role is granted here and not in the bootstrap step to limit the scope of this role effect.
 
 
-1. Update file `gcp-environments/modules/env_baseline/variables.tf` to create a toggle for the deploy of the Secured Data Warehouse.
+1. Update file `gcp-environments/modules/env_baseline/variables.tf` to create a toggle for the deploy of the Secure Serverless Cloud Functions.
 
     ```hcl
     variable "enable_scf" {
