@@ -32,7 +32,7 @@ steps:
   waitFor:
   - prepare
 
-- id: cloud-func-gcs-source
+- id: cloud-func-gcs-source-apply
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestGCF2GCSSource --stage apply --verbose']
   waitFor:
@@ -41,9 +41,46 @@ steps:
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestGCF2GCSSource --stage verify --verbose']
   waitFor:
-  - cloud-func-gcs-source
+  - cloud-func-gcs-source-apply
+- id: cloud-func-gcs-source-teardown
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2GCSSource --stage teardown --verbose']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+  waitFor:
+  - cloud-func-gcs-source-verify
 
-- id: secure-cloud-func-internal-server
+- id: secure-cloud-func-sql-apply
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2CloudSQL --stage apply --verbose']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+  waitFor:
+  - cloud-func-init
+- id: secure-cloud-func-sql-verify
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2CloudSQL --stage verify --verbose']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+  waitFor:
+  - secure-cloud-func-sql-apply
+- id: secure-cloud-func-sql-teardown
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2CloudSQL --stage teardown --verbose']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+  waitFor:
+  - secure-cloud-func-sql-verify
+
+- id: secure-cloud-func-internal-server-apply
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestCFInternalServer --stage apply --verbose']
   env:
@@ -60,9 +97,18 @@ steps:
   - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
-  - secure-cloud-func-internal-server
+  - secure-cloud-func-internal-server-apply
+- id: secure-cloud-func-internal-server-teardown
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestCFInternalServer --stage teardown --verbose']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+  waitFor:
+  - secure-cloud-func-internal-server-verify
 
-- id: cloud-func-pubsub-trigger
+- id: cloud-func-pubsub-trigger-apply
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage apply --verbose']
   waitFor:
@@ -71,9 +117,18 @@ steps:
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage verify --verbose']
   waitFor:
-  - cloud-func-pubsub-trigger
+  - cloud-func-pubsub-trigger-apply
+- id: cloud-func-pubsub-trigger-teardown
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage teardown --verbose']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+  waitFor:
+  - cloud-func-pubsub-trigger-verify
 
-- id: secure-cloud-func-bigquery
+- id: secure-cloud-func-bigquery-apply
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestGCF2BigqueryTrigger --stage apply --verbose']
   env:
@@ -90,20 +145,16 @@ steps:
   - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
-  - secure-cloud-func-bigquery
-
-- id: cloud-func-teardown
+  - secure-cloud-func-bigquery-apply
+- id: secure-cloud-func-bigquery-teardown
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run all --stage teardown --verbose']
+  args: ['/bin/bash', '-c', 'cft test run TestGCF2BigqueryTrigger --stage teardown --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
   - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
-  - secure-cloud-func-internal-server-verify
   - secure-cloud-func-bigquery-verify
-  - cloud-func-gcs-source-verify
-  - cloud-func-pubsub-trigger-verify
 tags:
   - "ci"
   - "integration"
