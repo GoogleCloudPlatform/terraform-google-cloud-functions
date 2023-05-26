@@ -214,7 +214,7 @@ you will enable an additional API in the restricted shared VPC project.
 ### 2-environments: Enable additional APIs and conditionally grant project IAM Admin role to the networks step terraform service account
 
 1. Wait for the `gcp-networks` build from the previous step to finish.
-1. Add yhe following API on the `activate_apis` list in `restricted_shared_vpc_host_project` module in file [modules/env_baseline/networking.tf](https://github.com/terraform-google-modules/terraform-example-foundation/blob/v3.0.0/2-environments/modules/env_baseline/networking.tf#LL68C1-L77C4)
+1. Add the `"vpcaccess.googleapis.com"` API on the `activate_apis` list in `restricted_shared_vpc_host_project` module in file [modules/env_baseline/networking.tf](https://github.com/terraform-google-modules/terraform-example-foundation/blob/v3.0.0/2-environments/modules/env_baseline/networking.tf#LL68C1-L77C4)
 
 ```hcl
 activate_apis = [
@@ -258,6 +258,7 @@ This role is granted here and not in the bootstrap step to limit the scope of th
 
       enable_scf = true
       ...
+    }
     ```
 
 1. Update file `gcp-environments/modules/env_baseline/iam.tf` and add the conditional grant of the role:
