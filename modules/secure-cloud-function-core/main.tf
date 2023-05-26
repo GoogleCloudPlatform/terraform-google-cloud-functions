@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+locals {
+  project_number = var.project_number == null ? data.google_project.project.number : var.project_number
+}
+
 data "google_project" "project" {
   project_id = var.project_id
 }
@@ -24,7 +28,7 @@ module "cloudfunction_bucket" {
 
   project_id      = var.project_id
   labels          = var.labels
-  name            = "gcf-v2-sources-${data.google_project.project.number}-${var.location}"
+  name            = "gcf-v2-sources-${local.project_number}-${var.location}"
   location        = var.location
   storage_class   = "REGIONAL"
   force_destroy   = var.force_destroy
@@ -50,6 +54,25 @@ resource "google_artifact_registry_repository" "cloudfunction_repo" {
   description   = "This repo stores de image of the secure cloud function"
   format        = "DOCKER"
   kms_key_name  = var.encryption_key
+  labels        = var.labels
+}
+
+resource "google_project_service" "container_scanning_api" {
+  project    = var.project_id
+  service    = "containerscanning.googleapis.com"
+  depends_on = [module.pubsub]
+}
+
+module "pubsub" {
+  for_each = toset(["container-analysis-notes-v1", "container-analysis-notes-v1beta1", "container-analysis-occurrences-v1", "container-analysis-occurrences-v1beta1"])
+
+  source  = "terraform-google-modules/pubsub/google"
+  version = "~> 5.0"
+
+  topic              = each.value
+  project_id         = var.project_id
+  topic_kms_key_name = var.encryption_key
+  topic_labels       = var.labels
 }
 
 resource "google_cloudbuild_worker_pool" "pool" {
@@ -85,7 +108,9 @@ module "cloud_function" {
 
   depends_on = [
     module.cloudfunction_bucket,
-    google_eventarc_google_channel_config.primary
+    google_eventarc_google_channel_config.primary,
+    google_project_service.container_scanning_api,
+    module.pubsub
   ]
 }
 
