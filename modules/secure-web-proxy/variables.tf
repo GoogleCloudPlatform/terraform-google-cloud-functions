@@ -35,7 +35,7 @@ variable "url_lists" {
   default     = []
 }
 
-variable "certificate_path" {
-  description = "Full path of the folder where the certificate is located (key and cert)"
+variable "certificate_id" {
+  description = "The certificate id to be used on the Secure Web Proxy Gateway."
   type        = string
 }

@@ -68,17 +68,6 @@ resource "google_service_networking_connection" "private_service_connect" {
   ]
 }
 
-resource "google_certificate_manager_certificate" "swp_certificate" {
-  name        = "swp-certificate"
-  description = "Secure Web Proxy provided certificate."
-  project     = var.project_id
-  location    = var.region
-  self_managed {
-    pem_private_key = file("${var.certificate_path}/key.pem")
-    pem_certificate = file("${var.certificate_path}/cert.pem")
-  }
-}
-
 resource "google_network_security_gateway_security_policy" "swp_security_policy" {
   provider    = google-beta
   name        = "swp-security-policy"
@@ -123,7 +112,7 @@ resource "null_resource" "swp_generate_gateway_config" {
       type: SECURE_WEB_GATEWAY
       addresses: ["10.0.0.10"]
       ports: [443]
-      certificateUrls: ["${google_certificate_manager_certificate.swp_certificate.id}"]
+      certificateUrls: ["${var.certificate_id}"]
       gatewaySecurityPolicy: ${google_network_security_gateway_security_policy.swp_security_policy.id}
       network: ${var.network_id}
       subnetwork: projects/${var.project_id}/regions/${var.region}/subnetworks/sb-restricted-${var.region}
@@ -132,7 +121,6 @@ resource "null_resource" "swp_generate_gateway_config" {
   }
 
   depends_on = [
-    google_certificate_manager_certificate.swp_certificate,
     google_network_security_gateway_security_policy.swp_security_policy
   ]
 }
@@ -172,7 +160,6 @@ resource "null_resource" "swp_deploy" {
   }
 
   depends_on = [
-    google_certificate_manager_certificate.swp_certificate,
     google_compute_subnetwork.swp_subnetwork_proxy,
     google_network_security_gateway_security_policy.swp_security_policy,
     google_network_security_url_lists.swp_url_lists,
