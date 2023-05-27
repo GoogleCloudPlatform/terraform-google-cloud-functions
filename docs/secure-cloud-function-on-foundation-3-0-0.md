@@ -2,7 +2,7 @@
 
 This example deploys the [Secure Cloud Function](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/tree/main/modules/secure-cloud-function) on top of the [Terraform Example Foundation](https://cloud.google.com/architecture/security-foundations/using-example-terraform) version [3.0.0](https://github.com/terraform-google-modules/terraform-example-foundation/tree/v3.0.0).
 
-This example will:
+This example will use the `production` environment of the business unit 1 and will:
 
 * Create two new projects under each environment folder and each business unit (bu1/bu2) for Secure Cloud Function within the foundation infrastructure.
 * Attach the projects to the Restricted Shared VPC foundation network.
@@ -422,10 +422,10 @@ will deployed in the Secure Cloud Function that will be created in step `5-app-i
  */
 
 locals {
-  eventarc_identities     = ["serviceAccount:${google_project_service_identity.eventarc_sa[0].email}"]
-  gcs_identities          = ["serviceAccount:${data.google_storage_project_service_account.serverless_project_gcs_account[0].email_address}"]
-  decrypters              = join(",", concat(["serviceAccount:${google_project_service_identity.artifact_sa[0].email}"], local.eventarc_identities, local.gcs_identities))
-  encrypters              = join(",", concat(["serviceAccount:${google_project_service_identity.artifact_sa[0].email}"], local.eventarc_identities, local.gcs_identities))
+  eventarc_identities     = var.enable_scf ? ["serviceAccount:${google_project_service_identity.eventarc_sa[0].email}"] : []
+  gcs_identities          = var.enable_scf ? ["serviceAccount:${data.google_storage_project_service_account.serverless_project_gcs_account[0].email_address}"] : []
+  decrypters              = var.enable_scf ? join(",", concat(["serviceAccount:${google_project_service_identity.artifact_sa[0].email}"], local.eventarc_identities, local.gcs_identities)) : ""
+  encrypters              = var.enable_scf ? join(",", concat(["serviceAccount:${google_project_service_identity.artifact_sa[0].email}"], local.eventarc_identities, local.gcs_identities)) : ""
   serverless_key_name     = "key-secure-artifact-registry"
   serverless_keyring_name = "krg-secure-artifact-registry"
   default_region          = data.terraform_remote_state.bootstrap.outputs.common_config.default_region
@@ -918,7 +918,7 @@ This is required because the build in stage `5-app-infra` only has access to the
 1. Update file `gcp-projects/modules/base_env/example_secure_cloud_function_projects.tf` to add the `restricted_serverless_network_connector_id` local:
 
 ```hcl
-restricted_serverless_network_connector_id = data.terraform_remote_state.network_env.outputs.restricted_serverless_network_connector_id
+restricted_serverless_network_connector_id = try(data.terraform_remote_state.network_env.outputs.restricted_serverless_network_connector_id, "")
 ```
 
 1. Commit changes in the `gcp-projects` repository and push the code to the `production` branch.
