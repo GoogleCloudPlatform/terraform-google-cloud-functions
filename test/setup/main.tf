@@ -40,6 +40,9 @@ module "project" {
     "iam.googleapis.com",
     "cloudbilling.googleapis.com",
     "cloudkms.googleapis.com",
-    "bigquery.googleapis.com"
+    "bigquery.googleapis.com",
+    "sql-component.googleapis.com",
+    "sqladmin.googleapis.com",
+    "servicenetworking.googleapis.com"
   ]
 }
