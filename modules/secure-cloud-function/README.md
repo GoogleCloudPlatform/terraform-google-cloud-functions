@@ -52,6 +52,7 @@ The resources/services/activations/deletions that this module will create/trigge
     * **Warning:** If there is another CMEK configured for the same region, it will be overwritten.
   * Creates a private worker pool for Cloud Build configured to not use External IP.
   * Grants Cloud Functions Invoker to EventArc Trigger Service Account.
+  * Enables Container Scanning.
 
 ## Usage
 
@@ -119,13 +120,13 @@ module "secure_cloud_run" {
 | organization\_id | The organization ID to apply the policy to. | `string` | `""` | no |
 | policy\_for | Policy Root: set one of the following values to determine where the policy is applied. Possible values: ["project", "folder", "organization"]. | `string` | `"project"` | no |
 | prevent\_destroy | Set the `prevent_destroy` lifecycle attribute on the Cloud KMS key. | `bool` | `true` | no |
-| region | Location for load balancer and Cloud Run resources. | `string` | n/a | yes |
 | repo\_source | The source repository where the Cloud Function Source is stored. Do not use combined with source\_path. | <pre>object({<br>    project_id   = optional(string)<br>    repo_name    = string<br>    branch_name  = string<br>    dir          = optional(string)<br>    tag_name     = optional(string)<br>    commit_sha   = optional(string)<br>    invert_regex = optional(bool, false)<br>  })</pre> | `null` | no |
 | resource\_names\_suffix | A suffix to concat in the end of the network resources names being created. | `string` | `null` | no |
 | runtime | The runtime in which the function will be executed. | `string` | n/a | yes |
 | secret\_environment\_variables | A list of maps which contains key, project\_id, secret\_name (not the full secret id) and version to assign to the function as a set of secret environment variables. | <pre>set(object({<br>    key_name   = string<br>    project_id = optional(string)<br>    secret     = string<br>    version    = string<br>  }))</pre> | `null` | no |
 | secret\_volumes | [Beta] Environment variables (Secret Manager). | <pre>set(object({<br>    mount_path = string<br>    project_id = optional(string)<br>    secret     = string<br>    versions = set(object({<br>      version = string<br>      path    = string<br>    }))<br>  }))</pre> | `null` | no |
-| serverless\_project\_id | The project to deploy the cloud run service. | `string` | n/a | yes |
+| serverless\_project\_id | The project to deploy the cloud function service. | `string` | n/a | yes |
+| serverless\_project\_number | The project number to deploy to. | `number` | `null` | no |
 | service\_account\_email | Service account to be used on Cloud Function. | `string` | n/a | yes |
 | shared\_vpc\_name | Shared VPC name which is going to be re-used to create Serverless Connector. | `string` | n/a | yes |
 | storage\_source | Get the source from this location in Google Cloud Storage. | <pre>object({<br>    bucket     = string<br>    object     = string<br>    generation = optional(string, null)<br>  })</pre> | `null` | no |

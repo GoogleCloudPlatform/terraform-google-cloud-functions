@@ -21,6 +21,7 @@ module "cloud_serverless_network" {
 
   connector_name            = var.connector_name
   subnet_name               = var.subnet_name
+  serverless_type           = "CLOUD_FUNCTION"
   location                  = var.location
   vpc_project_id            = var.vpc_project_id
   serverless_project_id     = var.serverless_project_id
@@ -29,7 +30,6 @@ module "cloud_serverless_network" {
   ip_cidr_range             = var.ip_cidr_range
   create_subnet             = var.create_subnet
   resource_names_suffix     = var.resource_names_suffix
-  serverless_type           = "CLOUD_FUNCTION"
 
   serverless_service_identity_email = google_project_service_identity.cloudfunction_sa.email
 }
@@ -69,6 +69,13 @@ data "google_storage_project_service_account" "gcs_account" {
   project = var.serverless_project_id
 }
 
+resource "google_project_service_identity" "pubsub_sa" {
+  provider = google-beta
+
+  project = var.serverless_project_id
+  service = "pubsub.googleapis.com"
+}
+
 module "cloud_serverless_security" {
   source = "../secure-cloud-serverless-security"
 
@@ -90,7 +97,8 @@ module "cloud_serverless_security" {
     "serviceAccount:${var.service_account_email}",
     "serviceAccount:${google_project_service_identity.artifact_sa.email}",
     "serviceAccount:${google_project_service_identity.eventarc_sa.email}",
-    "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"
+    "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}",
+    "serviceAccount:${google_project_service_identity.pubsub_sa.email}"
   ]
 
   decrypters = [
@@ -98,7 +106,8 @@ module "cloud_serverless_security" {
     "serviceAccount:${var.service_account_email}",
     "serviceAccount:${google_project_service_identity.artifact_sa.email}",
     "serviceAccount:${google_project_service_identity.eventarc_sa.email}",
-    "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"
+    "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}",
+    "serviceAccount:${google_project_service_identity.pubsub_sa.email}"
   ]
 }
 
@@ -108,8 +117,9 @@ module "cloud_function_core" {
   function_name               = var.function_name
   function_description        = var.function_description
   project_id                  = var.serverless_project_id
+  project_number              = var.serverless_project_number
   labels                      = var.labels
-  location                    = var.region
+  location                    = var.location
   runtime                     = var.runtime
   entry_point                 = var.entry_point
   repo_source                 = var.repo_source
