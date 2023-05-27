@@ -79,6 +79,7 @@ The APIs to add are:
     - "eventarcpublishing.googleapis.com"
     - "run.googleapis.com"
     - "vpcaccess.googleapis.com"
+    - "containerscanning.googleapis.com"
 ```
 
 1. The APIs should be included in the `services` list in the file [serviceusage_allow_basic_apis.yaml](https://github.com/terraform-google-modules/terraform-example-foundation/blob/v3.0.0/policy-library/policies/constraints/serviceusage_allow_basic_apis.yaml#L30)
@@ -326,34 +327,14 @@ will deployed in the Secure Cloud Function that will be created in step `5-app-i
       value       = var.enable_scf ? module.serverless_project[0].project_id : ""
     }
 
-    output "serverless_project_number" {
-      description = "The project number in which Secure Cloud Functions serverless resources will be created."
-      value       = var.enable_scf ? module.serverless_project[0].project_number : ""
-    }
-
     output "security_project_id" {
       description = "The ID of the project in which Secure Cloud Functions security resources will be created."
       value       = var.enable_scf ? module.security_project[0].project_id : ""
     }
 
-    output "security_project_number" {
-      description = "The project number in which Secure Cloud Functions security resources will be created."
-      value       = var.enable_scf ? module.security_project[0].project_number : ""
-    }
-
     output "cloudfunction_source_bucket_name" {
       description = "Cloud Function Source Bucket."
       value       = var.enable_scf ? module.cloudfunction_source_bucket[0].bucket.name : ""
-    }
-
-    output "restricted_network_name" {
-      description = "The network name from restricted environment."
-      value       = local.restricted_network_name
-    }
-
-    output "restricted_subnets_names" {
-      description = "The names of the subnets being created for restricted environment."
-      value       = local.restricted_subnets_names
     }
 
     output "serverless_service_account_email" {
@@ -385,34 +366,14 @@ will deployed in the Secure Cloud Function that will be created in step `5-app-i
       value       = module.env.serverless_project_id
     }
 
-    output "serverless_project_number" {
-      description = "The project number in which Secure Cloud Functions serverless resources will be created."
-      value       = module.env.serverless_project_number
-    }
-
     output "security_project_id" {
       description = "The ID of the project in which Secure Cloud Functions security resources will be created."
       value       = module.env.security_project_id
     }
 
-    output "security_project_number" {
-      description = "The project number in which Secure Cloud Functions security resources will be created."
-      value       = module.env.security_project_number
-    }
-
     output "cloudfunction_source_bucket_name" {
       description = "Cloud Function Source Bucket."
       value       = module.env.cloudfunction_source_bucket_name
-    }
-
-    output "restricted_network_name" {
-      description = "The network name from restricted environment."
-      value       = module.env.restricted_network_name
-    }
-
-    output "restricted_subnets_names" {
-      description = "The names of the subnets being created for restricted environment."
-      value       =  module.env.restricted_subnets_names
     }
 
     output "serverless_service_account_email" {
@@ -467,10 +428,7 @@ locals {
   encrypters              = join(",", concat(["serviceAccount:${google_project_service_identity.artifact_sa[0].email}"], local.eventarc_identities, local.gcs_identities))
   serverless_key_name     = "key-secure-artifact-registry"
   serverless_keyring_name = "krg-secure-artifact-registry"
-
-  default_region           = data.terraform_remote_state.bootstrap.outputs.common_config.default_region
-  restricted_network_name  = data.terraform_remote_state.network_env.outputs.restricted_network_name
-  restricted_subnets_names = data.terraform_remote_state.network_env.outputs.restricted_subnets_names
+  default_region          = data.terraform_remote_state.bootstrap.outputs.common_config.default_region
 
 }
 
@@ -503,6 +461,8 @@ module "serverless_project" {
       "roles/iam.serviceAccountUser",
       "roles/serviceusage.serviceUsageAdmin",
       "roles/storage.admin",
+      "roles/resourcemanager.projectIamAdmin",
+      "roles/pubsub.admin",
     ]
   }
 
@@ -1149,14 +1109,8 @@ cp "${SCF_PATH}/functions/bq-to-cf/main.go" ./business_unit_1/production/functio
 locals {
   location                                   = data.terraform_remote_state.projects_env.outputs.default_region
   serverless_project_id                      = data.terraform_remote_state.projects_env.outputs.serverless_project_id
-  serverless_project_number                  = data.terraform_remote_state.projects_env.outputs.serverless_project_number
   security_project_id                        = data.terraform_remote_state.projects_env.outputs.security_project_id
-  security_project_number                    = data.terraform_remote_state.projects_env.outputs.security_project_number
   cloudfunction_source_bucket_name           = data.terraform_remote_state.projects_env.outputs.cloudfunction_source_bucket_name
-  restricted_shared_vpc_project              = data.terraform_remote_state.projects_env.outputs.restricted_shared_vpc_project
-  restricted_network_name                    = data.terraform_remote_state.projects_env.outputs.restricted_network_name
-  restricted_subnets_names                   = data.terraform_remote_state.projects_env.outputs.restricted_subnets_names
-  restricted_subnet_name                     = [for s in local.restricted_subnets_names : s if length(regexall(".*${local.location}.*", s)) > 0][0]
   restricted_serverless_network_connector_id = data.terraform_remote_state.projects_env.outputs.restricted_serverless_network_connector_id
   serverless_service_account_email           = data.terraform_remote_state.projects_env.outputs.serverless_service_account_email
   repository_name                            = "rep-secure-cloud-function"
@@ -1169,6 +1123,7 @@ locals {
     "serviceAccount:${google_project_service_identity.cloudfunction_sa.email}",
     "serviceAccount:${local.serverless_service_account_email}",
     "serviceAccount:${google_project_service_identity.artifact_sa.email}",
+    "serviceAccount:${google_project_service_identity.pubsub_sa.email}",
     "serviceAccount:${google_project_service_identity.eventarc_sa.email}",
     "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"
   ]
@@ -1177,6 +1132,7 @@ locals {
     "serviceAccount:${google_project_service_identity.cloudfunction_sa.email}",
     "serviceAccount:${local.serverless_service_account_email}",
     "serviceAccount:${google_project_service_identity.artifact_sa.email}",
+    "serviceAccount:${google_project_service_identity.pubsub_sa.email}",
     "serviceAccount:${google_project_service_identity.eventarc_sa.email}",
     "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"
   ]
@@ -1302,6 +1258,13 @@ resource "google_project_service_identity" "artifact_sa" {
   service = "artifactregistry.googleapis.com"
 }
 
+resource "google_project_service_identity" "pubsub_sa" {
+  provider = google-beta
+
+  project = local.serverless_project_id
+  service = "pubsub.googleapis.com"
+}
+
 data "google_storage_project_service_account" "gcs_account" {
   project = local.serverless_project_id
 }
@@ -1312,6 +1275,7 @@ resource "time_sleep" "sa_propagation" {
   depends_on = [
     google_project_service_identity.cloudfunction_sa,
     google_project_service_identity.artifact_sa,
+    google_project_service_identity.pubsub_sa,
     google_project_service_identity.eventarc_sa,
     data.google_storage_project_service_account.gcs_account,
   ]
