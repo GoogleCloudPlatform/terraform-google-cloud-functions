@@ -58,5 +58,5 @@ resource "google_certificate_manager_certificate" "swp_certificate" {
     pem_certificate = file("certificate/cert.pem")
   }
 
-  depends_on = [ module.project ]
+  depends_on = [module.project]
 }

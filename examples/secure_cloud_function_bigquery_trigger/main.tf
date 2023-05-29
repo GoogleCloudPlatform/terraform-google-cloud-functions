@@ -153,11 +153,11 @@ module "secure_web_proxy" {
   source = "git::https://github.com/Samir-Cit/terraform-google-cloud-functions.git//modules/secure-web-proxy?ref=feat/add-secure-web-proxy"
   # source = "../../modules/secure-web-proxy"
 
-  project_id       = module.secure_harness.network_project_id[0]
-  region           = local.region
-  network_id       = module.secure_harness.service_vpc[0].network.id
-  certificate_id   = var.swp_certificate_id
-  
+  project_id     = module.secure_harness.network_project_id[0]
+  region         = local.region
+  network_id     = module.secure_harness.service_vpc[0].network.id
+  certificate_id = var.swp_certificate_id
+
   url_lists = [
     "*google.com/go*",
     "*github.com/GoogleCloudPlatform*",
@@ -173,7 +173,6 @@ module "secure_cloud_function" {
   function_name         = "secure-cloud-function-bigquery"
   function_description  = "Logs when there is a new row in the BigQuery"
   location              = local.location
-  region                = local.region
   serverless_project_id = module.secure_harness.serverless_project_ids[0]
   vpc_project_id        = module.secure_harness.network_project_id[0]
   kms_project_id        = module.secure_harness.security_project_id

@@ -28,6 +28,7 @@ variable "vpc_project_id" {
 variable "shared_vpc_name" {
   description = "Shared VPC name which is going to be used to connect the WorkerPool."
   type        = string
+}
 
 variable "project_number" {
   description = "The project number to deploy to."
