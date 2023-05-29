@@ -193,3 +193,5 @@ the resources of this module:
   * Project Creator: `roles/resourcemanager.projectCreator`
   * Project Deleter: `roles/resourcemanager.projectDeleter`
   * Compute Shared VPC Admin: `roles/compute.xpnAdmin`
+* Billing:
+  * Billing User: `roles/billing.user`
