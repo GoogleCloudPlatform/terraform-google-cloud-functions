@@ -90,7 +90,6 @@ module "secure_cloud_function" {
   function_name         = "secure-function2-internal-server"
   function_description  = "Secure cloud function example"
   location              = local.location
-  region                = local.region
   serverless_project_id = module.secure_harness.serverless_project_ids[0]
   vpc_project_id        = module.secure_harness.network_project_id[0]
   kms_project_id        = module.secure_harness.security_project_id
