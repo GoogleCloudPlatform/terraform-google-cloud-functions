@@ -48,15 +48,41 @@ module "project" {
   ]
 }
 
+resource "null_resource" "generate_cert" {
+  provisioner "local-exec" {
+    command = <<EOT
+      openssl req -x509 -newkey rsa:2048 \
+        -keyout key.pem \
+        -out cert.pem -days 365 \
+        -subj '/CN=myswp.example.com' -nodes \
+        -addext "subjectAltName=DNS:myswp.example.com"
+    EOT
+  }
+}
+
+data "local_file" "key" {
+  filename = "${path.module}/key.pem"
+  depends_on = [null_resource.generate_cert]
+}
+
+data "local_file" "cert" {
+  filename = "${path.module}/cert.pem"
+  depends_on = [null_resource.generate_cert]
+}
+
 resource "google_certificate_manager_certificate" "swp_certificate" {
   name        = "swp-certificate"
   description = "Secure Web Proxy provided certificate."
   project     = module.project.project_id
   location    = "us-west1"
   self_managed {
-    pem_private_key = file("certificate/key.pem")
-    pem_certificate = file("certificate/cert.pem")
+    pem_private_key = data.local_file.key.content
+    pem_certificate = data.local_file.cert.content
   }
 
-  depends_on = [module.project]
+  depends_on = [
+    module.project,
+    data.local_file.cert,
+    data.local_file.key
+  ]
 }
