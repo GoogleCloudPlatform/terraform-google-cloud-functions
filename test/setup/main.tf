@@ -61,12 +61,12 @@ resource "null_resource" "generate_cert" {
 }
 
 data "local_file" "key" {
-  filename = "${path.module}/key.pem"
+  filename   = "${path.module}/key.pem"
   depends_on = [null_resource.generate_cert]
 }
 
 data "local_file" "cert" {
-  filename = "${path.module}/cert.pem"
+  filename   = "${path.module}/cert.pem"
   depends_on = [null_resource.generate_cert]
 }
 
