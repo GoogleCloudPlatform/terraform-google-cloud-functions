@@ -135,44 +135,61 @@ The resources/services/activations/deletions that this example will create/trigg
 
 The following dependencies must be available:
 
-* [Terraform](https://www.terraform.io/downloads.html) >= 0.13.0
+* [Terraform](https://www.terraform.io/downloads.html) >= 1.3
 * [Terraform Provider for GCP](https://github.com/terraform-providers/terraform-provider-google) < 5.0
 
 ### APIs
 
-The Secure-cloud-function module will enable the following APIs to the Serverlesss Project:
+The Secure Cloud Function with Cloud SQL Example will enable the following APIs to the Serverless Project:
+
+* Google VPC Access API: `vpcaccess.googleapis.com`
+* Compute API: `compute.googleapis.com`
+* Container Registry API: `container.googleapis.com`
+* Artifact Registry API: `artifactregistry.googleapis.com`
+* Cloud Function API: `cloudfunctions.googleapis.com`
+* Cloud Run API: `run.googleapis.com`
+* Service Networking API: `servicenetworking.googleapis.com`
+* SQL Admin API: `sqladmin.googleapis.com`
+* Cloud KMS API: `cloudkms.googleapis.com`
+* Cloud Scheduler API: `cloudscheduler.googleapis.com`
+* Container Scanning API: `containerscanning.googleapis.com`
+* Eventarc API: `eventarc.googleapis.com`
+* Eventarc Publishing API: `eventarcpublishing.googleapis.com`
+* Cloud Build API: `cloudbuild.googleapis.com`
+
+The Secure Cloud Function with Cloud SQL Example will enable the following APIs to the Cloud SQL Project:
 
 * Google VPC Access API: `vpcaccess.googleapis.com`
 * Compute API: `compute.googleapis.com`
 * Container Registry API: `container.googleapis.com`
 * Cloud Function API: `run.googleapis.com`
+* Service Networking API: `servicenetworking.googleapis.com`
+* SQL Admin API: `sqladmin.googleapis.com`
+* SQL Component API: `sql-component.googleapis.com`
 
-The Secure-cloud-function module will enable the following APIs to the VPC Project:
+The Secure Cloud Function with Cloud SQL Example will enable the following APIs to the VPC Project:
 
 * Google VPC Access API: `vpcaccess.googleapis.com`
 * Compute API: `compute.googleapis.com`
+* Service Networking API: `servicenetworking.googleapis.com`
+* DNS API: `dns.googleapis.com`
 
-The Secure-cloud-function module will enable the following APIs to the KMS Project:
+The Secure Cloud Function with Cloud SQL Example will enable the following APIs to the Security Project:
 
 * Cloud KMS API: `cloudkms.googleapis.com`
+* Secret Manager API: `secretmanager`
+* Artifact Registry API: `artifactregistry.googleapis.com`
 
 ### Service Account
 
 A service account with the following roles must be used to provision
 the resources of this module:
 
-* VPC Project
+* Organization Level
+  * Access Context Manager Admin: `roles/accesscontextmanager.policyAdmin`
+  * Organization Policy Admin: `roles/orgpolicy.policyAdmin`
+* Folder Level:
+  * Folder Admin: `roles/resourcemanager.folderAdmin`
+  * Project Creator: `roles/resourcemanager.projectCreator`
+  * Project Deleter: `roles/resourcemanager.projectDeleter`
   * Compute Shared VPC Admin: `roles/compute.xpnAdmin`
-  * Network Admin: `roles/compute.networkAdmin`
-  * Security Admin: `roles/compute.securityAdmin`
-  * Serverless VPC Access Admin: `roles/vpcaccess.admin`
-* KMS Project
-  * Cloud KMS Admin: `roles/cloudkms.admin`
-* Serverless Project
-  * Security Admin: `roles/compute.securityAdmin`
-  * Serverless VPC Access Admin: `roles/vpcaccess.admin`
-  * Cloud Function Developer: `roles/run.developer`
-  * Compute Network User: `roles/compute.networkUser`
-  * Artifact Registry Reader: `roles/artifactregistry.reader`
-
-**Note:** [Secret Manager Secret Accessor](https://cloud.google.com/run/docs/configuring/secrets#access-secret) role must be granted to the Cloud Function service account to allow read access on the secret.
