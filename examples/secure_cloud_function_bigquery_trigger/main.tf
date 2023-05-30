@@ -163,7 +163,18 @@ module "secure_web_proxy" {
     "*github.com/GoogleCloudPlatform*",
     "*github.com/cloudevents*",
     "*golang.org/x*",
-    "*google.golang.org/api"
+    "*google.golang.org/*",
+    "*cloud.google.com/go*",
+    "*github.com/golang/*",
+    "*github.com/google/*",
+    "*github.com/googleapis/*",
+    "*github.com/json-iterator/go",
+    "*github.com/modern-go/concurrent",
+    "*github.com/modern-go/reflect2",
+    "*go.opencensus.io",
+    "*go.uber.org/atomic",
+    "*go.uber.org/multierr",
+    "*go.uber.org/zap"
   ]
 }
 
