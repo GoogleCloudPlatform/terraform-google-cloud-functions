@@ -158,26 +158,15 @@ module "secure_cloud_run" {
 
 The following dependencies must be available:
 
-* [Terraform](https://www.terraform.io/downloads.html) >= 0.13.0
+* [Terraform](https://www.terraform.io/downloads.html) >= 1.3
 * [Terraform Provider for GCP](https://github.com/terraform-providers/terraform-provider-google) < 5.0
 
 ### APIs
 
-The Secure-cloud-function module will enable the following APIs to the Serverlesss Project:
+The Secure-cloud-function module will enable the following APIs to the Serverless Project:
 
-* Google VPC Access API: `vpcaccess.googleapis.com`
-* Compute API: `compute.googleapis.com`
-* Container Registry API: `container.googleapis.com`
-* Cloud Function API: `run.googleapis.com`
-
-The Secure-cloud-function module will enable the following APIs to the VPC Project:
-
-* Google VPC Access API: `vpcaccess.googleapis.com`
-* Compute API: `compute.googleapis.com`
-
-The Secure-cloud-function module will enable the following APIs to the KMS Project:
-
-* Cloud KMS API: `cloudkms.googleapis.com`
+* Serverless Project
+  * Container Scanning: `containerscanning.googleapis.com`
 
 ### Service Account
 
@@ -192,10 +181,15 @@ the resources of this module:
 * KMS Project
   * Cloud KMS Admin: `roles/cloudkms.admin`
 * Serverless Project
-  * Security Admin: `roles/compute.securityAdmin`
-  * Serverless VPC Access Admin: `roles/vpcaccess.admin`
-  * Cloud Function Developer: `roles/run.developer`
+  * Viewer: `roles/viewer`
+  * Cloud Function Developer: `roles/cloudfunctions.developer`
   * Compute Network User: `roles/compute.networkUser`
-  * Artifact Registry Reader: `roles/artifactregistry.reader`
-
-**Note:** [Secret Manager Secret Accessor](https://cloud.google.com/run/docs/configuring/secrets#access-secret) role must be granted to the Cloud Function service account to allow read access on the secret.
+  * Artifact Registry Admin: `roles/artifactregistry.admin`
+  * Cloud Build Editor: `roles/cloudbuild.builds.editor`
+  * Cloud Build Worker Pool Owner: `roles/cloudbuild.workerPoolOwner`
+  * Pub/Sub Admin: `roles/pubsub.admin`
+  * Storage Admin: `roles/storage.admin`
+  * Service Usage Admin: `roles/serviceusage.serviceUsageAdmin`
+  * Eventarc Developer: `roles/eventarc.developer`
+  * Organization Policy Administrator: `roles/orgpolicy.policyAdmin`
+  * Project IAM Admin: `roles/resourcemanager.projectIamAdmin`

@@ -90,7 +90,7 @@ module "cloud_function_security" {
 
 The following dependencies must be available:
 
-* [Terraform](https://www.terraform.io/downloads.html) >= 0.13.0
+* [Terraform](https://www.terraform.io/downloads.html) >= 1.3
 * [Terraform Provider for GCP](https://github.com/terraform-providers/terraform-provider-google) < 5.0
 
 ### APIs
@@ -110,3 +110,4 @@ the resources of this module:
   * Cloud KMS Admin: `roles/cloudkms.admin`
 * Serverless Project
   * Organization Policy Administrator: `roles/orgpolicy.policyAdmin`
+  * Project IAM Admin: `roles/resourcemanager.projectIamAdmin`
