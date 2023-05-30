@@ -386,11 +386,6 @@ will deployed in the Secure Cloud Function that will be created in step `5-app-i
       value       = module.env.default_region
     }
 
-    output "restricted_serverless_network_connector_id" {
-      description = "VPC serverless connector ID for the restricted network."
-      value       = module.env.restricted_serverless_network_connector_id
-    }
-
     output "serverless_project_cb_sa" {
       description = "The Cloud Build service account created for the serverless project."
       value       = module.env.serverless_project_cb_sa
