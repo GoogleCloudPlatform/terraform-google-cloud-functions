@@ -63,5 +63,5 @@ variable "addresses" {
 
 variable "ports" {
   description = "Protocol port list to be used to access the Secure Web Proxy Gateway."
-  type        = list(string)
+  type        = list(number)
 }
