@@ -90,7 +90,7 @@ module "secure_cloud_function_core" {
 
 The following dependencies must be available:
 
-* [Terraform](https://www.terraform.io/downloads.html) >= 0.13.0
+* [Terraform](https://www.terraform.io/downloads.html) >= 1.3
 * [Terraform Provider for GCP](https://github.com/terraform-providers/terraform-provider-google) plugin < 5.0
 
 ### APIs
@@ -99,14 +99,20 @@ A project with the following APIs enabled must be used to host the
 resources of this module:
 
 * Serverless Project
-  * Google Cloud Function Service: `cloudfunctions.googleapis.com`
-  * Google Compute Service: `compute.googleapis.com`
+  * Container Scanning: `containerscanning.googleapis.com`
 
 ### Service Account
 
 A service account with the following roles must be used to provision
 the resources of this module:
 
+* Viewer: `roles/viewer`
 * Cloud Function Developer: `roles/cloudfunctions.developer`
 * Compute Network User: `roles/compute.networkUser`
-* Artifact Registry Reader: `roles/artifactregistry.reader`
+* Artifact Registry Admin: `roles/artifactregistry.admin`
+* Cloud Build Editor: `roles/cloudbuild.builds.editor`
+* Cloud Build Worker Pool Owner: `roles/cloudbuild.workerPoolOwner`
+* Pub/Sub Admin: `roles/pubsub.admin`
+* Storage Admin: `roles/storage.admin`
+* Service Usage Admin: `roles/serviceusage.serviceUsageAdmin`
+* Eventarc Developer: `roles/eventarc.developer`
