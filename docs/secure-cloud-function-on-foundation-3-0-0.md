@@ -99,7 +99,7 @@ The Secure Cloud Function requires five Organization Policies related to Cloud F
 * Allowed VPC egress settings (Cloud Run)
 
 For the Terraform Example Foundation deploy, we will use the `terraform-google-modules/org-policy/google` [module](https://registry.terraform.io/modules/terraform-google-modules/org-policy/google/latest)
-instead of the specific Secure Cloud Serverless Security [module](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/tree/main/modules/secure-cloud-serverless-security) because the Secure Cloud Serverless Security module also creates KMS resources.
+instead of the specific Secure Cloud Function Security [module](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/tree/main/modules/secure-cloud-function-security) because the Secure Cloud Function Security module also creates KMS resources.
 
 To apply these Organization Policies in Parent Level (Organization or Folder level), add the code below in the `1-org` step.
 
