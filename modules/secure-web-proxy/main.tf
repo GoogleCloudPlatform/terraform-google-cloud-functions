@@ -115,7 +115,7 @@ resource "null_resource" "swp_generate_gateway_config" {
       certificateUrls: ["${var.certificate_id}"]
       gatewaySecurityPolicy: ${google_network_security_gateway_security_policy.swp_security_policy.id}
       network: ${var.network_id}
-      subnetwork: projects/${var.project_id}/regions/${var.region}/subnetworks/sb-restricted-${var.region}
+      subnetwork: projects/${var.project_id}/regions/${var.region}/subnetworks/${var.subnetwork_name}
       scope: samplescope
     EOF
   }
@@ -136,7 +136,7 @@ resource "null_resource" "swp_deploy" {
   provisioner "local-exec" {
     when    = create
     command = <<EOF
-      gcloud alpha network-services gateways import secure-web-proxy \
+      gcloud network-services gateways import secure-web-proxy \
         --source=gateway.yaml \
         --location=${var.region} \
         --project=${var.project_id}

@@ -29,6 +29,11 @@ variable "network_id" {
   type        = string
 }
 
+variable "subnetwork_name" {
+  description = "The sub-network name where the SWP should be deployed."
+  type        = string
+}
+
 variable "url_lists" {
   description = "A [URL list](https://cloud.google.com/secure-web-proxy/docs/url-list-syntax-reference) to allow access during Cloud Function build time."
   type        = list(string)
