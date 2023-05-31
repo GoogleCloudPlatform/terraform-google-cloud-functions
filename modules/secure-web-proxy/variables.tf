@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+variable "proxy_name" {
+  description = "Secure Web Proxy name."
+  type        = string
+  default     = "secure-web-proxy"
+}
+
 variable "project_id" {
   description = "The network project id where the SWP should be deployed."
   type        = string
@@ -29,8 +35,13 @@ variable "network_id" {
   type        = string
 }
 
-variable "subnetwork_name" {
-  description = "The sub-network name where the SWP should be deployed."
+variable "subnetwork_id" {
+  description = "The sub-network id where the SWP should be deployed."
+  type        = string
+}
+
+variable "subnetwork_ip_range" {
+  description = "The sub-network ip range."
   type        = string
 }
 
@@ -40,7 +51,17 @@ variable "url_lists" {
   default     = []
 }
 
-variable "certificate_id" {
-  description = "The certificate id to be used on the Secure Web Proxy Gateway."
-  type        = string
+variable "certificates" {
+  description = "Certificate id list to be used on the Secure Web Proxy Gateway."
+  type        = list(string)
+}
+
+variable "addresses" {
+  description = "IP address list to be used to access the Secure Web Proxy Gateway. Must be inside the range of the sub-network."
+  type        = list(string)
+}
+
+variable "ports" {
+  description = "Protocol port list to be used to access the Secure Web Proxy Gateway."
+  type        = list(string)
 }

@@ -36,11 +36,11 @@ module "swp_firewall_rule" {
     description = "Allow Cloud Build to connect in Secure Web Proxy"
     direction   = "EGRESS"
     priority    = 100
-    ranges      = ["10.129.0.0/23", "10.0.0.0/28"]
+    ranges      = ["10.129.0.0/23", var.subnetwork_ip_range] //variavel
     source_tags = []
     allow = [{
       protocol = "tcp"
-      ports    = ["443"]
+      ports    = var.ports
     }]
     deny = []
     log_config = {
@@ -108,14 +108,14 @@ resource "null_resource" "swp_generate_gateway_config" {
   provisioner "local-exec" {
     command = <<EOF
       cat << EOF > gateway.yaml
-      name: projects/${var.project_id}/locations/${var.region}/gateways/secure-web-proxy
+      name: projects/${var.project_id}/locations/${var.region}/gateways/${var.proxy_name}
       type: SECURE_WEB_GATEWAY
-      addresses: ["10.0.0.10"]
-      ports: [443]
-      certificateUrls: ["${var.certificate_id}"]
+      addresses: ${var.addresses}
+      ports: ${var.ports}
+      certificateUrls: ${var.certificates}
       gatewaySecurityPolicy: ${google_network_security_gateway_security_policy.swp_security_policy.id}
       network: ${var.network_id}
-      subnetwork: projects/${var.project_id}/regions/${var.region}/subnetworks/${var.subnetwork_name}
+      subnetwork: ${var.subnetwork_id}
       scope: samplescope
     EOF
   }
