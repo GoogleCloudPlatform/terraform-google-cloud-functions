@@ -163,7 +163,7 @@ resource "null_resource" "swp_deploy" {
         --project=${self.triggers.project_id} \
         --quiet
     EOF
-  }F
+  }
 
   depends_on = [
     google_compute_subnetwork.swp_subnetwork_proxy,
