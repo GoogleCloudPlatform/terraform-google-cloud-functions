@@ -28,7 +28,7 @@ The resources/services/activations/deletions that this example will create/trigg
     * Grant Network User role to Cloud Services service account.
     * Grant VPC Access User to Cloud Function Service Identity when deploying VPC Access.
 
-* secure-cloud-serverless-security module will apply:
+* secure-cloud-function-security module will apply:
   * Creates KMS Keyring and Key for [customer managed encryption keys](https://cloud.google.com/run/docs/securing/using-cmek) in the **KMS Project** to be used by Cloud Function (2nd Gen).
   * Enables Organization Policies related to Cloud Function (2nd Gen) in the **Serverless Project**.
     * Allow Ingress only from internal and Cloud Load Balancing.
