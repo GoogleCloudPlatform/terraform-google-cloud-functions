@@ -133,6 +133,7 @@ resource "null_resource" "swp_generate_gateway_config" {
 resource "null_resource" "swp_deploy" {
 
   triggers = {
+    proxy_name = var.proxy_name
     project_id = var.project_id
     location   = var.region
     network_id = var.network_id
@@ -141,7 +142,7 @@ resource "null_resource" "swp_deploy" {
   provisioner "local-exec" {
     when    = create
     command = <<EOF
-      gcloud network-services gateways import secure-web-proxy \
+      gcloud network-services gateways import ${var.proxy_name} \
         --source=gateway.yaml \
         --location=${var.region} \
         --project=${var.project_id}
@@ -151,7 +152,7 @@ resource "null_resource" "swp_deploy" {
   provisioner "local-exec" {
     when    = destroy
     command = <<EOF
-      gcloud network-services gateways delete secure-web-proxy \
+      gcloud network-services gateways delete ${self.triggers.proxy_name} \
         --location=${self.triggers.location} \
         --project=${self.triggers.project_id} \
         --quiet
@@ -162,7 +163,7 @@ resource "null_resource" "swp_deploy" {
         --project=${self.triggers.project_id} \
         --quiet
     EOF
-  }
+  }F
 
   depends_on = [
     google_compute_subnetwork.swp_subnetwork_proxy,
