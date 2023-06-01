@@ -76,8 +76,8 @@ resource "google_project_service_identity" "pubsub_sa" {
   service = "pubsub.googleapis.com"
 }
 
-module "cloud_serverless_security" {
-  source = "../secure-cloud-serverless-security"
+module "cloud_function_security" {
+  source = "../secure-cloud-function-security"
 
   kms_project_id        = var.kms_project_id
   location              = var.location
@@ -127,7 +127,7 @@ module "cloud_function_core" {
   build_environment_variables = var.build_environment_variables
   event_trigger               = var.event_trigger
   force_destroy               = !var.prevent_destroy
-  encryption_key              = module.cloud_serverless_security.key_self_link
+  encryption_key              = module.cloud_function_security.key_self_link
   bucket_lifecycle_rules      = var.bucket_lifecycle_rules
   bucket_cors                 = var.bucket_cors
 
