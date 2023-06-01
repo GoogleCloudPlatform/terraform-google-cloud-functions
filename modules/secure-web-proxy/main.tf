@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
+locals {
+  swp_addresses    = "[ ${join(",", [for s in var.addresses : format("%q", s)])} ]"
+  swp_ports        = "[ ${join(",", [for s in var.ports : s])} ]"
+  swp_certificates = "[ ${join(",", [for s in var.certificates : format("%q", s)])} ]"
+}
 
 resource "google_compute_subnetwork" "swp_subnetwork_proxy" {
   name          = "sb-swp-${var.region}"
-  ip_cidr_range = "10.129.0.0/23"
+  ip_cidr_range = var.proxy_ip_range
   project       = var.project_id
   region        = var.region
   network       = var.network_id
@@ -36,11 +41,11 @@ module "swp_firewall_rule" {
     description = "Allow Cloud Build to connect in Secure Web Proxy"
     direction   = "EGRESS"
     priority    = 100
-    ranges      = ["10.129.0.0/23", "10.0.0.0/28"]
+    ip_cidr_range = var.proxy_ip_range
     source_tags = []
     allow = [{
       protocol = "tcp"
-      ports    = ["443"]
+      ports    = var.ports
     }]
     deny = []
     log_config = {
@@ -52,9 +57,10 @@ module "swp_firewall_rule" {
 resource "google_compute_global_address" "private_ip_allocation" {
   name          = "swp-cloud-function-internal-connection"
   project       = var.project_id
-  address_type  = "INTERNAL"
   purpose       = "VPC_PEERING"
-  prefix_length = 16
+  address_type  = "INTERNAL"
+  address       = "10.0.4.0"
+  prefix_length = 24
   network       = var.network_id
 }
 
@@ -108,14 +114,14 @@ resource "null_resource" "swp_generate_gateway_config" {
   provisioner "local-exec" {
     command = <<EOF
       cat << EOF > gateway.yaml
-      name: projects/${var.project_id}/locations/${var.region}/gateways/secure-web-proxy
+      name: projects/${var.project_id}/locations/${var.region}/gateways/${var.proxy_name}
       type: SECURE_WEB_GATEWAY
-      addresses: ["10.0.0.10"]
-      ports: [443]
-      certificateUrls: ["${var.certificate_id}"]
+      addresses: ${local.swp_addresses}
+      ports: ${local.swp_ports}
+      certificateUrls: ${local.swp_certificates}
       gatewaySecurityPolicy: ${google_network_security_gateway_security_policy.swp_security_policy.id}
       network: ${var.network_id}
-      subnetwork: projects/${var.project_id}/regions/${var.region}/subnetworks/sb-restricted-${var.region}
+      subnetwork: ${var.subnetwork_id}
       scope: samplescope
     EOF
   }
@@ -136,7 +142,7 @@ resource "null_resource" "swp_deploy" {
   provisioner "local-exec" {
     when    = create
     command = <<EOF
-      gcloud alpha network-services gateways import secure-web-proxy \
+      gcloud network-services gateways import secure-web-proxy \
         --source=gateway.yaml \
         --location=${var.region} \
         --project=${var.project_id}

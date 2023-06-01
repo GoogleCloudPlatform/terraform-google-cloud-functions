@@ -68,3 +68,8 @@ variable "ingress_policies" {
   }))
   default = []
 }
+
+variable "swp_certificate_id" {
+  description = "The certificate id to be used on the Secure Web Proxy Gateway."
+  type        = string
+}
