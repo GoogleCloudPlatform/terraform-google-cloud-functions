@@ -231,7 +231,7 @@ module "secure_cloud_function" {
   # IPs used on Secure Web Proxy
   build_environment_variables = {
     HTTP_PROXY  = "http://10.0.0.10:443"
-    HTTPS_PROXY = "http://10.0.0.10:443" # Using http because is a self-signed certification (just for test porpuse) 
+    HTTPS_PROXY = "http://10.0.0.10:443" # Using http because is a self-signed certification (just for test porpuse)
   }
 
   labels = {
