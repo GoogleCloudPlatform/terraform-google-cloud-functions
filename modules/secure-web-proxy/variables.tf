@@ -65,3 +65,8 @@ variable "ports" {
   description = "Protocol port list to be used to access the Secure Web Proxy Gateway."
   type        = list(number)
 }
+
+variable "proxy_ip_range" {
+  description = "The proxy sub-network ip range to be used by Secure Web Proxy Gateway. We recommend a subnet size of /23, or 512 proxy-only addresses."
+  type        = string
+}
