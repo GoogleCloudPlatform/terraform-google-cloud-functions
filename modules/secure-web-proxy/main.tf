@@ -41,7 +41,7 @@ module "swp_firewall_rule" {
     description = "Allow Cloud Build to connect in Secure Web Proxy"
     direction   = "EGRESS"
     priority    = 100
-    ranges      = ["10.129.0.0/23", var.subnetwork_ip_range]
+    ranges      = [var.proxy_ip_range, var.subnetwork_ip_range]
     source_tags = []
     allow = [{
       protocol = "tcp"
