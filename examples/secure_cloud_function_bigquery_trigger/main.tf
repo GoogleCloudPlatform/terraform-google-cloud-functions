@@ -151,17 +151,32 @@ module "bigquery" {
 }
 
 resource "null_resource" "generate_certificate" {
+  triggers = {
+    project_id = module.secure_harness.network_project_id[0]
+    region     = local.region
+  }
+
   provisioner "local-exec" {
+    when    = create
     command = <<EOT
       ${path.module}/../../helpers/generate_swp_certificate.sh \
         ${module.secure_harness.network_project_id[0]} \
         ${local.region}
     EOT
   }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = <<EOT
+      gcloud certificate-manager certificates delete swp-certificate \
+        --location=${self.triggers.region} --project=${self.triggers.project_id}
+    EOT
+  }
 }
 
 resource "time_sleep" "wait_upload_certificate" {
-  create_duration = "1m"
+  create_duration  = "1m"
+  destroy_duration = "1m"
 
   depends_on = [
     null_resource.generate_certificate
