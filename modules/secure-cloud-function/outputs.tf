@@ -20,12 +20,12 @@ output "connector_id" {
 }
 
 output "keyring_self_link" {
-  value       = module.cloud_serverless_security.keyring_self_link
+  value       = module.cloud_function_security.keyring_self_link
   description = "Name of the Cloud KMS keyring."
 }
 
 output "key_self_link" {
-  value       = module.cloud_serverless_security.key_self_link
+  value       = module.cloud_function_security.key_self_link
   description = "Name of the Cloud KMS crypto key."
 }
 

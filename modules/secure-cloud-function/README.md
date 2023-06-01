@@ -1,6 +1,6 @@
 # Secure Cloud Function
 
-This module handles the deployment required for Cloud Function (2nd Gen) usage. Secure-cloud-function module will call the secure-cloud-function-core, secure-cloud-serverless-net and secure-cloud-serverless-security modules.
+This module handles the deployment required for Cloud Function (2nd Gen) usage. Secure-cloud-function module will call the secure-cloud-function-core, secure-cloud-serverless-net and secure-cloud-function-security modules.
 
 When using a Shared VPC, you can chose where to create the VPC Connector.
 
@@ -22,7 +22,7 @@ The resources/services/activations/deletions that this module will create/trigge
     * Grant Network User role to Cloud Services service account.
     * Grant VPC Access User to Cloud Function Service Identity when deploying VPC Access.
 
-* secure-cloud-serverless-security module will apply:
+* secure-cloud-function-security module will apply:
   * Creates KMS Keyring and Key for [customer managed encryption keys](https://cloud.google.com/run/docs/securing/using-cmek) in the **KMS Project** to be used by Cloud Function (2nd Gen).
   * Enables Organization Policies related to Cloud Function (2nd Gen) in the **Serverless Project**.
     * Allow Ingress only from internal and Cloud Load Balancing.
