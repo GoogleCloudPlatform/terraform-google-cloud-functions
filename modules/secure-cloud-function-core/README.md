@@ -61,14 +61,13 @@ module "secure_cloud_function_core" {
 | function\_name | The name of the Cloud Function to create. | `string` | n/a | yes |
 | labels | Labels to be assigned to resources. | `map(any)` | `{}` | no |
 | location | Cloud Function deployment location. | `string` | `"us-east4"` | no |
+| network\_id | VPC network ID which is going to be used to connect the WorkerPool. | `string` | n/a | yes |
 | project\_id | The project ID to deploy to. | `string` | n/a | yes |
 | project\_number | The project number to deploy to. | `number` | `null` | no |
 | repo\_source | The source repository where the Cloud Function Source is stored. Do not use combined with source\_path. | <pre>object({<br>    project_id   = optional(string)<br>    repo_name    = string<br>    branch_name  = string<br>    dir          = optional(string)<br>    tag_name     = optional(string)<br>    commit_sha   = optional(string)<br>    invert_regex = optional(bool, false)<br>  })</pre> | `null` | no |
 | runtime | The runtime in which the function will be executed. | `string` | n/a | yes |
 | service\_config | Details of the service | <pre>object({<br>    max_instance_count    = optional(string, 100)<br>    min_instance_count    = optional(string, 1)<br>    available_memory      = optional(string, "256M")<br>    timeout_seconds       = optional(string, 60)<br>    runtime_env_variables = optional(map(string), null)<br>    runtime_secret_env_variables = optional(set(object({<br>      key_name   = string<br>      project_id = optional(string)<br>      secret     = string<br>      version    = string<br>    })), null)<br>    secret_volumes = optional(set(object({<br>      mount_path = string<br>      project_id = optional(string)<br>      secret     = string<br>      versions = set(object({<br>        version = string<br>        path    = string<br>      }))<br>    })), null)<br>    vpc_connector                  = string<br>    vpc_connector_egress_settings  = optional(string, "PRIVATE_RANGES_ONLY")<br>    ingress_settings               = optional(string, "ALLOW_INTERNAL_AND_GCLB")<br>    service_account_email          = string<br>    all_traffic_on_latest_revision = optional(bool, true)<br>  })</pre> | n/a | yes |
-| shared\_vpc\_name | Shared VPC name which is going to be used to connect the WorkerPool. | `string` | n/a | yes |
 | storage\_source | Get the source from this location in Google Cloud Storage. | <pre>object({<br>    bucket     = string<br>    object     = string<br>    generation = optional(string, null)<br>  })</pre> | `null` | no |
-| vpc\_project\_id | The host project for the shared vpc. | `string` | n/a | yes |
 
 ## Outputs
 

@@ -85,7 +85,7 @@ resource "google_cloudbuild_worker_pool" "pool" {
     no_external_ip = true
   }
   network_config {
-    peered_network = "projects/${var.vpc_project_id}/global/networks/${var.shared_vpc_name}"
+    peered_network = var.network_id
   }
 }
 

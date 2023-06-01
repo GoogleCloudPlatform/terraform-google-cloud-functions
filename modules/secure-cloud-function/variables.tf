@@ -342,3 +342,8 @@ variable "bucket_lifecycle_rules" {
     }
   }]
 }
+
+variable "network_id" {
+  description = "VPC network ID which is going to be used to connect the WorkerPool."
+  type        = string
+}

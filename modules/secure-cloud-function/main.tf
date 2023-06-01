@@ -130,8 +130,7 @@ module "cloud_function_core" {
   encryption_key              = module.cloud_serverless_security.key_self_link
   bucket_lifecycle_rules      = var.bucket_lifecycle_rules
   bucket_cors                 = var.bucket_cors
-  vpc_project_id              = var.vpc_project_id
-  shared_vpc_name             = var.shared_vpc_name
+  network_id                  = var.network_id
 
   service_config = {
     max_instance_count             = var.max_scale_instances
