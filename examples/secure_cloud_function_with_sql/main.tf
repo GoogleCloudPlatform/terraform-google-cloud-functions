@@ -375,8 +375,8 @@ module "secure_cloud_function" {
   create_subnet             = false
   shared_vpc_name           = module.secure_harness.service_vpc[0].network.name
   prevent_destroy           = false
-  ip_cidr_range             = "10.0.0.0/28"
-
+  ip_cidr_range             = "10.0.1.0/28"
+  network_id                = module.secure_harness.service_vpc[0].network.id
   build_environment_variables = {
     HTTP_PROXY  = "http://10.0.0.10:443"
     HTTPS_PROXY = "http://10.0.0.10:443"

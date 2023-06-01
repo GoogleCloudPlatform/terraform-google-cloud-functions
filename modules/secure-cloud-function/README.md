@@ -1,6 +1,6 @@
 # Secure Cloud Function
 
-This module handles the deployment required for Cloud Function (2nd Gen) usage. Secure-cloud-function module will call the secure-cloud-function-core, secure-cloud-serverless-net and secure-cloud-serverless-security modules.
+This module handles the deployment required for Cloud Function (2nd Gen) usage. Secure-cloud-function module will call the secure-cloud-function-core, secure-cloud-serverless-net and secure-cloud-function-security modules.
 
 When using a Shared VPC, you can chose where to create the VPC Connector.
 
@@ -22,7 +22,7 @@ The resources/services/activations/deletions that this module will create/trigge
     * Grant Network User role to Cloud Services service account.
     * Grant VPC Access User to Cloud Function Service Identity when deploying VPC Access.
 
-* secure-cloud-serverless-security module will apply:
+* secure-cloud-function-security module will apply:
   * Creates KMS Keyring and Key for [customer managed encryption keys](https://cloud.google.com/run/docs/securing/using-cmek) in the **KMS Project** to be used by Cloud Function (2nd Gen).
   * Enables Organization Policies related to Cloud Function (2nd Gen) in the **Serverless Project**.
     * Allow Ingress only from internal and Cloud Load Balancing.
@@ -117,6 +117,7 @@ module "secure_cloud_run" {
 | location | The location where resources are going to be deployed. | `string` | n/a | yes |
 | max\_scale\_instances | Sets the maximum number of container instances needed to handle all incoming requests or events from each revison from Cloud Run. For more information, access this [documentation](https://cloud.google.com/run/docs/about-instance-autoscaling). | `number` | `2` | no |
 | min\_scale\_instances | Sets the minimum number of container instances needed to handle all incoming requests or events from each revison from Cloud Run. For more information, access this [documentation](https://cloud.google.com/run/docs/about-instance-autoscaling). | `number` | `1` | no |
+| network\_id | VPC network ID which is going to be used to connect the WorkerPool. | `string` | n/a | yes |
 | organization\_id | The organization ID to apply the policy to. | `string` | `""` | no |
 | policy\_for | Policy Root: set one of the following values to determine where the policy is applied. Possible values: ["project", "folder", "organization"]. | `string` | `"project"` | no |
 | prevent\_destroy | Set the `prevent_destroy` lifecycle attribute on the Cloud KMS key. | `bool` | `true` | no |
