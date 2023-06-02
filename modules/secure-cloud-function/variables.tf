@@ -347,3 +347,9 @@ variable "network_id" {
   description = "VPC network ID which is going to be used to connect the WorkerPool."
   type        = string
 }
+
+variable "enable_private_worker" {
+  type        = bool
+  description = "This variable enables the creation and usage of Private Worker Pool used to build the Cloud Function."
+  default     = true
+}

@@ -201,3 +201,9 @@ variable "bucket_lifecycle_rules" {
     }
   }]
 }
+
+variable "enable_private_worker" {
+  type        = bool
+  description = "This variable enables the creation and usage of Private Worker Pool used to build the Cloud Function."
+  default     = true
+}

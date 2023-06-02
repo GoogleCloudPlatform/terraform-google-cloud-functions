@@ -131,6 +131,7 @@ module "cloud_function_core" {
   bucket_lifecycle_rules      = var.bucket_lifecycle_rules
   bucket_cors                 = var.bucket_cors
   network_id                  = var.network_id
+  enable_private_worker       = var.enable_private_worker
 
   service_config = {
     max_instance_count             = var.max_scale_instances

@@ -99,6 +99,7 @@ module "secure_cloud_run" {
 | build\_environment\_variables | A set of key/value environment variable pairs to be used when building the Function. | `map(string)` | `{}` | no |
 | connector\_name | The name for the connector to be created. | `string` | `"serverless-vpc-connector"` | no |
 | create\_subnet | The subnet will be created with the subnet\_name variable if true. When false, it will use the subnet\_name for the subnet. | `bool` | `true` | no |
+| enable\_private\_worker | This variable enables the creation and usage of Private Worker Pool used to build the Cloud Function. | `bool` | `true` | no |
 | entry\_point | The name of a method in the function source which will be invoked when the function is executed. | `string` | n/a | yes |
 | environment\_variables | A set of key/value environment variable pairs to assign to the function. | `map(string)` | `{}` | no |
 | event\_trigger | A source that fires events in response to a condition in another service. | <pre>object({<br>    trigger_region        = optional(string)<br>    event_type            = string<br>    service_account_email = string<br>    pubsub_topic          = optional(string)<br>    retry_policy          = string<br>    event_filters = optional(set(object({<br>      attribute       = string<br>      attribute_value = string<br>      operator        = optional(string)<br>    })))<br>  })</pre> | n/a | yes |
