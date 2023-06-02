@@ -30,7 +30,7 @@ output "artifact_registry_repository_id" {
 }
 
 output "cloudbuild_worker_pool_id" {
-  value       = google_cloudbuild_worker_pool.pool.id
+  value       = var.enable_private_worker ? google_cloudbuild_worker_pool.pool[0].id : ""
   description = "The ID of the Cloud Build worker pool created to build Cloud Function images."
 }
 

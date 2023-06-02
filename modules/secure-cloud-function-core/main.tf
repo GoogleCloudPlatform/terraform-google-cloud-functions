@@ -107,7 +107,7 @@ module "cloud_function" {
   storage_source      = var.storage_source
   service_config      = var.service_config
   docker_repository   = google_artifact_registry_repository.cloudfunction_repo.id
-  worker_pool         = var.enable_private_worker ? google_cloudbuild_worker_pool.pool.id : ""
+  worker_pool         = var.enable_private_worker ? google_cloudbuild_worker_pool.pool[0].id : ""
 
   depends_on = [
     module.cloudfunction_bucket,
