@@ -31,8 +31,9 @@ resource "random_id" "random_folder_suffix" {
 }
 
 module "secure_harness" {
-  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.7"
+  # source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
+  # version = "~> 0.7"
+  source = "git::https://github.com/amandakarina/terraform-google-cloud-run//modules/secure-serverless-harness?ref=feat/adds-harness-variable-to-customize-propagation-time"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-security"
@@ -57,6 +58,7 @@ module "secure_harness" {
   ingress_policies                            = var.ingress_policies
   serverless_type                             = "CLOUD_FUNCTION"
   use_shared_vpc                              = true
+  time_to_wait_vpc_sc_propagation             = "360s"
 
   serverless_project_extra_apis = {
     "prj-secure-cloud-function" = ["servicenetworking.googleapis.com", "sqladmin.googleapis.com", "cloudscheduler.googleapis.com"],
