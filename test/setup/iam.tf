@@ -17,7 +17,8 @@
 locals {
   int_required_roles = [
     "roles/owner",
-    "roles/iam.serviceAccountUser"
+    "roles/iam.serviceAccountUser",
+    "roles/certificatemanager.editor"
   ]
 
   folder_required_roles = [

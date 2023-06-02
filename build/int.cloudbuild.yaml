@@ -80,6 +80,34 @@ steps:
   waitFor:
   - secure-cloud-func-sql-verify
 
+- id: secure-cloud-func-internal-server-apply
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', './test/install_build_dependencies.sh && cft test run TestCFInternalServer --stage apply --verbose']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+  waitFor:
+  - cloud-func-init
+- id: secure-cloud-func-internal-server-verify
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestCFInternalServer --stage verify --verbose']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+  waitFor:
+  - secure-cloud-func-internal-server-apply
+- id: secure-cloud-func-internal-server-teardown
+  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+  args: ['/bin/bash', '-c', 'cft test run TestCFInternalServer --stage teardown --verbose']
+  env:
+  - 'TF_VAR_org_id=$_ORG_ID'
+  - 'TF_VAR_folder_id=$_FOLDER_ID'
+  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+  waitFor:
+  - secure-cloud-func-internal-server-verify
+
 - id: cloud-func-pubsub-trigger-apply
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
   args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage apply --verbose']

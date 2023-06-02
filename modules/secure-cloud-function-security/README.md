@@ -30,7 +30,7 @@ to be used by Cloud Function (2nd Gen).
 ## Usage
 
 ```hcl
-module "cloud_function_security" {
+module "cloud_serverless_security" {
   source = "../secure-cloud-function-security"
 
   kms_project_id        = <KMS PROJECT ID>

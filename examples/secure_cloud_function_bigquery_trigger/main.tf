@@ -162,6 +162,7 @@ module "secure_cloud_function" {
   shared_vpc_name           = module.secure_harness.service_vpc[0].network.name
   prevent_destroy           = false
   ip_cidr_range             = "10.0.0.0/28"
+  network_id                = module.secure_harness.service_vpc[0].network.id
   labels = {
     env      = "development"
     billable = "true"
