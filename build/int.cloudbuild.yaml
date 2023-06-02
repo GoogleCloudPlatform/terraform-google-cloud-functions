@@ -34,7 +34,7 @@ steps:
 
 - id: cloud-func-gcs-source-apply
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestGCF2GCSSource --stage apply --verbose']
+  args: ['/bin/bash', '-c', './test/install_build_dependencies.sh && cft test run TestGCF2GCSSource --stage apply --verbose']
   waitFor:
   - cloud-func-init
 - id: cloud-func-gcs-source-verify
@@ -54,7 +54,7 @@ steps:
 
 - id: secure-cloud-func-sql-apply
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestGCF2CloudSQL --stage apply --verbose']
+  args: ['/bin/bash', '-c', './test/install_build_dependencies.sh && cft test run TestGCF2CloudSQL --stage apply --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
   - 'TF_VAR_folder_id=$_FOLDER_ID'
@@ -110,7 +110,7 @@ steps:
 
 - id: cloud-func-pubsub-trigger-apply
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage apply --verbose']
+  args: ['/bin/bash', '-c', './test/install_build_dependencies.sh && cft test run TestGCF2PubSubTrigger --stage apply --verbose']
   waitFor:
   - cloud-func-init
 - id: cloud-func-pubsub-trigger-verify
@@ -130,7 +130,7 @@ steps:
 
 - id: secure-cloud-func-bigquery-apply
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestGCF2BigqueryTrigger --stage apply --verbose']
+  args: ['/bin/bash', '-c', './test/install_build_dependencies.sh && cft test run TestGCF2BigqueryTrigger --stage apply --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
   - 'TF_VAR_folder_id=$_FOLDER_ID'
