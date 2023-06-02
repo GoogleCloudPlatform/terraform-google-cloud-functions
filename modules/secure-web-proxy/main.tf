@@ -126,7 +126,7 @@ resource "null_resource" "swp_generate_gateway_config" {
   }
 
   depends_on = [
-    google_network_security_gateway_security_policy.swp_security_policy
+    google_network_security_gateway_security_policy_rule.swp_security_policy_rule
   ]
 }
 
@@ -170,7 +170,8 @@ resource "null_resource" "swp_deploy" {
     google_network_security_gateway_security_policy.swp_security_policy,
     google_network_security_url_lists.swp_url_lists,
     google_network_security_gateway_security_policy_rule.swp_security_policy_rule,
-    null_resource.swp_generate_gateway_config
+    null_resource.swp_generate_gateway_config,
+    google_service_networking_connection.private_service_connect
   ]
 }
 
