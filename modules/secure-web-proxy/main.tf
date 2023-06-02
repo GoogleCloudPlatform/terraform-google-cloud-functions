@@ -59,7 +59,7 @@ resource "google_compute_global_address" "private_ip_allocation" {
   project       = var.project_id
   address_type  = "INTERNAL"
   purpose       = "VPC_PEERING"
-  prefix_length = 16
+  prefix_length = var.global_address_prefix_length
   network       = var.network_id
 }
 

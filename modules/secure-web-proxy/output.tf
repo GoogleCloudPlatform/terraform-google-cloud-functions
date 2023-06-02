@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+output "global_address_name" {
+  description = "URL of the reserved range."
+  value       = google_compute_global_address.private_ip_allocation.name
+}
+
 // SWP name or ID
 // Router name or ID
 // Privete connection IP
