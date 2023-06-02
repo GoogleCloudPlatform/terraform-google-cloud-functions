@@ -31,7 +31,7 @@ to be used by Cloud Function (2nd Gen).
 
 ```hcl
 module "cloud_serverless_security" {
-  source = "../secure-cloud-serverless-security"
+  source = "../secure-cloud-function-security"
 
   kms_project_id        = <KMS PROJECT ID>
   location              = <KMS LOCATION>

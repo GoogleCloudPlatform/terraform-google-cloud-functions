@@ -77,7 +77,7 @@ resource "google_project_service_identity" "pubsub_sa" {
 }
 
 module "cloud_serverless_security" {
-  source = "../secure-cloud-serverless-security"
+  source = "../secure-cloud-function-security"
 
   kms_project_id        = var.kms_project_id
   location              = var.location
