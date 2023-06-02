@@ -34,3 +34,7 @@ output "access_level_members" {
 output "create_access_context_manager_access_policy" {
   value = false
 }
+
+output "swp_certificate_id" {
+  value = google_certificate_manager_certificate.swp_certificate.id
+}

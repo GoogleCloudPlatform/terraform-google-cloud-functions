@@ -26,6 +26,20 @@ The resources/services/activations/deletions that this example will create/trigg
     * Grant Network User role to Cloud Services service account.
     * Grant VPC Access User to Cloud Function Service Identity when deploying VPC Access.
 
+* secure-web-proxy module will apply:
+  * Creates a sub network to Regional Managed Proxy purpose.
+  * Creates Firewall rules on your **VPC Project**.
+    * Cloud Build to Secure Web Proxy
+  * Creates a VPC peering for your network.
+    * Global address
+    * Networking Connection
+  * Uploads your certificate manager.
+    * You can use a self-signed.
+  * Creates a Gateway Security Policy Rule.
+    * Creates a Gateway Security Policy.
+    * Creates a Security URL Lists.
+  * Creates the Secure Web Proxy/Gateway (SWP/SWG) instance.
+
 * secure-cloud-serverless-security module will apply:
   * Creates KMS Keyring and Key for [customer managed encryption keys](https://cloud.google.com/run/docs/securing/using-cmek) in the **KMS Project** to be used by Cloud Function (2nd Gen).
   * Enables Organization Policies related to Cloud Function (2nd Gen) in the **Serverless Project**.

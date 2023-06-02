@@ -84,6 +84,10 @@ resource "google_cloudbuild_worker_pool" "pool" {
     machine_type   = "e2-standard-8"
     no_external_ip = true
   }
+  network_config {
+    peered_network = var.network_id
+  }
+
 }
 
 module "cloud_function" {
@@ -107,6 +111,7 @@ module "cloud_function" {
   depends_on = [
     module.cloudfunction_bucket,
     google_eventarc_google_channel_config.primary,
+    google_cloudbuild_worker_pool.pool,
     google_project_service.container_scanning_api,
     module.pubsub
   ]

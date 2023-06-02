@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-
 variable "project_id" {
   description = "The project ID to deploy to."
+  type        = string
+}
+
+variable "network_id" {
+  description = "VPC network ID which is going to be used to connect the WorkerPool."
   type        = string
 }
 
