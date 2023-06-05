@@ -149,21 +149,7 @@ module "secure_web_proxy" {
   # This list of URL was obtained through Cloud Function imports
   # It will change depending on what imports your CF are using.
   url_lists = [
-    "*google.com/go*",
     "*github.com/GoogleCloudPlatform*",
-    "*github.com/cloudevents*",
-    "*golang.org/x*",
-    "*google.golang.org/*",
-    "*github.com/golang/*",
-    "*github.com/google/*",
-    "*github.com/googleapis/*",
-    "*github.com/json-iterator/go",
-    "*github.com/modern-go/concurrent",
-    "*github.com/modern-go/reflect2",
-    "*go.opencensus.io",
-    "*go.uber.org/atomic",
-    "*go.uber.org/multierr",
-    "*go.uber.org/zap"
   ]
 
   depends_on = [
