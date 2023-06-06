@@ -35,6 +35,11 @@ variable "vpc_project_id" {
   type        = string
 }
 
+variable "network_id" {
+  description = "VPC network ID which is going to be used to connect the WorkerPool."
+  type        = string
+}
+
 variable "key_name" {
   description = "The name of KMS Key to be created and used in Cloud Run."
   type        = string
@@ -341,9 +346,4 @@ variable "bucket_lifecycle_rules" {
       with_state                 = "ARCHIVED"
     }
   }]
-}
-
-variable "network_id" {
-  description = "VPC network ID which is going to be used to connect the WorkerPool."
-  type        = string
 }

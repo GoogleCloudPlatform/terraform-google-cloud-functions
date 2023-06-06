@@ -118,7 +118,8 @@ resource "null_resource" "generate_certificate" {
     when    = destroy
     command = <<EOT
       gcloud certificate-manager certificates delete swp-certificate \
-        --location=${self.triggers.region} --project=${self.triggers.project_id}
+        --location=${self.triggers.region} --project=${self.triggers.project_id} \
+        --quiet
     EOT
   }
 }
