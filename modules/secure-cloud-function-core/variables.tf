@@ -26,6 +26,11 @@ variable "project_number" {
   default     = null
 }
 
+variable "network_id" {
+  description = "VPC network ID which is going to be used to connect the WorkerPool."
+  type        = string
+}
+
 variable "encryption_key" {
   description = "The KMS Key to Encrypt Event Arc, source Bucket, docker repository."
   type        = string

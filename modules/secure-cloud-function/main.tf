@@ -130,6 +130,7 @@ module "cloud_function_core" {
   encryption_key              = module.cloud_function_security.key_self_link
   bucket_lifecycle_rules      = var.bucket_lifecycle_rules
   bucket_cors                 = var.bucket_cors
+  network_id                  = var.network_id
 
   service_config = {
     max_instance_count             = var.max_scale_instances
