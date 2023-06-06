@@ -231,6 +231,7 @@ module "secure_cloud_function" {
   function_description  = "Logs when there is a new row in the BigQuery"
   location              = local.location
   serverless_project_id = module.secure_harness.serverless_project_ids[0]
+  serverless_project_number = module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]
   vpc_project_id        = module.secure_harness.network_project_id[0]
   kms_project_id        = module.secure_harness.security_project_id
   key_name              = "key-secure-cloud-function"
