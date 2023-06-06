@@ -172,23 +172,23 @@ module "secure_web_proxy" {
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
 
-  function_name         = "secure-function2-internal-server4"
-  function_description  = "Secure cloud function example"
-  location              = local.location
-  serverless_project_id = module.secure_harness.serverless_project_ids[0]
+  function_name             = "secure-function2-internal-server4"
+  function_description      = "Secure cloud function example"
+  location                  = local.location
+  serverless_project_id     = module.secure_harness.serverless_project_ids[0]
   serverless_project_number = module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]
-  vpc_project_id        = module.secure_harness.network_project_id[0]
-  kms_project_id        = module.secure_harness.security_project_id
-  key_name              = "key-secure-cloud-function"
-  keyring_name          = "krg-secure-cloud-function"
-  service_account_email = module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]
-  connector_name        = "con-secure-cloud-function"
-  subnet_name           = module.secure_harness.service_subnet[0]
-  create_subnet         = false
-  shared_vpc_name       = module.secure_harness.service_vpc[0].network.name
-  prevent_destroy       = false
-  ip_cidr_range         = "10.0.0.0/28"
-  network_id            = module.secure_harness.service_vpc[0].network.id
+  vpc_project_id            = module.secure_harness.network_project_id[0]
+  kms_project_id            = module.secure_harness.security_project_id
+  key_name                  = "key-secure-cloud-function"
+  keyring_name              = "krg-secure-cloud-function"
+  service_account_email     = module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]
+  connector_name            = "con-secure-cloud-function"
+  subnet_name               = module.secure_harness.service_subnet[0]
+  create_subnet             = false
+  shared_vpc_name           = module.secure_harness.service_vpc[0].network.name
+  prevent_destroy           = false
+  ip_cidr_range             = "10.0.0.0/28"
+  network_id                = module.secure_harness.service_vpc[0].network.id
 
   build_environment_variables = {
     HTTP_PROXY  = "http://10.0.0.10:443"
