@@ -21,6 +21,7 @@ locals {
   repository_name = "rep-secure-cloud-function"
   table_name      = "tbl_test"
   kms_bigquery    = "key-secure-bigquery"
+  subnet_ip       = "10.0.0.0/28"
 }
 resource "random_id" "random_folder_suffix" {
   byte_length = 2
@@ -143,6 +144,80 @@ module "bigquery" {
   ]
 }
 
+resource "null_resource" "generate_certificate" {
+  triggers = {
+    project_id = module.secure_harness.network_project_id[0]
+    region     = local.region
+  }
+
+  provisioner "local-exec" {
+    when    = create
+    command = <<EOT
+      ${path.module}/../../helpers/generate_swp_certificate.sh \
+        ${module.secure_harness.network_project_id[0]} \
+        ${local.region}
+    EOT
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = <<EOT
+      gcloud certificate-manager certificates delete swp-certificate \
+        --location=${self.triggers.region} --project=${self.triggers.project_id}
+    EOT
+  }
+}
+
+resource "time_sleep" "wait_upload_certificate" {
+  create_duration  = "1m"
+  destroy_duration = "1m"
+
+  depends_on = [
+    null_resource.generate_certificate
+  ]
+}
+
+module "secure_web_proxy" {
+  source = "git::https://github.com/Samir-Cit/terraform-google-cloud-functions.git//modules/secure-web-proxy?ref=fix/secure-web-proxy-fix"
+  # source = "../../modules/secure-web-proxy"
+
+  project_id          = module.secure_harness.network_project_id[0]
+  region              = local.region
+  network_id          = module.secure_harness.service_vpc[0].network.id
+  subnetwork_id       = "projects/${module.secure_harness.network_project_id[0]}/regions/${local.region}/subnetworks/${module.secure_harness.service_subnet[0]}"
+  subnetwork_ip_range = local.subnet_ip
+  certificates        = ["projects/${module.secure_harness.network_project_id[0]}/locations/${local.region}/certificates/swp-certificate"]
+  addresses           = ["10.0.0.10"]
+  ports               = [443]
+  proxy_ip_range      = "10.129.0.0/23"
+
+  # This list of URL was obtained through Cloud Function imports
+  # It will change depending on what imports your CF are using.
+  url_lists = [
+    "*google.com/go*",
+    "*github.com/GoogleCloudPlatform*",
+    "*github.com/cloudevents*",
+    "*golang.org/x*",
+    "*google.golang.org/*",
+    "*github.com/golang/*",
+    "*github.com/google/*",
+    "*github.com/googleapis/*",
+    "*github.com/json-iterator/go",
+    "*github.com/modern-go/concurrent",
+    "*github.com/modern-go/reflect2",
+    "*go.opencensus.io",
+    "*go.uber.org/atomic",
+    "*go.uber.org/multierr",
+    "*go.uber.org/zap"
+  ]
+
+  depends_on = [
+    module.secure_harness,
+    null_resource.generate_certificate,
+    time_sleep.wait_upload_certificate
+  ]
+}
+
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
 
@@ -163,6 +238,13 @@ module "secure_cloud_function" {
   prevent_destroy           = false
   ip_cidr_range             = "10.0.0.0/28"
   network_id                = module.secure_harness.service_vpc[0].network.id
+
+  # IPs used on Secure Web Proxy
+  build_environment_variables = {
+    HTTP_PROXY  = "http://10.0.0.10:443"
+    HTTPS_PROXY = "http://10.0.0.10:443" # Using http because is a self-signed certification (just for test porpuse)
+  }
+
   labels = {
     env      = "development"
     billable = "true"
