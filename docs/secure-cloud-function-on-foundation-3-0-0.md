@@ -103,7 +103,11 @@ instead of the specific Secure Cloud Function Security [module](https://github.c
 
 To apply these Organization Policies in Parent Level (Organization or Folder level), add the code below in the `1-org` step.
 
-1. Add org policies related to Cloud Function at `1-org/envs/shared/org_policy.tf`
+**Note:** You can also apply these Organization Policies to the folder `production` or directly to the projects that will be created for the Secure Cloud Function.
+If you want to apply to the Secure Cloud Function projects, this step must be applied after step [4-projects: Create Serverless project, security project, and additional harness in the production environment](#4-projects-create-serverless-project-security-project-and-additional-harness-in-the-production-environment).
+See the [org-policy module](https://github.com/terraform-google-modules/terraform-google-org-policy/tree/master#variables) documentation on how to apply the policies to projects.
+
+1. Add Organization Policies related to Secure Cloud Function at `1-org/envs/shared/org_policy.tf`
 
 #### Boolean policy
 
