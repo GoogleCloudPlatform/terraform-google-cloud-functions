@@ -149,7 +149,16 @@ module "secure_web_proxy" {
   # This list of URL was obtained through Cloud Function imports
   # It will change depending on what imports your CF are using.
   url_lists = [
+    "*google.com/go*",
     "*github.com/GoogleCloudPlatform*",
+    "*github.com/cloudevents*",
+    "*golang.org/x*",
+    "*google.golang.org/*",
+    "*github.com/golang/*",
+    "*github.com/google/*",
+    "*github.com/googleapis/*",
+    "*github.com/json-iterator/go",
+    "*dl.google.com/*"
   ]
 
   depends_on = [
@@ -162,7 +171,7 @@ module "secure_web_proxy" {
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
 
-  function_name         = "secure-function2-internal-server"
+  function_name         = "secure-function2-internal-server4"
   function_description  = "Secure cloud function example"
   location              = local.location
   serverless_project_id = module.secure_harness.serverless_project_ids[0]
