@@ -25,6 +25,7 @@ locals {
   db_host         = "cloudsqlproxy~%"
   secret_name     = "sct-sql-password"
   labels          = { "env" = "dev" }
+  subnet_ip       = "10.0.0.0/28"
 }
 resource "random_id" "random_folder_suffix" {
   byte_length = 2
@@ -44,7 +45,7 @@ module "secure_harness" {
   region                                      = local.region
   location                                    = local.location
   vpc_name                                    = "vpc-secure-cloud-function"
-  subnet_ip                                   = "10.0.0.0/28"
+  subnet_ip                                   = local.subnet_ip
   private_service_connect_ip                  = "10.3.0.5"
   create_access_context_manager_access_policy = var.create_access_context_manager_access_policy
   access_context_manager_policy_id            = var.access_context_manager_policy_id
@@ -58,16 +59,19 @@ module "secure_harness" {
   serverless_type                             = "CLOUD_FUNCTION"
   use_shared_vpc                              = true
 
+  network_project_extra_apis = ["certificatemanager.googleapis.com", "networkservices.googleapis.com", "networksecurity.googleapis.com"]
+
+  security_project_extra_apis = ["secretmanager.googleapis.com"]
+
   serverless_project_extra_apis = {
-    "prj-secure-cloud-function" = ["servicenetworking.googleapis.com", "sqladmin.googleapis.com", "cloudscheduler.googleapis.com"],
+    "prj-secure-cloud-function" = ["servicenetworking.googleapis.com", "sqladmin.googleapis.com", "cloudscheduler.googleapis.com", "networksecurity.googleapis.com"],
     "prj-secure-cloud-sql"      = ["sqladmin.googleapis.com", "sql-component.googleapis.com", "servicenetworking.googleapis.com"]
   }
+
   service_account_project_roles = {
     "prj-secure-cloud-function" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
     "prj-secure-cloud-sql"      = []
   }
-
-  security_project_extra_apis = ["secretmanager.googleapis.com"]
 }
 
 resource "google_project_service_identity" "pubsub_sa" {
@@ -351,26 +355,110 @@ data "google_secret_manager_secret_version" "latest_version" {
   depends_on = [null_resource.create_user_pwd]
 }
 
+resource "null_resource" "generate_certificate" {
+  triggers = {
+    project_id = module.secure_harness.network_project_id[0]
+    region     = local.region
+  }
+
+  provisioner "local-exec" {
+    when    = create
+    command = <<EOT
+      ${path.module}/../../helpers/generate_swp_certificate.sh \
+        ${module.secure_harness.network_project_id[0]} \
+        ${local.region}
+    EOT
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = <<EOT
+      gcloud certificate-manager certificates delete swp-certificate \
+        --location=${self.triggers.region} --project=${self.triggers.project_id} \
+        --quiet
+    EOT
+  }
+}
+
+resource "time_sleep" "wait_upload_certificate" {
+  create_duration  = "1m"
+  destroy_duration = "1m"
+
+  depends_on = [
+    null_resource.generate_certificate
+  ]
+}
+
+module "secure_web_proxy" {
+  source = "git::https://github.com/Samir-Cit/terraform-google-cloud-functions.git//modules/secure-web-proxy?ref=fix/secure-web-proxy-fix"
+  # source = "../../modules/secure-web-proxy"
+
+  project_id          = module.secure_harness.network_project_id[0]
+  region              = local.region
+  network_id          = module.secure_harness.service_vpc[0].network.id
+  subnetwork_id       = "projects/${module.secure_harness.network_project_id[0]}/regions/${local.region}/subnetworks/${module.secure_harness.service_subnet[0]}"
+  subnetwork_ip_range = local.subnet_ip
+  certificates        = ["projects/${module.secure_harness.network_project_id[0]}/locations/${local.region}/certificates/swp-certificate"]
+  addresses           = ["10.0.0.10"]
+  ports               = [443]
+  proxy_ip_range      = "10.129.0.0/23"
+
+  # This list of URL was obtained through Cloud Function imports
+  # It will change depending on what imports your CF are using.
+  url_lists = [
+    "*google.com/go*",
+    "*github.com/GoogleCloudPlatform*",
+    "*github.com/cloudevents*",
+    "*golang.org/x*",
+    "*google.golang.org/*",
+    "*github.com/golang/*",
+    "*github.com/google/*",
+    "*github.com/googleapis/*",
+    "*github.com/json-iterator/go",
+    "*github.com/modern-go/concurrent",
+    "*github.com/modern-go/reflect2",
+    "*go.opencensus.io",
+    "*go.uber.org/atomic",
+    "*go.uber.org/multierr",
+    "*go.uber.org/zap",
+    "*googlesource.com"
+  ]
+
+  depends_on = [
+    module.secure_harness,
+    null_resource.generate_certificate,
+    time_sleep.wait_upload_certificate,
+    module.safer_mysql_db
+  ]
+}
+
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
 
-  function_name             = "secure-cloud-function-cloud-sql"
-  function_description      = "Read from Cloud SQL"
-  location                  = local.location
-  serverless_project_id     = module.secure_harness.serverless_project_ids[0]
-  serverless_project_number = module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]
-  vpc_project_id            = module.secure_harness.network_project_id[0]
-  labels                    = local.labels
-  kms_project_id            = module.secure_harness.security_project_id
-  key_name                  = "key-secure-cloud-function"
-  keyring_name              = "krg-secure-cloud-function"
-  service_account_email     = module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]
-  connector_name            = "con-secure-cloud-function"
-  subnet_name               = module.secure_harness.service_subnet[0]
-  create_subnet             = false
-  shared_vpc_name           = module.secure_harness.service_vpc[0].network.name
-  prevent_destroy           = false
-  ip_cidr_range             = "10.0.1.0/28"
+  function_name         = "secure-cloud-function-cloud-sql"
+  function_description  = "Read from Cloud SQL"
+  location              = local.location
+  serverless_project_id = module.secure_harness.serverless_project_ids[0]
+  vpc_project_id        = module.secure_harness.network_project_id[0]
+  labels                = local.labels
+  kms_project_id        = module.secure_harness.security_project_id
+  key_name              = "key-secure-cloud-function"
+  keyring_name          = "krg-secure-cloud-function"
+  service_account_email = module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]
+  connector_name        = "con-secure-cloud-function"
+  subnet_name           = module.secure_harness.service_subnet[0]
+  create_subnet         = false
+  shared_vpc_name       = module.secure_harness.service_vpc[0].network.name
+  prevent_destroy       = false
+  ip_cidr_range         = local.subnet_ip
+  network_id            = module.secure_harness.service_vpc[0].network.id
+
+  # IPs used on Secure Web Proxy
+  build_environment_variables = {
+    HTTP_PROXY  = "http://10.0.0.10:443"
+    HTTPS_PROXY = "http://10.0.0.10:443" # Using http because is a self-signed certification (just for test porpuse)
+  }
+
   storage_source = {
     bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
     object = google_storage_bucket_object.cf_cloudsql_source_zip.name
@@ -408,6 +496,7 @@ module "secure_cloud_function" {
     google_storage_bucket_object.cf_cloudsql_source_zip,
     google_secret_manager_secret_iam_member.member,
     null_resource.create_and_populate_db,
-    null_resource.create_user_pwd
+    null_resource.create_user_pwd,
+    module.secure_web_proxy
   ]
 }
