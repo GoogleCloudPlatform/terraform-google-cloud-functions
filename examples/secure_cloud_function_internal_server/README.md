@@ -1,7 +1,6 @@
-# Secure Cloud Function With Cloud SQL Example
+# Secure Cloud Function With Internal Server Example
 
-This examples shows how to connect Secure Cloud Function (2nd Gen) with Cloud SQL in different project
-using a Shared VPC and multiple projects.
+This example shows how to deploy a Secure Cloud Function (2nd Gen) that communicates with an internal webserver using Shared VPC and multiple projects.
 
 The resources and services that this example will create or enable are:
 
