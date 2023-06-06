@@ -3,76 +3,89 @@
 This examples shows how to connect Secure Cloud Function (2nd Gen) with Cloud SQL in different project
 using a Shared VPC and multiple projects.
 
-The resources/services/activations/deletions that this example will create/trigger are:
+The resources and services that this example will create or enable are:
 
-* secure-serverless-harness module will apply:
-  * Creates Security Project
-  * Creates Shared VPC Project
-    * Creates Shared Network
-    * Deny all Egress Rule
-    * Allow Internal APIs Firewall Rule
-    * Configure Private Connect
-  * Creates Cloud Function project
-  * Creates Cloud SQL project
+* The **secure-serverless-harness** module will:
+  * Create a Security Project
+  * Create a Cloud Function project
+  * Create a Shared VPC Project with:
+    * A Shared Network
+    * A firewall rule to deny all egress traffic
+    * A firewall rule to allow internal APIs traffic
+    * A configured Private Connect
 
-* secure-serverless-network module will apply:
-  * Creates Firewall rules on your **VPC Project**.
+* The **secure-serverless-network** module will:
+  * Create the following Firewall rules on the **Shared VPC Project**:
     * Serverless to VPC Connector
     * VPC Connector to Serverless
     * VPC Connector Health Checks
-  * Creates a sub network to VPC Connector usage purpose.
-  * Creates Serverless Connector on your **VPC Project** or **Serverless Project**. Refer the comparison below:
+  * Create a sub network to VPC Connector usage purpose
+  * Create a Serverless Connector on the **Shared VPC Project** or the **Serverless Project**. Refer to the following comparison to choose where to create Serverless Connector:
     * Advantages of creating connectors in the [VPC Project](https://cloud.google.com/run/docs/configuring/connecting-shared-vpc#host-project)
     * Advantages of creating connectors in the [Serverless Project](https://cloud.google.com/run/docs/configuring/connecting-shared-vpc#service-projects)
-  * Grant the necessary roles for Cloud Function are able to use VPC Connector on your Shared VPC when creating VPC Connector in host project.
-    * Grant Network User role to Cloud Services service account.
-    * Grant VPC Access User to Cloud Function Service Identity when deploying VPC Access.
+  * Grant the necessary roles for the Cloud Function to be able to use the VPC Connector on the Shared VPC if creating the VPC Connector in the host project:
+    * Grant Network User role to the [Google API Service Agent](https://cloud.google.com/compute/docs/access/service-accounts#google_apis_service_agent) service account.
+    * Grant VPC Access User to the [Google Cloud Functions Service Agent](https://cloud.google.com/functions/docs/concepts/iam#access_control_for_service_accounts) when deploying VPC Access.
 
-* secure-cloud-function-security module will apply:
-  * Creates KMS Keyring and Key for [customer managed encryption keys](https://cloud.google.com/run/docs/securing/using-cmek) in the **KMS Project** to be used by Cloud Function (2nd Gen).
-  * Enables Organization Policies related to Cloud Function (2nd Gen) in the **Serverless Project**.
-    * Allow Ingress only from internal and Cloud Load Balancing.
-    * Allow VPC Egress to Private Ranges Only.
-  * When groups emails are provided, this module will grant the roles for each persona.
-    * Serverless administrator - Service Project
-      * roles/run.admin
-      * roles/cloudfunctions.admin
-      * roles/compute.networkViewer
-      * compute.networkUser
-    * Servervless Security Administrator - Security project
-      * roles/cloudfunctions.viewer
-      * roles/run.viewer
-      * roles/cloudkms.viewer
-      * roles/artifactregistry.reader
-    * Cloud Function (2nd Gen) developer - Security project
-      * roles/cloudfunctions.developer
-      * roles/artifactregistry.writer
-      * roles/cloudkms.cryptoKeyEncrypter
-    * Cloud Function (2nd Gen) user - Service project
-      * roles/cloudfunctions.invoker
+* The **secure-web-proxy** module will:
+  * Create a sub network for Regional Managed Proxy purpose
+  * Create the following Firewall rule on the **Shared VPC Project**:
+    * Cloud Build to Secure Web Proxy
+  * Create a VPC peering for the Shared VPC Network with:
+    * A Compute Global Address
+    * A Service Networking Connection
+  * Upload your certificate manager
+    * You can use a self-signed
+  * Create a Gateway Security Policy with:
+    * A Gateway Security Policy Rule
+    * A Security URL Lists resource
+  * Create the Secure Web Proxy/Gateway (SWP/SWG) instance
 
-* secure-cloud-function-core module will apply:
-  * Creates a Cloud Function (2nd Gen).
-  * Creates the Cloud Function source bucket in the same location as the Cloud Function.
-  * Configure the EventArc Google Channel to use Customer Encryption Key in the Cloud Function location.
-    * **Warning:** If there is another CMEK configured for the same region, it will be overwritten.
-  * Creates a private worker pool for Cloud Build configured to not use External IP.
-  * Grants Cloud Functions Invoker to EventArc Trigger Service Account.
-  * Enables Container Registry Automatic Scanning.
+* The **secure-cloud-serverless-security** module will:
+  * Create KMS Keyring and Key for [customer managed encryption keys](https://cloud.google.com/run/docs/securing/using-cmek) in the **KMS Project** to be used by Cloud Function (2nd Gen)
+  * Enable the following Organization Policies related to Cloud Function (2nd Gen) in the **Serverless Project**:
+    * Allowed ingress settings - Allow HTTP traffic from private VPC sources and through GCLB.
+    * Allowed VPC Connector egress settings - Force the use of VPC Access Connector for all egress traffic from the function.
+  * Grant the following roles if groups emails are provided:
+    * **Serverless Administrator** group on the Service Project:
+      * Cloud Run Admin: `roles/run.admin`
+      * Cloud Functions Admin: `roles/cloudfunctions.admin`
+      * Network Viewer: `roles/compute.networkViewer`
+      * Network User: `roles/compute.networkUser`
+    * **Servervless Security Administrator** group on the Security project:
+      * Cloud Functions Viewer: `roles/cloudfunctions.viewer`
+      * Cloud Frun Viewer: `roles/run.viewer`
+      * Cloud KMS Viewer: `roles/cloudkms.viewer`
+      * Artifact Registry Reader: `roles/artifactregistry.reader`
+    * **Cloud Function (2nd Gen) developer** group on the Security project:
+      * Cloud Functions Developer: `roles/cloudfunctions.developer`
+      * Artifact Registry Writer: `roles/artifactregistry.writer`
+      * Cloud KMS CryptoKey Encrypter: `roles/cloudkms.cryptoKeyEncrypter`
+    * **Cloud Function (2nd Gen) user** group on the Service project:
+      * Cloud Functions Invoker: `roles/cloudfunctions.invoker`
 
-* The Example will create besides all secure-cloud-function resources:
-  * Cloud SQL Private Access
-  * Cloud SQL Instance
-  * Cloud SQL MYSQL database
-  * Storage Bucket to store Cloud Function source Code
+* The **secure-cloud-function-core** module will:
+  * Create a Cloud Function (2nd Gen)
+  * Create the Cloud Function source bucket in the same location as the Cloud Function
+  * Configure the EventArc Google Channel to use Customer Encryption Key in the Cloud Function location
+    * **Warning:** If there is another CMEK configured for the same region, it will be overwritten
+  * Create a private worker pool for Cloud Build configured to not use External IP
+  * Grant Cloud Functions Invoker to the [EventArc Trigger Service Account](https://cloud.google.com/functions/docs/calling/eventarc#trigger-identity)
+  * Enable [Container Registry Automatic Scanning](https://cloud.google.com/artifact-registry/docs/analysis)
+
+* In addition to all the secure-cloud-function resources created, this example will also create:
+  * [Cloud SQL Private Access](https://cloud.google.com/sql/docs/mysql/configure-private-services-access)
+  * [Cloud SQL Instance](https://cloud.google.com/sql/docs/mysql/introduction)
+  * [Cloud SQL MYSQL database](https://cloud.google.com/sql/docs/mysql/create-manage-databases)
+  * A Storage Bucket to store Cloud Function source Code
   * KMS Keys to be used by:
-    * Pub/Sub
-    * Cloud SQL
-    * Secret Manager
-  * Cloud Scheduler
+    * Pub/Sub Topic
+    * Cloud SQL Instance
+    * [Secret Manager](https://cloud.google.com/secret-manager)
+  * [Cloud Scheduler](https://cloud.google.com/scheduler)
   * Pub/Sub Topic
   * Secret Manager
-  * Cloud SQL User
+  * [Cloud SQL User](https://cloud.google.com/sql/docs/mysql/create-manage-users)
   * Secret Manager version saving Database user password
   * Firewall rule to allow to connect on Cloud SQL using Private IP
   * Import a sample database
@@ -177,7 +190,7 @@ The Secure Cloud Function with Cloud SQL Example will enable the following APIs 
 The Secure Cloud Function with Cloud SQL Example will enable the following APIs to the Security Project:
 
 * Cloud KMS API: `cloudkms.googleapis.com`
-* Secret Manager API: `secretmanager`
+* Secret Manager API: `secretmanager.googleapis.com`
 * Artifact Registry API: `artifactregistry.googleapis.com`
 
 ### Service Account
