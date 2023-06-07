@@ -34,7 +34,7 @@ resource "random_id" "random_folder_suffix" {
 
 module "secure_harness" {
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.7"
+  version = "~> 0.8"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-security"
@@ -59,6 +59,7 @@ module "secure_harness" {
   ingress_policies                            = var.ingress_policies
   serverless_type                             = "CLOUD_FUNCTION"
   use_shared_vpc                              = true
+  time_to_wait_vpc_sc_propagation             = "600s"
 
   network_project_extra_apis = ["certificatemanager.googleapis.com", "networkservices.googleapis.com", "networksecurity.googleapis.com"]
 
@@ -125,12 +126,82 @@ module "kms_keys" {
   depends_on           = [module.secure_harness]
 }
 
-module "cloud_sql_private_service_access" {
-  source      = "GoogleCloudPlatform/sql-db/google//modules/private_service_access"
-  version     = "~> 15.0"
-  project_id  = module.secure_harness.network_project_id[0]
-  vpc_network = module.secure_harness.service_vpc[0].network.name
-  depends_on  = [module.secure_harness]
+resource "null_resource" "generate_certificate" {
+  triggers = {
+    project_id = module.secure_harness.network_project_id[0]
+    region     = local.region
+  }
+
+  provisioner "local-exec" {
+    when    = create
+    command = <<EOT
+      ${path.module}/../../helpers/generate_swp_certificate.sh \
+        ${module.secure_harness.network_project_id[0]} \
+        ${local.region}
+    EOT
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = <<EOT
+      gcloud certificate-manager certificates delete swp-certificate \
+        --location=${self.triggers.region} --project=${self.triggers.project_id} \
+        --quiet
+    EOT
+  }
+
+  depends_on = [module.secure_harness]
+}
+
+resource "time_sleep" "wait_upload_certificate" {
+  create_duration  = "1m"
+  destroy_duration = "3m"
+
+  depends_on = [
+    null_resource.generate_certificate
+  ]
+}
+
+module "secure_web_proxy" {
+  source = "git::https://github.com/Samir-Cit/terraform-google-cloud-functions.git//modules/secure-web-proxy?ref=fix/secure-web-proxy-fix"
+  # source = "../../modules/secure-web-proxy"
+
+  project_id          = module.secure_harness.network_project_id[0]
+  region              = local.region
+  network_id          = module.secure_harness.service_vpc[0].network.id
+  subnetwork_id       = "projects/${module.secure_harness.network_project_id[0]}/regions/${local.region}/subnetworks/${module.secure_harness.service_subnet[0]}"
+  subnetwork_ip_range = local.subnet_ip
+  certificates        = ["projects/${module.secure_harness.network_project_id[0]}/locations/${local.region}/certificates/swp-certificate"]
+  addresses           = ["10.0.0.10"]
+  ports               = [443]
+  proxy_ip_range      = "10.129.0.0/23"
+
+  # This list of URL was obtained through Cloud Function imports
+  # It will change depending on what imports your CF are using.
+  url_lists = [
+    "*google.com/go*",
+    "*github.com/GoogleCloudPlatform*",
+    "*github.com/cloudevents*",
+    "*golang.org/x*",
+    "*google.golang.org/*",
+    "*github.com/golang/*",
+    "*github.com/google/*",
+    "*github.com/googleapis/*",
+    "*github.com/json-iterator/go",
+    "*github.com/modern-go/concurrent",
+    "*github.com/modern-go/reflect2",
+    "*go.opencensus.io",
+    "*go.uber.org/atomic",
+    "*go.uber.org/multierr",
+    "*go.uber.org/zap",
+    "*googlesource.com"
+  ]
+
+  depends_on = [
+    module.secure_harness,
+    null_resource.generate_certificate,
+    time_sleep.wait_upload_certificate
+  ]
 }
 
 module "safer_mysql_db" {
@@ -155,10 +226,10 @@ module "safer_mysql_db" {
     authorized_networks = []
     require_ssl         = true
     private_network     = module.secure_harness.service_vpc[0].network.id
-    allocated_ip_range  = module.cloud_sql_private_service_access.google_compute_global_address_name
+    allocated_ip_range  = module.secure_web_proxy.global_address_name
   }
 
-  depends_on = [module.cloud_sql_private_service_access]
+  depends_on = [module.secure_web_proxy]
 }
 
 module "cloud_sql_firewall_rule" {
@@ -347,6 +418,7 @@ module "pubsub" {
   topic              = "tpc-cloud-function-sql"
   project_id         = module.secure_harness.serverless_project_ids[0]
   topic_kms_key_name = module.kms_keys.keys["key-topic"]
+  topic_labels       = local.labels
   depends_on         = [module.secure_harness]
 }
 
@@ -354,85 +426,6 @@ data "google_secret_manager_secret_version" "latest_version" {
   project    = module.secure_harness.security_project_id
   secret     = local.secret_name
   depends_on = [null_resource.create_user_pwd]
-}
-
-resource "null_resource" "generate_certificate" {
-  triggers = {
-    project_id = module.secure_harness.network_project_id[0]
-    region     = local.region
-  }
-
-  provisioner "local-exec" {
-    when    = create
-    command = <<EOT
-      ${path.module}/../../helpers/generate_swp_certificate.sh \
-        ${module.secure_harness.network_project_id[0]} \
-        ${local.region}
-    EOT
-  }
-
-  provisioner "local-exec" {
-    when    = destroy
-    command = <<EOT
-      gcloud certificate-manager certificates delete swp-certificate \
-        --location=${self.triggers.region} --project=${self.triggers.project_id} \
-        --quiet
-    EOT
-  }
-
-  depends_on = [module.secure_harness]
-}
-
-resource "time_sleep" "wait_upload_certificate" {
-  create_duration  = "1m"
-  destroy_duration = "1m"
-
-  depends_on = [
-    null_resource.generate_certificate
-  ]
-}
-
-module "secure_web_proxy" {
-  source = "git::https://github.com/Samir-Cit/terraform-google-cloud-functions.git//modules/secure-web-proxy?ref=fix/secure-web-proxy-fix"
-  # source = "../../modules/secure-web-proxy"
-
-  project_id          = module.secure_harness.network_project_id[0]
-  region              = local.region
-  network_id          = module.secure_harness.service_vpc[0].network.id
-  subnetwork_id       = "projects/${module.secure_harness.network_project_id[0]}/regions/${local.region}/subnetworks/${module.secure_harness.service_subnet[0]}"
-  subnetwork_ip_range = local.subnet_ip
-  certificates        = ["projects/${module.secure_harness.network_project_id[0]}/locations/${local.region}/certificates/swp-certificate"]
-  addresses           = ["10.0.0.10"]
-  ports               = [443]
-  proxy_ip_range      = "10.129.0.0/23"
-
-  # This list of URL was obtained through Cloud Function imports
-  # It will change depending on what imports your CF are using.
-  url_lists = [
-    "*google.com/go*",
-    "*github.com/GoogleCloudPlatform*",
-    "*github.com/cloudevents*",
-    "*golang.org/x*",
-    "*google.golang.org/*",
-    "*github.com/golang/*",
-    "*github.com/google/*",
-    "*github.com/googleapis/*",
-    "*github.com/json-iterator/go",
-    "*github.com/modern-go/concurrent",
-    "*github.com/modern-go/reflect2",
-    "*go.opencensus.io",
-    "*go.uber.org/atomic",
-    "*go.uber.org/multierr",
-    "*go.uber.org/zap",
-    "*googlesource.com"
-  ]
-
-  depends_on = [
-    module.secure_harness,
-    null_resource.generate_certificate,
-    time_sleep.wait_upload_certificate,
-    module.safer_mysql_db
-  ]
 }
 
 module "secure_cloud_function" {

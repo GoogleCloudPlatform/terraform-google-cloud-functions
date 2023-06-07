@@ -30,7 +30,7 @@ resource "random_id" "random_folder_suffix" {
 
 module "secure_harness" {
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.7"
+  version = "~> 0.8"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-security"
@@ -55,6 +55,7 @@ module "secure_harness" {
   ingress_policies                            = var.ingress_policies
   serverless_type                             = "CLOUD_FUNCTION"
   use_shared_vpc                              = true
+  time_to_wait_vpc_sc_propagation             = "600s"
 
   service_account_project_roles = {
     "prj-secure-cloud-function" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
@@ -179,7 +180,7 @@ resource "null_resource" "generate_certificate" {
 
 resource "time_sleep" "wait_upload_certificate" {
   create_duration  = "1m"
-  destroy_duration = "1m"
+  destroy_duration = "3m"
 
   depends_on = [
     null_resource.generate_certificate
