@@ -57,7 +57,7 @@ module "secure_harness" {
   ingress_policies                            = var.ingress_policies
   serverless_type                             = "CLOUD_FUNCTION"
   use_shared_vpc                              = true
-  time_to_wait_vpc_sc_propagation             = "480s"
+  time_to_wait_vpc_sc_propagation             = "600s"
 
   serverless_project_extra_apis = {
     "prj-secure-cloud-function" = ["servicenetworking.googleapis.com", "sqladmin.googleapis.com", "cloudscheduler.googleapis.com"],

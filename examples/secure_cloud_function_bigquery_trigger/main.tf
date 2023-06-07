@@ -53,7 +53,7 @@ module "secure_harness" {
   ingress_policies                            = var.ingress_policies
   serverless_type                             = "CLOUD_FUNCTION"
   use_shared_vpc                              = true
-  time_to_wait_vpc_sc_propagation             = "480s"
+  time_to_wait_vpc_sc_propagation             = "600s"
 
   service_account_project_roles = {
     "prj-secure-cloud-function" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
