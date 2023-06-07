@@ -190,7 +190,7 @@ The Secure Cloud Function with Cloud SQL Example will enable the following APIs 
 The Secure Cloud Function with Cloud SQL Example will enable the following APIs to the Security Project:
 
 * Cloud KMS API: `cloudkms.googleapis.com`
-* Secret Manager API: `secretmanager`
+* Secret Manager API: `secretmanager.googleapis.com`
 * Artifact Registry API: `artifactregistry.googleapis.com`
 
 ### Service Account
