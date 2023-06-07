@@ -1,84 +1,91 @@
 # Secure Cloud Function Triggered by BigQuery
 
-This examples shows how trigger Cloud Function (2nd Gen) by BigQuery
+This examples shows how trigger Secure Cloud Function (2nd Gen) by BigQuery.
 
-The resources/services/activations/deletions that this example will create/trigger are:
+The resources and services that this example will create or enable are:
 
-* secure-serverless-harness module will apply:
-  * Creates Security Project
-  * Creates Shared VPC Project
-    * Creates Shared Network
-    * Deny all Egress Rule
-    * Allow Internal APIs Firewall Rule
-    * Configure Private Connect
-  * Creates Cloud Function project
+* The **secure-serverless-harness** module will:
+  * Create a Security Project with the following APIS enabled:
+    * Cloud KMS API: `cloudkms.googleapis.com`
+  * Create a Cloud Function project with the following APIS enabled:
+    * Google VPC Access API: `vpcaccess.googleapis.com`
+    * Compute API: `compute.googleapis.com`
+    * Container Registry API: `container.googleapis.com`
+    * Cloud Function API: `run.googleapis.com`
+  * Create a Shared VPC Project with:
+    * A Shared Network
+    * A firewall rule to deny all egress traffic
+    * A firewall rule to allow Internal APIs traffic
+    * A configured Private Connect
+    * And the following APIs enabled:
+      * Google VPC Access API: `vpcaccess.googleapis.com`
+      * Compute API: `compute.googleapis.com`
 
-* secure-serverless-network module will apply:
-  * Creates Firewall rules on your **VPC Project**.
+* The **secure-serverless-network** module will:
+  * Create the following Firewall rules on the **Shared VPC Project**.
     * Serverless to VPC Connector
     * VPC Connector to Serverless
     * VPC Connector Health Checks
-  * Creates a sub network to VPC Connector usage purpose.
-  * Creates Serverless Connector on your **VPC Project** or **Serverless Project**. Refer the comparison below:
-    * Advantages of creating connectors in the [VPC Project](https://cloud.google.com/run/docs/configuring/connecting-shared-vpc#host-project)
+  * Create a a sub network to VPC Connector usage purpose.
+  * Create a Serverless Connector on the **Shared VPC Project** or **Serverless Project**. Refer to the following comparison to choose where to create Serverless Connector:
+    * Advantages of creating connectors in the [Shared VPC Project](https://cloud.google.com/run/docs/configuring/connecting-shared-vpc#host-project)
     * Advantages of creating connectors in the [Serverless Project](https://cloud.google.com/run/docs/configuring/connecting-shared-vpc#service-projects)
-  * Grant the necessary roles for Cloud Function are able to use VPC Connector on your Shared VPC when creating VPC Connector in host project.
-    * Grant Network User role to Cloud Services service account.
-    * Grant VPC Access User to Cloud Function Service Identity when deploying VPC Access.
+  * Grant the necessary roles for the Cloud Function to be able to use the VPC Connector on the Shared VPC if creating the VPC Connector in the host project:
+    * Grant Network User role to the [Google API Service Agent](https://cloud.google.com/compute/docs/access/service-accounts#google_apis_service_agent) service account.
+    * Grant VPC Access User to the [Google Cloud Functions Service Agent](https://cloud.google.com/functions/docs/concepts/iam#access_control_for_service_accounts) when deploying VPC Access.
 
-* secure-web-proxy module will apply:
-  * Creates a sub network to Regional Managed Proxy purpose.
-  * Creates Firewall rules on your **VPC Project**.
+* The **secure-web-proxy** module will:
+  * Create a sub network for Regional Managed Proxy purpose
+  * Create the following Firewall rule on the **Shared VPC Project**:
     * Cloud Build to Secure Web Proxy
-  * Creates a VPC peering for your network.
-    * Global address
-    * Networking Connection
-  * Uploads your certificate manager.
-    * You can use a self-signed.
-  * Creates a Gateway Security Policy Rule.
-    * Creates a Gateway Security Policy.
-    * Creates a Security URL Lists.
-  * Creates the Secure Web Proxy/Gateway (SWP/SWG) instance.
+  * Create a VPC peering for the Shared VPC Network with:
+    * A Compute Global Address
+    * A Service Networking Connection
+  * Upload a example generated self-signed certificate to Certificate Manager
+  * Create a Gateway Security Policy with:
+    * A Gateway Security Policy Rule
+    * A Security URL Lists resource
+  * Create the Secure Web Proxy/Gateway (SWP/SWG) instance
 
-* secure-cloud-serverless-security module will apply:
-  * Creates KMS Keyring and Key for [customer managed encryption keys](https://cloud.google.com/run/docs/securing/using-cmek) in the **KMS Project** to be used by Cloud Function (2nd Gen).
-  * Enables Organization Policies related to Cloud Function (2nd Gen) in the **Serverless Project**.
-    * Allow Ingress only from internal and Cloud Load Balancing.
-    * Allow VPC Egress to Private Ranges Only.
-  * When groups emails are provided, this module will grant the roles for each persona.
-    * Serverless administrator - Service Project
-      * roles/run.admin
-      * roles/cloudfunctions.admin
-      * roles/compute.networkViewer
-      * compute.networkUser
-    * Servervless Security Administrator - Security project
-      * roles/cloudfunctions.viewer
-      * roles/run.viewer
-      * roles/cloudkms.viewer
-      * roles/artifactregistry.reader
-    * Cloud Function (2nd Gen) developer - Security project
-      * roles/cloudfunctions.developer
-      * roles/artifactregistry.writer
-      * roles/cloudkms.cryptoKeyEncrypter
-    * Cloud Function (2nd Gen) user - Service project
-      * roles/cloudfunctions.invoker
+* The **secure-cloud-serverless-security** module will:
+  * Create KMS Keyring and Key for [customer managed encryption keys](https://cloud.google.com/run/docs/securing/using-cmek) in the **KMS Project** to be used by Cloud Function (2nd Gen)
+  * Enable the following Organization Policies related to Cloud Function (2nd Gen) in the **Serverless Project**:
+    * Allowed ingress settings - Allow HTTP traffic from private VPC sources and through GCLB.
+    * Allowed VPC Connector egress settings - Force the use of VPC Access Connector for all egress traffic from the function.
+  * Grant the following roles if groups emails are provided:
+    * **Serverless Administrator** group on the Service Project:
+      * Cloud Run Admin: `roles/run.admin`
+      * Cloud Functions Admin: `roles/cloudfunctions.admin`
+      * Network Viewer: `roles/compute.networkViewer`
+      * Network User: `roles/compute.networkUser`
+    * **Servervless Security Administrator** group on the Security project:
+      * Cloud Functions Viewer: `roles/cloudfunctions.viewer`
+      * Cloud Frun Viewer: `roles/run.viewer`
+      * Cloud KMS Viewer: `roles/cloudkms.viewer`
+      * Artifact Registry Reader: `roles/artifactregistry.reader`
+    * **Cloud Function (2nd Gen) developer** group on the Security project:
+      * Cloud Functions Developer: `roles/cloudfunctions.developer`
+      * Artifact Registry Writer: `roles/artifactregistry.writer`
+      * Cloud KMS CryptoKey Encrypter: `roles/cloudkms.cryptoKeyEncrypter`
+    * **Cloud Function (2nd Gen) user** group on the Service project:
+      * Cloud Functions Invoker: `roles/cloudfunctions.invoker`
 
-* secure-cloud-function-core module will apply:
-  * Creates a Cloud Function (2nd Gen).
-  * Creates the Cloud Function source bucket in the same location as the Cloud Function.
-  * Configure the EventArc Google Channel to use Customer Encryption Key in the Cloud Function location.
-    * **Warning:** If there is another CMEK configured for the same region, it will be overwritten.
-  * Creates a private worker pool for Cloud Build configured to not use External IP.
-  * Grants Cloud Functions Invoker to EventArc Trigger Service Account.
-  * Enables Container Registry Automatic Scanning.
+* The **secure-cloud-function-core** module will:
+  * Create a Cloud Function (2nd Gen)
+  * Create the Cloud Function source bucket in the same location as the Cloud Function
+  * Configure the EventArc Google Channel to use Customer Encryption Key in the Cloud Function location
+    * **Warning:** If there is another CMEK configured for the same region, it will be overwritten
+  * Create a private worker pool for Cloud Build configured to not use External IP
+  * Grant Cloud Functions Invoker to the [EventArc Trigger Service Account](https://cloud.google.com/functions/docs/calling/eventarc#trigger-identity)
+  * Enable [Container Registry Automatic Scanning](https://cloud.google.com/artifact-registry/docs/analysis)
 
-* The Example will create besides all secure-cloud-function resources:
+* In addition to all the secure-cloud-function resources created, this example will also create::
   * BigQuery Dataset
   * BigQuery Table
   * Storage Bucket to store Cloud Function source Code
   * KMS Keys to be used by:
-    * Pub/Sub
-    * BigQuery
+    * Pub/Sub Topic
+    * BigQuery Dataset and Table
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
@@ -126,33 +133,19 @@ The resources/services/activations/deletions that this example will create/trigg
 
 The following dependencies must be available:
 
-* [Terraform](https://www.terraform.io/downloads.html) >= 0.13.0
+* [Terraform](https://www.terraform.io/downloads.html) >= 1.3
 * [Terraform Provider for GCP](https://github.com/terraform-providers/terraform-provider-google) < 5.0
+* [Google Cloud SDK CLI](https://cloud.google.com/sdk/docs/install) > 428.0.0
 
 ### APIs
-
-The Secure-cloud-function module will enable the following APIs to the Serverlesss Project:
-
-* Google VPC Access API: `vpcaccess.googleapis.com`
-* Compute API: `compute.googleapis.com`
-* Container Registry API: `container.googleapis.com`
-* Cloud Function API: `run.googleapis.com`
-
-The Secure-cloud-function module will enable the following APIs to the VPC Project:
-
-* Google VPC Access API: `vpcaccess.googleapis.com`
-* Compute API: `compute.googleapis.com`
-
-The Secure-cloud-function module will enable the following APIs to the KMS Project:
-
-* Cloud KMS API: `cloudkms.googleapis.com`
+#TODO: Fill with APIs needed on SA project
 
 ### Service Account
 
 A service account with the following roles must be used to provision
 the resources of this module:
 
-* VPC Project
+* Shared VPC Project
 * Organization Level
   * Access Context Manager Admin: `roles/accesscontextmanager.policyAdmin`
   * Organization Policy Admin: `roles/orgpolicy.policyAdmin`
@@ -163,4 +156,3 @@ the resources of this module:
   * Compute Shared VPC Admin: `roles/compute.xpnAdmin`
 * Billing:
   * Billing User: `roles/billing.user`
-  
