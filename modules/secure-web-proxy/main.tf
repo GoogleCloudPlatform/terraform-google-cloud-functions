@@ -73,6 +73,16 @@ resource "google_service_networking_connection" "private_service_connect" {
   ]
 }
 
+resource "time_sleep" "wait_network_config_propagation" {
+  create_duration  = "1m"
+  destroy_duration = "5m"
+
+  depends_on = [
+    google_service_networking_connection.private_service_connect,
+    google_compute_subnetwork.swp_subnetwork_proxy
+  ]
+}
+
 resource "google_network_security_gateway_security_policy" "swp_security_policy" {
   provider    = google-beta
   name        = "swp-security-policy"
@@ -177,7 +187,7 @@ resource "null_resource" "swp_deploy" {
 
 resource "time_sleep" "wait_secure_web_proxy" {
   create_duration  = "3m"
-  destroy_duration = "1m"
+  destroy_duration = "5m"
 
   depends_on = [
     null_resource.swp_deploy
