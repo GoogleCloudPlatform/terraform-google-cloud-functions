@@ -58,6 +58,7 @@ module "secure_harness" {
   ingress_policies                            = var.ingress_policies
   serverless_type                             = "CLOUD_FUNCTION"
   use_shared_vpc                              = true
+  time_to_wait_vpc_sc_propagation             = "600s"
 
   network_project_extra_apis = ["certificatemanager.googleapis.com", "networkservices.googleapis.com", "networksecurity.googleapis.com"]
 
