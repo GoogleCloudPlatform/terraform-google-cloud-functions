@@ -28,9 +28,8 @@ resource "random_id" "random_folder_suffix" {
 }
 
 module "secure_harness" {
-  #source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  #version = "~> 0.8"
-  source = "git::https://github.com/amandakarina/terraform-google-cloud-run//modules/secure-serverless-harness?ref=feat/adds-harness-variable-to-customize-propagation-time"
+  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
+  version = "~> 0.8"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-security"
