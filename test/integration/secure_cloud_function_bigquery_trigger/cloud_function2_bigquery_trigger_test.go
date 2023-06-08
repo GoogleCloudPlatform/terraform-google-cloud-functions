@@ -255,7 +255,7 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 
 		// Firewall - Allow egress to Secure Web Proxy
 		allowSwpEgress := "fw-allow-tcp-443-egress-to-secure-web-proxy"
-		swpRanges := [subnetProxyRange, subNetRange]
+		swpRanges := []string{subnetProxyRange, subNetRange}
 		allowSwpEgressRule := gcloud.Runf(t, "compute firewall-rules describe %s --project %s", allowSwpEgress, networkProjectID)
 		assert.Equal(allowSwpEgress, allowSwpEgressRule.Get("name").String(), fmt.Sprintf("firewall rule %s should exist", allowSwpEgress))
 		assert.Equal("EGRESS", allowSwpEgressRule.Get("direction").String(), fmt.Sprintf("firewall rule %s direction should be EGRESS", allowSwpEgress))
