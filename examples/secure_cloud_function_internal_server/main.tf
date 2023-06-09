@@ -121,11 +121,13 @@ resource "null_resource" "generate_certificate" {
         --quiet
     EOT
   }
+
+  depends_on = [module.secure_harness]
 }
 
 resource "time_sleep" "wait_upload_certificate" {
   create_duration  = "1m"
-  destroy_duration = "1m"
+  destroy_duration = "3m"
 
   depends_on = [
     null_resource.generate_certificate
