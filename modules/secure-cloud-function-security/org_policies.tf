@@ -85,6 +85,6 @@ module "cloudrun_allowed_vpc_egress" {
   organization_id   = local.organization
   constraint        = "constraints/run.allowedVPCEgress"
   policy_type       = "list"
-  allow             = ["private-ranges-only"]
+  allow             = ["all-traffic"]
   allow_list_length = 1
 }
