@@ -80,6 +80,9 @@ The APIs to add are:
     - "run.googleapis.com"
     - "vpcaccess.googleapis.com"
     - "containerscanning.googleapis.com"
+    - "certificatemanager.googleapis.com"
+    - "networkservices.googleapis.com"
+    - "networksecurity.googleapis.com"
 ```
 
 1. The APIs should be included in the `services` list in the file [serviceusage_allow_basic_apis.yaml](https://github.com/terraform-google-modules/terraform-example-foundation/blob/v3.0.0/policy-library/policies/constraints/serviceusage_allow_basic_apis.yaml#L30)
@@ -190,7 +193,7 @@ Copy the following code to file [org_policy.tf](https://github.com/terraform-goo
      folder_id         = local.folder_id
      policy_for        = local.policy_for
      policy_type       = "list"
-     allow             = ["private-ranges-only"]
+     allow             = ["all-traffic"]
      allow_list_length = 1
      constraint        = "constraints/run.allowedVPCEgress"
    }
@@ -219,7 +222,7 @@ you will enable an additional API in the restricted shared VPC project.
 ### 2-environments: Enable additional APIs and conditionally grant project IAM Admin role to the networks step terraform service account
 
 1. Wait for the `gcp-networks` build from the previous step to finish.
-1. Add the `"vpcaccess.googleapis.com"` API on the `activate_apis` list in `restricted_shared_vpc_host_project` module in file [modules/env_baseline/networking.tf](https://github.com/terraform-google-modules/terraform-example-foundation/blob/v3.0.0/2-environments/modules/env_baseline/networking.tf#LL68C1-L77C4)
+1. Add the `"vpcaccess.googleapis.com"`, ` "certificatemanager.googleapis.com"`, `"networkservices.googleapis.com"`, and `"networksecurity.googleapis.com"` APIs on the `activate_apis` list in `restricted_shared_vpc_host_project` module in file [modules/env_baseline/networking.tf](https://github.com/terraform-google-modules/terraform-example-foundation/blob/v3.0.0/2-environments/modules/env_baseline/networking.tf#LL68C1-L77C4)
 
 ```hcl
 activate_apis = [
@@ -231,7 +234,10 @@ activate_apis = [
     "cloudresourcemanager.googleapis.com",
     "accesscontextmanager.googleapis.com",
     "billingbudgets.googleapis.com",
-    "vpcaccess.googleapis.com"
+    "vpcaccess.googleapis.com",
+    "certificatemanager.googleapis.com",
+    "networkservices.googleapis.com",
+    "networksecurity.googleapis.com",
 ]
 ```
 
@@ -486,6 +492,7 @@ module "serverless_project" {
     "cloudbuild.googleapis.com",
     "artifactregistry.googleapis.com",
     "compute.googleapis.com",
+    "networksecurity.googleapis.com",
   ]
 
   vpc_service_control_attach_enabled = "true"
@@ -734,7 +741,7 @@ module "cloudfunction_source_bucket" {
 1. Wait for the `gcp-projects` build from the previous step to finish.
 1. Commit changes in the `gcp-projects` repository and push the code to the `production` branch.
 
-### 3-networks: Deploy the serverless connector and add new workspace service account, GCS service account, and Cloud build service account to the restricted perimeter
+### 3-networks: Deploy the serverless connector, the Secure Web Proxy, and add new workspace service account, GCS service account, and Cloud build service account to the restricted perimeter
 
 1. Get the new workspace service account to the restricted perimeter:
 
@@ -779,7 +786,23 @@ module "cloudfunction_source_bucket" {
   ])
     ```
 
-1. Update file `gcp-networks/modules/base_env/variables.tf` to create a toggle for the deploy of the Secured Data Warehouse:
+1. Update file `gcp-networks/envs/production/main.tf` to include a new local `restricted_subnet_web_proxy_ip`:
+
+    ```hcl
+    ...
+    restricted_subnet_primary_ranges = {
+      (local.default_region1) = "10.8.192.0/21"
+      (local.default_region2) = "10.9.192.0/21"
+    }
+
+    restricted_subnet_web_proxy_ip = {
+      (local.default_region1) = "10.8.192.10"
+      (local.default_region2) = "10.9.192.10"
+    }
+    ...
+    ```
+
+1. Update file `gcp-networks/modules/base_env/variables.tf` to create a toggle for the deploy of the Secured Data Warehouse and the IP for the Secure Web Proxy:
 
     ```hcl
     variable "enable_scf" {
@@ -798,16 +821,21 @@ module "cloudfunction_source_bucket" {
     }
 ```
 
-1. Update file `gcp-networks/envs/production/outputs.tf` to add the `restricted_serverless_network_connector_id` output:
+1. Update file `gcp-networks/envs/production/outputs.tf` to add the `restricted_serverless_network_connector_id` and the `restricted_subnet_secure_web_proxy_ip` outputs:
 
 ```hcl
     output "restricted_serverless_network_connector_id" {
       description = "VPC serverless connector ID for the restricted network."
       value       = module.base_env.restricted_serverless_network_connector_id
     }
+
+    output "restricted_subnet_secure_web_proxy_ip" {
+      description = "The IPs the will be used by the Secure Web Proxy instance."
+      value       = local.restricted_subnet_secure_web_proxy_ip
+    }
 ```
 
-1. Update file `gcp-networks/envs/production/main.tf` to set the toggle to `true`:
+1. Update file `gcp-networks/envs/production/main.tf` to set the toggle to `true` and set the `restricted_subnet_secure_web_proxy_ip`:
 
     ```hcl
     module "base_env" {
@@ -820,6 +848,8 @@ module "cloudfunction_source_bucket" {
     ...
 
       enable_scf = true
+
+      restricted_subnet_secure_web_proxy_ip = local.restricted_subnet_secure_web_proxy_ip
     }
     ```
 
@@ -890,34 +920,192 @@ module "serverless_connector" {
 priority  = 65430
 ```
 
+1. Create file `gcp-networks/modules/base_env/scf_secure_web_proxy.tf` and copy the following content:
+
+```hcl
+/**
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+resource "null_resource" "generate_certificate" {
+  count   = var.enable_scf ? 1 : 0
+
+  triggers = {
+    project_id = local.restricted_project_id
+    region     = local.default_region
+  }
+
+  provisioner "local-exec" {
+    when    = create
+    command = <<EOT
+      ${path.module}/generate_swp_certificate.sh \
+        ${local.restricted_project_id} \
+        ${local.default_region}
+    EOT
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = <<EOT
+      gcloud certificate-manager certificates delete swp-certificate \
+        --location=${self.triggers.region} --project=${self.triggers.project_id} \
+        --quiet
+    EOT
+  }
+}
+
+resource "time_sleep" "wait_upload_certificate" {
+  count   = var.enable_scf ? 1 : 0
+
+  create_duration  = "1m"
+  destroy_duration = "3m"
+
+  depends_on = [
+    null_resource.generate_certificate
+  ]
+}
+
+module "secure_web_proxy" {
+  source = "github.com/GoogleCloudPlatform/terraform-google-cloud-functions//modules/secure-web-proxy"
+  count   = var.enable_scf ? 1 : 0
+
+  project_id          = local.restricted_project_id
+  region              = local.default_region
+  network_id          = "projects/${local.restricted_project_id}/global/networks/${module.restricted_shared_vpc.network_name}"
+  subnetwork_id       = "projects/${local.restricted_project_id}/regions/${local.default_region}/subnetworks/sb-${var.environment_code}-shared-restricted-${local.default_region}"
+  subnetwork_ip_range = var.restricted_subnet_primary_ranges[local.default_region]
+  certificates        = ["projects/${local.restricted_project_id}/locations/${local.default_region}/certificates/swp-certificate"]
+  addresses           = [var.restricted_subnet_secure_web_proxy_ip[local.default_region]]
+  ports               = [443]
+  proxy_ip_range      = "10.129.0.0/23"
+
+  # This list of URL was obtained through Cloud Function imports
+  # It will change depending on what imports your CF are using.
+  url_lists = [
+    "*google.com/go*",
+    "*github.com/GoogleCloudPlatform*",
+    "*github.com/cloudevents*",
+    "*golang.org/x*",
+    "*google.golang.org/*",
+    "*github.com/golang/*",
+    "*github.com/google/*",
+    "*github.com/googleapis/*",
+    "*github.com/json-iterator/go",
+    "*github.com/modern-go/concurrent",
+    "*github.com/modern-go/reflect2",
+    "*go.opencensus.io",
+    "*go.uber.org/atomic",
+    "*go.uber.org/multierr",
+    "*go.uber.org/zap"
+  ]
+
+  depends_on = [
+    null_resource.generate_certificate,
+    time_sleep.wait_upload_certificate
+  ]
+}
+ ```
+
+1. Create file `gcp-networks/modules/base_env/generate_swp_certificate.sh` and copy the following content:
+
+```bash
+#!/bin/bash
+
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+project_id=${1}
+location=${2}
+
+generate_self_signed_certificate() {
+    if [[ ! -x "$(command -v openssl)" ]]; then
+        echo "openssl not found"
+        exit 1
+    fi
+
+    openssl req -x509 -newkey rsa:2048 \
+        -keyout key.pem \
+        -out cert.pem -days 365 \
+        -subj '/CN=myswp.example.com' -nodes \
+        -addext "subjectAltName=DNS:myswp.example.com"
+
+    gcloud certificate-manager certificates create swp-certificate \
+        --certificate-file=cert.pem \
+        --private-key-file=key.pem \
+        --location="${location}" \
+        --project="${project_id}"
+}
+generate_self_signed_certificate
+```
+
+1. Ensure that the file `generate_swp_certificate.sh` has the correct permissions
+
+```bash
+chmod 755 gcp-networks/modules/base_env/generate_swp_certificate.sh
+```
+
 1. Commit changes in the `gcp-networks` repository and push the code to the `production` branch.
 
-### 4-projects: Add the `restricted_serverless_network_connector_id` output in the production environment
+### 4-projects: Add the `restricted_serverless_network_connector_id` and `restricted_subnet_secure_web_proxy_ip` outputs in the production environment
 
 This is required because the build in stage `5-app-infra` only has access to the remote state of the `4-projects` stage.
 
-1. Update file `gcp-projects/modules/base_env/outputs.tf` to add the `restricted_serverless_network_connector_id` output:
+1. Update file `gcp-projects/modules/base_env/outputs.tf` to add the outputs:
 
 ```hcl
     output "restricted_serverless_network_connector_id" {
       description = "VPC serverless connector ID for the restricted network."
       value       = local.restricted_serverless_network_connector_id
     }
+
+    output "restricted_subnet_secure_web_proxy_ip" {
+      description = "The IPs the will be used by the Secure Web Proxy instance."
+      value       = local.restricted_subnet_secure_web_proxy_ip
+    }
 ```
 
-1. Update file `gcp-projects/business_unit_1/production/outputs.tf` to add the `restricted_serverless_network_connector_id` output:
+1. Update file `gcp-projects/business_unit_1/production/outputs.tf` to add the outputs:
 
 ```hcl
     output "restricted_serverless_network_connector_id" {
       description = "VPC serverless connector ID for the restricted network."
       value       = module.env.restricted_serverless_network_connector_id
     }
+
+    output "restricted_subnet_secure_web_proxy_ip" {
+      description = "The IPs the will be used by the Secure Web Proxy instance."
+      value       = module.env.restricted_subnet_secure_web_proxy_ip
+    }
 ```
 
-1. Update file `gcp-projects/modules/base_env/example_secure_cloud_function_projects.tf` to add the `restricted_serverless_network_connector_id` local:
+1. Update file `gcp-projects/modules/base_env/example_secure_cloud_function_projects.tf` to add the new locals:
 
 ```hcl
 restricted_serverless_network_connector_id = try(data.terraform_remote_state.network_env.outputs.restricted_serverless_network_connector_id, "")
+restricted_subnet_secure_web_proxy_ip      = try(data.terraform_remote_state.network_env.outputs.restricted_subnet_secure_web_proxy_ip, {})
 ```
 
 1. Commit changes in the `gcp-projects` repository and push the code to the `production` branch.
@@ -1111,6 +1299,7 @@ locals {
   security_project_id                        = data.terraform_remote_state.projects_env.outputs.security_project_id
   cloudfunction_source_bucket_name           = data.terraform_remote_state.projects_env.outputs.cloudfunction_source_bucket_name
   restricted_serverless_network_connector_id = data.terraform_remote_state.projects_env.outputs.restricted_serverless_network_connector_id
+  restricted_subnet_secure_web_proxy_ip      =data.terraform_remote_state.projects_env.outputs.restricted_subnet_secure_web_proxy_ip
   serverless_service_account_email           = data.terraform_remote_state.projects_env.outputs.serverless_service_account_email
   repository_name                            = "rep-secure-cloud-function"
   table_name                                 = "tbl_test"
@@ -1344,6 +1533,13 @@ module "cloud_function_core" {
       }
     ]
   }
+
+  # IPs used on Secure Web Proxy
+  build_environment_variables = {
+    HTTP_PROXY  = "http://${local.restricted_subnet_secure_web_proxy_ip[local.location]}:443"
+    HTTPS_PROXY = "http://${local.restricted_subnet_secure_web_proxy_ip[local.location]}:443"
+  }
+
 
   service_config = {
     max_instance_count             = 2
