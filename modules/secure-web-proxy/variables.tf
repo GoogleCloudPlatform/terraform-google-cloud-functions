@@ -40,10 +40,10 @@ variable "subnetwork_id" {
   type        = string
 }
 
-# variable "subnetwork_ip_range" {
-#   description = "The sub-network ip range."
-#   type        = string
-# }
+variable "subnetwork_ip_range" {
+  description = "The sub-network ip range."
+  type        = string
+}
 
 variable "url_lists" {
   description = "A [URL list](https://cloud.google.com/secure-web-proxy/docs/url-list-syntax-reference) to allow access during Cloud Function build time."
@@ -69,4 +69,10 @@ variable "ports" {
 variable "proxy_ip_range" {
   description = "The proxy sub-network ip range to be used by Secure Web Proxy Gateway. We recommend a subnet size of /23, or 512 proxy-only addresses."
   type        = string
+}
+
+variable "global_address_prefix_length" {
+  description = "The prefix length of the IP range for the private service connect. Defaults to /16."
+  type        = number
+  default     = 16
 }
