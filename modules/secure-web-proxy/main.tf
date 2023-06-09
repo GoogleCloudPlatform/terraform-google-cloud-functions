@@ -57,6 +57,7 @@ module "swp_firewall_rule" {
 resource "google_compute_global_address" "private_ip_allocation" {
   name          = "swp-cloud-function-internal-connection"
   project       = var.project_id
+  address_type  = "INTERNAL"
   purpose       = "VPC_PEERING"
   prefix_length = var.global_address_prefix_length
   network       = var.network_id
@@ -151,11 +152,7 @@ resource "null_resource" "swp_deploy" {
   provisioner "local-exec" {
     when    = create
     command = <<EOF
-<<<<<<< HEAD
-      gcloud network-services gateways import secure-web-proxy \
-=======
       gcloud network-services gateways import ${var.proxy_name} \
->>>>>>> main
         --source=gateway.yaml \
         --location=${var.region} \
         --project=${var.project_id}
