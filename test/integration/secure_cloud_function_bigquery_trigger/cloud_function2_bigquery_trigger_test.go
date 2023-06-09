@@ -274,7 +274,7 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 			},
 			{
 				constraint:    "constraints/run.allowedVPCEgress",
-				allowedValues: "private-ranges-only",
+				allowedValues: "all-traffic",
 			},
 			{
 				constraint:    "constraints/run.allowedIngress",
@@ -305,7 +305,7 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		cf := gcloud.Runf(t, "functions describe %s --project %s --gen2 --region %s", name, projectID, location)
 		assert.Equal("ACTIVE", cf.Get("state").String(), "Should be ACTIVE. Cloud Function is not successfully deployed.")
 		assert.Equal(connectorID, cf.Get("serviceConfig.vpcConnector").String(), fmt.Sprintf("VPC Connector should be %s. Connector was not set.", connectorID))
-		assert.Equal("PRIVATE_RANGES_ONLY", cf.Get("serviceConfig.vpcConnectorEgressSettings").String(), "Egress setting should be PRIVATE_RANGES_ONLY.")
+		assert.Equal("ALL_TRAFFIC", cf.Get("serviceConfig.vpcConnectorEgressSettings").String(), "Egress setting should be ALL_TRAFFIC.")
 		assert.Equal("ALLOW_INTERNAL_AND_GCLB", cf.Get("serviceConfig.ingressSettings").String(), "Ingress setting should be ALLOW_INTERNAL_AND_GCLB.")
 		assert.Equal(saEmail, cf.Get("serviceConfig.serviceAccountEmail").String(), fmt.Sprintf("Cloud Function should use the service account %s.", saEmail))
 		assert.Contains(cf.Get("eventTrigger.eventType").String(), "google.cloud.audit.log.v1.written", "Event Trigger is not based on Audit Logs. Check the EventType configuration.")
