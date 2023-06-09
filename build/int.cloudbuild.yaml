@@ -27,7 +27,6 @@ steps:
   args: ['/bin/bash', '-c', 'cft test run all --stage init --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
   - prepare
@@ -47,7 +46,6 @@ steps:
   args: ['/bin/bash', '-c', 'cft test run TestGCF2GCSSource --stage teardown --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
   - cloud-func-gcs-source-verify
@@ -57,7 +55,6 @@ steps:
   args: ['/bin/bash', '-c', './test/install_build_dependencies.sh && cft test run TestGCF2CloudSQL --stage apply --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
   - cloud-func-init
@@ -66,7 +63,6 @@ steps:
   args: ['/bin/bash', '-c', 'cft test run TestGCF2CloudSQL --stage verify --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
   - secure-cloud-func-sql-apply
@@ -75,7 +71,6 @@ steps:
   args: ['/bin/bash', '-c', 'cft test run TestGCF2CloudSQL --stage teardown --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
   - secure-cloud-func-sql-verify
@@ -85,7 +80,6 @@ steps:
   args: ['/bin/bash', '-c', './test/install_build_dependencies.sh && cft test run TestCFInternalServer --stage apply --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
   - cloud-func-init
@@ -94,7 +88,6 @@ steps:
   args: ['/bin/bash', '-c', 'cft test run TestCFInternalServer --stage verify --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
   - secure-cloud-func-internal-server-apply
@@ -103,7 +96,6 @@ steps:
   args: ['/bin/bash', '-c', 'cft test run TestCFInternalServer --stage teardown --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
   - secure-cloud-func-internal-server-verify
@@ -123,7 +115,6 @@ steps:
   args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage teardown --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
   - cloud-func-pubsub-trigger-verify
@@ -133,7 +124,6 @@ steps:
   args: ['/bin/bash', '-c', './test/install_build_dependencies.sh && cft test run TestGCF2BigqueryTrigger --stage apply --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
   - cloud-func-init
@@ -142,7 +132,6 @@ steps:
   args: ['/bin/bash', '-c', 'cft test run TestGCF2BigqueryTrigger --stage verify --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
   - secure-cloud-func-bigquery-apply
@@ -151,7 +140,6 @@ steps:
   args: ['/bin/bash', '-c', 'cft test run TestGCF2BigqueryTrigger --stage teardown --verbose']
   env:
   - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
   - secure-cloud-func-bigquery-verify
