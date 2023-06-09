@@ -15,7 +15,7 @@
  */
 
 output "folder_id" {
-  value = google_folder.ci-iam-folder.id
+  value = trimprefix(google_folder.ci-iam-folder.id, "folders/")
 }
 
 output "project_id" {
