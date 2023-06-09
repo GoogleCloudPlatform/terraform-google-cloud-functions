@@ -52,7 +52,7 @@ resource "google_project_iam_member" "int_test" {
 resource "google_folder_iam_member" "folder_test" {
   count = length(local.folder_required_roles)
 
-  folder =  google_folder.ci-iam-folder.id
+  folder = google_folder.ci-iam-folder.id
   role   = local.folder_required_roles[count.index]
   member = "serviceAccount:${google_service_account.int_test.email}"
 }
