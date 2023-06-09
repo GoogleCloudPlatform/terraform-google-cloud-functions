@@ -138,7 +138,7 @@ variable "service_config" {
       }))
     })), null)
     vpc_connector                  = string
-    vpc_connector_egress_settings  = optional(string, "PRIVATE_RANGES_ONLY")
+    vpc_connector_egress_settings  = optional(string, "ALL_TRAFFIC")
     ingress_settings               = optional(string, "ALLOW_INTERNAL_AND_GCLB")
     service_account_email          = string
     all_traffic_on_latest_revision = optional(bool, true)
