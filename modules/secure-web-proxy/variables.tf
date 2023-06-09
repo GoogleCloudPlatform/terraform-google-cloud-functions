@@ -31,12 +31,12 @@ variable "region" {
 }
 
 variable "network_id" {
-  description = "The network id where the subnetwork, firewall rule and SWP should be deployed."
+  description = "The network id where the subnetwork, firewall rule and SWP should be deployed. E.g.:projects/{PROJECT_ID}/regions/{REGION}/networks/{NETWORK_NAME}"
   type        = string
 }
 
 variable "subnetwork_id" {
-  description = "The sub-network id where the SWP should be deployed."
+  description = "The sub-network id where the SWP should be deployed. E.g.:projects/{PROJECT_ID}/regions/{REGION}/subnetworks/{SUBNET_NAME}"
   type        = string
 }
 
