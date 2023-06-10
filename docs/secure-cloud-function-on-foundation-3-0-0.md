@@ -87,8 +87,25 @@ The APIs to add are:
 
 1. The APIs should be included in the `services` list in the file [serviceusage_allow_basic_apis.yaml](https://github.com/terraform-google-modules/terraform-example-foundation/blob/v3.0.0/policy-library/policies/constraints/serviceusage_allow_basic_apis.yaml#L30)
 1. Update `gcp-policies/policies/constraints/serviceusage_allow_basic_apis.yaml` file in your policy repository (gcp-policies) for the CI/CD pipeline.
+1. It is also necessary to update the file `gcp-policies/policies/constraints/gcp_network_enable_flow_logs_v1.yaml` to allow the creation of subnetworks of purpose type `REGIONAL_MANAGED_PROXY`.
+
+    ```yaml
+
+              network := asset.resource.data
+              legacy_enable_flow_logs := lib.get_default(network, "enableFlowLogs", false)
+              log_config := lib.get_default(network, "logConfig", {})
+              log_config_enable_flow_logs := lib.get_default(log_config, "enable", false)
+              purpose := lib.get_default(network, "purpose", "PRIVATE")
+
+              log_config_enable_flow_logs != true
+              legacy_enable_flow_logs != true
+              purpose != "REGIONAL_MANAGED_PROXY"
+
+    ```
+
 1. Commit changes in the `gcp-policies` repository and push the code.
 1. Update `gcp-policies-app-infra/policies/constraints/serviceusage_allow_basic_apis.yaml` file in your policy repository (gcp-policies-app-infra) for the App Infra pipeline.
+1. Update `gcp-policies-app-infra/policies/constraints/gcp_network_enable_flow_logs_v1.yaml` file in your policy repository (gcp-policies-app-infra) for the App Infra pipeline.
 1. Commit changes in the `gcp-policies-app-infra` repository and push the code.
 
 ### 1-org: Enforce Cloud Function Organization Policies
@@ -241,8 +258,8 @@ activate_apis = [
 ]
 ```
 
-1. Conditionally grant to the networks step terraform service account the project IAM Admin role in the restricted shared project.
-This is necessary for the serverless VPC access configuration.
+1. Conditionally grant to the networks step terraform service account the project IAM Admin and Certificate Manager Owner roles in the restricted shared project.
+This is necessary for the configuration of the [Serverless VPC Access connector](https://cloud.google.com/vpc/docs/configure-serverless-vpc-access) and the [Secure Web Proxy](https://cloud.google.com/secure-web-proxy/docs/overview).
 This role is granted here and not in the bootstrap step to limit the scope of this role effect.
 
 
@@ -272,7 +289,7 @@ This role is granted here and not in the bootstrap step to limit the scope of th
     }
     ```
 
-1. Update file `gcp-environments/modules/env_baseline/iam.tf` and add the conditional grant of the role:
+1. Update file `gcp-environments/modules/env_baseline/iam.tf` and add the conditional grant of the roles:
 
     ```hcl
     resource "google_project_iam_member" "iam_admin" {
@@ -280,6 +297,14 @@ This role is granted here and not in the bootstrap step to limit the scope of th
 
       project = module.restricted_shared_vpc_host_project.project_id
       role    = "roles/resourcemanager.projectIamAdmin"
+      member  = "serviceAccount:${data.terraform_remote_state.bootstrap.outputs.networks_step_terraform_service_account_email}"
+    }
+
+    resource "google_project_iam_member" "certificate_manager_owner" {
+      count = var.enable_scf ? 1 : 0
+
+      project = module.restricted_shared_vpc_host_project.project_id
+      role    = "roles/certificatemanager.owner"
       member  = "serviceAccount:${data.terraform_remote_state.bootstrap.outputs.networks_step_terraform_service_account_email}"
     }
     ```
