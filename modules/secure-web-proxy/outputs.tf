@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,7 @@
  * limitations under the License.
  */
 
-output "folder_id" {
-  value = google_folder.ci-iam-folder.folder_id
-}
-
-output "project_id" {
-  value = module.project.project_id
-}
-
-output "sa_key" {
-  value     = google_service_account_key.int_test.private_key
-  sensitive = true
-}
-
-output "terraform_service_account" {
-  value = google_service_account.int_test.email
-}
-
-output "access_level_members" {
-  value = ["serviceAccount:${google_service_account.int_test.email}"]
-}
-
-output "create_access_context_manager_access_policy" {
-  value = false
+output "global_address_name" {
+  description = "Google compute global address name."
+  value       = google_compute_global_address.private_ip_allocation.name
 }

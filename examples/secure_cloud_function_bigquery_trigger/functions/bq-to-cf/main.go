@@ -61,14 +61,14 @@ func helloPubSub(ctx context.Context, e event.Event) error {
 		log.Printf("Error listing compute regions: %s.", err.Error())
 		fmt.Errorf(err.Error())
 	}
-	log.Println("Regions: %v!\n", regions)
+	log.Printf("Regions: %v!\n", regions)
 	buckets, err := listBuckets()
 	if err != nil {
 		log.Printf("Error listing project buckets: %s.", err.Error())
 		fmt.Errorf(err.Error())
 	}
 
-	log.Println("Buckets: %v!\n", buckets)
+	log.Printf("Buckets: %v!\n", buckets)
 	return nil
 }
 
@@ -79,7 +79,7 @@ func helloPubSub(ctx context.Context, e event.Event) error {
 func listBuckets() ([]string, error) {
 	projectID := os.Getenv("PROJECT_ID")
 	ctx := context.Background()
-	log.Println("Creating Client for Storage.")
+	log.Printf("Creating Client for Storage.")
 	client, err := storage.NewClient(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("storage.NewClient: %v", err)
@@ -90,7 +90,7 @@ func listBuckets() ([]string, error) {
 	defer cancel()
 
 	var buckets []string
-	log.Println("Getting buckets in project.")
+	log.Printf("Getting buckets in project.")
 	it := client.Buckets(ctx, projectID)
 	for {
 		battrs, err := it.Next()
@@ -108,13 +108,13 @@ func listBuckets() ([]string, error) {
 func listComputeRegions() ([]string, error) {
 	ctx := context.Background()
 
-	log.Println("Creating Default Client for Compute client.")
+	log.Printf("Creating Default Client for Compute client.")
 	c, err := google.DefaultClient(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println("Creating service for Compute client.")
+	log.Printf("Creating service for Compute client.")
 	computeService, err := compute.New(c)
 	if err != nil {
 		log.Fatal(err)
@@ -123,7 +123,7 @@ func listComputeRegions() ([]string, error) {
 	// Project ID for this request.
 	project := os.Getenv("PROJECT_ID")
 	var regions []string
-	log.Println("Getting compute regions.")
+	log.Printf("Getting compute regions.")
 	req := computeService.Regions.List(project)
 	if err := req.Pages(ctx, func(page *compute.RegionList) error {
 		for _, region := range page.Items {

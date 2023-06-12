@@ -35,6 +35,11 @@ variable "vpc_project_id" {
   type        = string
 }
 
+variable "network_id" {
+  description = "VPC network ID which is going to be used to connect the WorkerPool."
+  type        = string
+}
+
 variable "key_name" {
   description = "The name of KMS Key to be created and used in Cloud Run."
   type        = string
@@ -236,9 +241,9 @@ variable "timeout_seconds" {
 }
 
 variable "vpc_egress_value" {
-  description = "Sets VPC Egress firewall rule. Supported values are all-traffic, all (deprecated), and private-ranges-only. all-traffic and all provide the same functionality. all is deprecated but will continue to be supported. Prefer all-traffic."
+  description = "Sets VPC Egress firewall rule. Supported values are VPC_CONNECTOR_EGRESS_SETTINGS_UNSPECIFIED, PRIVATE_RANGES_ONLY, and ALL_TRAFFIC."
   type        = string
-  default     = "PRIVATE_RANGES_ONLY"
+  default     = "ALL_TRAFFIC"
 }
 
 variable "ingress_settings" {
@@ -341,9 +346,4 @@ variable "bucket_lifecycle_rules" {
       with_state                 = "ARCHIVED"
     }
   }]
-}
-
-variable "network_id" {
-  description = "VPC network ID which is going to be used to connect the WorkerPool."
-  type        = string
 }

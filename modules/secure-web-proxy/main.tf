@@ -37,12 +37,12 @@ module "swp_firewall_rule" {
   network_name = var.network_id
 
   rules = [{
-    name          = "fw-allow-tcp-443-egress-to-secure-web-proxy"
-    description   = "Allow Cloud Build to connect in Secure Web Proxy"
-    direction     = "EGRESS"
-    priority      = 100
-    ip_cidr_range = var.proxy_ip_range
-    source_tags   = []
+    name        = "fw-allow-tcp-443-egress-to-secure-web-proxy"
+    description = "Allow Cloud Build to connect in Secure Web Proxy"
+    direction   = "EGRESS"
+    priority    = 100
+    ranges      = [var.proxy_ip_range, var.subnetwork_ip_range]
+    source_tags = []
     allow = [{
       protocol = "tcp"
       ports    = var.ports
@@ -57,10 +57,9 @@ module "swp_firewall_rule" {
 resource "google_compute_global_address" "private_ip_allocation" {
   name          = "swp-cloud-function-internal-connection"
   project       = var.project_id
-  purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
-  address       = "10.0.4.0"
-  prefix_length = 24
+  purpose       = "VPC_PEERING"
+  prefix_length = var.global_address_prefix_length
   network       = var.network_id
 }
 
@@ -71,6 +70,16 @@ resource "google_service_networking_connection" "private_service_connect" {
 
   depends_on = [
     google_compute_global_address.private_ip_allocation
+  ]
+}
+
+resource "time_sleep" "wait_network_config_propagation" {
+  create_duration  = "1m"
+  destroy_duration = "5m"
+
+  depends_on = [
+    google_service_networking_connection.private_service_connect,
+    google_compute_subnetwork.swp_subnetwork_proxy
   ]
 }
 
@@ -127,13 +136,14 @@ resource "null_resource" "swp_generate_gateway_config" {
   }
 
   depends_on = [
-    google_network_security_gateway_security_policy.swp_security_policy
+    google_network_security_gateway_security_policy_rule.swp_security_policy_rule
   ]
 }
 
 resource "null_resource" "swp_deploy" {
 
   triggers = {
+    proxy_name = var.proxy_name
     project_id = var.project_id
     location   = var.region
     network_id = var.network_id
@@ -142,7 +152,7 @@ resource "null_resource" "swp_deploy" {
   provisioner "local-exec" {
     when    = create
     command = <<EOF
-      gcloud network-services gateways import secure-web-proxy \
+      gcloud network-services gateways import ${var.proxy_name} \
         --source=gateway.yaml \
         --location=${var.region} \
         --project=${var.project_id}
@@ -152,7 +162,7 @@ resource "null_resource" "swp_deploy" {
   provisioner "local-exec" {
     when    = destroy
     command = <<EOF
-      gcloud network-services gateways delete secure-web-proxy \
+      gcloud network-services gateways delete ${self.triggers.proxy_name} \
         --location=${self.triggers.location} \
         --project=${self.triggers.project_id} \
         --quiet
@@ -170,13 +180,14 @@ resource "null_resource" "swp_deploy" {
     google_network_security_gateway_security_policy.swp_security_policy,
     google_network_security_url_lists.swp_url_lists,
     google_network_security_gateway_security_policy_rule.swp_security_policy_rule,
-    null_resource.swp_generate_gateway_config
+    null_resource.swp_generate_gateway_config,
+    google_service_networking_connection.private_service_connect
   ]
 }
 
 resource "time_sleep" "wait_secure_web_proxy" {
   create_duration  = "3m"
-  destroy_duration = "1m"
+  destroy_duration = "5m"
 
   depends_on = [
     null_resource.swp_deploy

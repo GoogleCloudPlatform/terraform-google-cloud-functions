@@ -28,9 +28,8 @@ resource "random_id" "random_folder_suffix" {
 }
 
 module "secure_harness" {
-  #source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  #version = "~> 0.7"
-  source = "git::https://github.com/amandakarina/terraform-google-cloud-run//modules/secure-serverless-harness?ref=feat/adds-harness-variable-to-customize-propagation-time"
+  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
+  version = "~> 0.8"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-security"
@@ -46,7 +45,7 @@ module "secure_harness" {
   private_service_connect_ip                  = "10.3.0.5"
   create_access_context_manager_access_policy = var.create_access_context_manager_access_policy
   access_context_manager_policy_id            = var.access_context_manager_policy_id
-  access_level_members                        = var.access_level_members
+  access_level_members                        = distinct(concat(var.access_level_members, ["serviceAccount:${var.terraform_service_account}"]))
   key_name                                    = "key-secure-artifact-registry"
   keyring_name                                = "krg-secure-artifact-registry"
   prevent_destroy                             = false
@@ -55,7 +54,7 @@ module "secure_harness" {
   ingress_policies                            = var.ingress_policies
   serverless_type                             = "CLOUD_FUNCTION"
   use_shared_vpc                              = true
-  time_to_wait_vpc_sc_propagation             = "360s"
+  time_to_wait_vpc_sc_propagation             = "600s"
 
   service_account_project_roles = {
     "prj-secure-cloud-function" = [
@@ -118,14 +117,17 @@ resource "null_resource" "generate_certificate" {
     when    = destroy
     command = <<EOT
       gcloud certificate-manager certificates delete swp-certificate \
-        --location=${self.triggers.region} --project=${self.triggers.project_id}
+        --location=${self.triggers.region} --project=${self.triggers.project_id} \
+        --quiet
     EOT
   }
+
+  depends_on = [module.secure_harness]
 }
 
 resource "time_sleep" "wait_upload_certificate" {
   create_duration  = "1m"
-  destroy_duration = "1m"
+  destroy_duration = "3m"
 
   depends_on = [
     null_resource.generate_certificate
@@ -157,12 +159,7 @@ module "secure_web_proxy" {
     "*github.com/google/*",
     "*github.com/googleapis/*",
     "*github.com/json-iterator/go",
-    "*github.com/modern-go/concurrent",
-    "*github.com/modern-go/reflect2",
-    "*go.opencensus.io",
-    "*go.uber.org/atomic",
-    "*go.uber.org/multierr",
-    "*go.uber.org/zap"
+    "*dl.google.com/*"
   ]
 
   depends_on = [
@@ -175,22 +172,23 @@ module "secure_web_proxy" {
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
 
-  function_name         = "secure-function2-internal-server"
-  function_description  = "Secure cloud function example"
-  location              = local.location
-  serverless_project_id = module.secure_harness.serverless_project_ids[0]
-  vpc_project_id        = module.secure_harness.network_project_id[0]
-  kms_project_id        = module.secure_harness.security_project_id
-  key_name              = "key-secure-cloud-function"
-  keyring_name          = "krg-secure-cloud-function"
-  service_account_email = module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]
-  connector_name        = "con-secure-cloud-function"
-  subnet_name           = module.secure_harness.service_subnet[0]
-  create_subnet         = false
-  shared_vpc_name       = module.secure_harness.service_vpc[0].network.name
-  prevent_destroy       = false
-  ip_cidr_range         = "10.0.0.0/28"
-  network_id            = module.secure_harness.service_vpc[0].network.id
+  function_name             = "secure-function2-internal-server4"
+  function_description      = "Secure cloud function example"
+  location                  = local.location
+  serverless_project_id     = module.secure_harness.serverless_project_ids[0]
+  serverless_project_number = module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]
+  vpc_project_id            = module.secure_harness.network_project_id[0]
+  kms_project_id            = module.secure_harness.security_project_id
+  key_name                  = "key-secure-cloud-function"
+  keyring_name              = "krg-secure-cloud-function"
+  service_account_email     = module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]
+  connector_name            = "con-secure-cloud-function"
+  subnet_name               = module.secure_harness.service_subnet[0]
+  create_subnet             = false
+  shared_vpc_name           = module.secure_harness.service_vpc[0].network.name
+  prevent_destroy           = false
+  ip_cidr_range             = "10.0.0.0/28"
+  network_id                = module.secure_harness.service_vpc[0].network.id
 
   build_environment_variables = {
     HTTP_PROXY  = "http://10.0.0.10:443"

@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
+resource "random_id" "folder-rand" {
+  byte_length = 2
+}
+
+resource "google_folder" "ci-iam-folder" {
+  display_name = "ci-tests-iam-folder-${random_id.folder-rand.hex}"
+  parent       = "folders/${var.folder_id}"
+}
+
 module "project" {
   source  = "terraform-google-modules/project-factory/google"
   version = "~> 14.0"
@@ -21,7 +30,7 @@ module "project" {
   name                    = "ci-cloud-functions"
   random_project_id       = "true"
   org_id                  = var.org_id
-  folder_id               = var.folder_id
+  folder_id               = google_folder.ci-iam-folder.id
   billing_account         = var.billing_account
   default_service_account = "keep"
 
@@ -45,44 +54,5 @@ module "project" {
     "sql-component.googleapis.com",
     "sqladmin.googleapis.com",
     "servicenetworking.googleapis.com"
-  ]
-}
-
-resource "null_resource" "generate_cert" {
-  provisioner "local-exec" {
-    command = <<EOT
-      openssl req -x509 -newkey rsa:2048 \
-        -keyout key.pem \
-        -out cert.pem -days 365 \
-        -subj '/CN=myswp.example.com' -nodes \
-        -addext "subjectAltName=DNS:myswp.example.com"
-    EOT
-  }
-}
-
-data "local_file" "key" {
-  filename   = "${path.module}/key.pem"
-  depends_on = [null_resource.generate_cert]
-}
-
-data "local_file" "cert" {
-  filename   = "${path.module}/cert.pem"
-  depends_on = [null_resource.generate_cert]
-}
-
-resource "google_certificate_manager_certificate" "swp_certificate" {
-  name        = "swp-certificate"
-  description = "Secure Web Proxy provided certificate."
-  project     = module.project.project_id
-  location    = "us-west1"
-  self_managed {
-    pem_private_key = data.local_file.key.content
-    pem_certificate = data.local_file.cert.content
-  }
-
-  depends_on = [
-    module.project,
-    data.local_file.cert,
-    data.local_file.key
   ]
 }
