@@ -68,6 +68,14 @@ module "secure_harness" {
   }
 }
 
+resource "time_sleep" "wait_swp_and_certificate_to_destroy" {
+  destroy_duration = "5m"
+
+  depends_on = [
+    module.secure_harness
+  ]
+}
+
 data "archive_file" "cf_bigquery_source" {
   type        = "zip"
   source_dir  = "${path.module}/functions/bq-to-cf/"

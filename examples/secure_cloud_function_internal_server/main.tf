@@ -134,7 +134,7 @@ resource "null_resource" "generate_certificate" {
 }
 
 resource "time_sleep" "wait_upload_certificate" {
-  create_duration  = "1m"
+  create_duration = "1m"
 
   depends_on = [
     null_resource.generate_certificate

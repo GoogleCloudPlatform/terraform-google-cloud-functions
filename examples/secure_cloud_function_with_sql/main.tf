@@ -76,6 +76,14 @@ module "secure_harness" {
   }
 }
 
+resource "time_sleep" "wait_swp_and_certificate_to_destroy" {
+  destroy_duration = "5m"
+
+  depends_on = [
+    module.secure_harness
+  ]
+}
+
 resource "google_project_service_identity" "pubsub_sa" {
   provider = google-beta
 
