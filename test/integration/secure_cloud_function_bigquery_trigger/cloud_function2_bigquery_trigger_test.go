@@ -180,7 +180,7 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		"visionai.googleapis.com",
 		"vmmigration.googleapis.com",
 		"vpcaccess.googleapis.com",
-		"webrisk.googleapis.com",.Array()
+		"webrisk.googleapis.com",
 		"workflows.googleapis.com",
 		"workstations.googleapis.com",
 	}

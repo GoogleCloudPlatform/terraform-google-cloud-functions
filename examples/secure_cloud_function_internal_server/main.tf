@@ -78,6 +78,14 @@ module "secure_harness" {
   }
 }
 
+resource "time_sleep" "wait_swp_and_certificate_to_destroy" {
+  destroy_duration = "5m"
+
+  depends_on = [
+    module.secure_harness
+  ]
+}
+
 data "archive_file" "cf-internal-server-source" {
   type        = "zip"
   source_dir  = "${path.module}/function"
@@ -127,7 +135,6 @@ resource "null_resource" "generate_certificate" {
 
 resource "time_sleep" "wait_upload_certificate" {
   create_duration  = "1m"
-  destroy_duration = "3m"
 
   depends_on = [
     null_resource.generate_certificate
