@@ -358,28 +358,48 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 
 		// Global Address test
 		// Networking Connection Peering test
-		opNetworkPeering := gcloud.Runf(t, "compute networks peerings list --network=%s --project=%s", networkName, projectID).Array()
+		opNetworkPeering := gcloud.Runf(t, "compute networks peerings list --network=%s --project=%s", networkName, networkProjectID).Array()
 		assert.Equal(1, len(opNetworkPeering), "Should have only one Network Peering.")
 
 		// Gateway Security Policy test
-		opSwpPolicy := gcloud.Runf(t, "network-security gateway-security-policies list --location=%s --project=%s", location, projectID).Array()
+		opSwpPolicy := gcloud.Runf(t, "network-security gateway-security-policies list --location=%s --project=%s", location, networkProjectID).Array()
 		assert.Equal(1, len(opSwpPolicy), "Should have only one Gateway Security Policy")
 
 		// URL lists test
-		opSwpUrlList := gcloud.Runf(t, "network-security url-lists list --location=%s --project=%s", location, projectID).Array()
+		swpUrlListValues := []string{
+			"*google.com/go*",
+      		"*github.com/GoogleCloudPlatform*",
+      		"*github.com/cloudevents*",
+      		"*golang.org/x*",
+      		"*google.golang.org/*",
+      		"*github.com/golang/*",
+      		"*github.com/google/*",
+      		"*github.com/googleapis/*",
+      		"*github.com/json-iterator/go",
+      		"*github.com/modern-go/concurrent",
+      		"*github.com/modern-go/reflect2",
+      		"*go.opencensus.io",
+      		"*go.uber.org/atomic",
+      		"*go.uber.org/multierr",
+      		"*go.uber.org/zap"
+		}
+		opSwpUrlList := gcloud.Runf(t, "network-security url-lists list --location=%s --project=%s", location, networkProjectID).Array()
 		assert.Equal(1, len(opSwpUrlList), "Should have only one URL Lists")
+		assert.Contains(swpUrlListValues, opSwpUrlList[0].Get("values").Array(), fmt.Sprintf("Should have same URL Lists value: %v", swpUrlListValues))
 
 		// Gateway Security Policy Rule test
-		opSwpPolicyRule := gcloud.Runf(t, "network-security gateway-security-policies rules list --gateway-security-policy swp-security-policy --location=%s --project=%s", location, projectID).Array()
+		swpSessionMatcher := fmt.Sprintf("inUrlList(host(), 'projects/%s/locations/%s/urlLists/swp-url-lists')", networkProjectID, location)
+		opSwpPolicyRule := gcloud.Runf(t, "network-security gateway-security-policies rules list --gateway-security-policy swp-security-policy --location=%s --project=%s", location, networkProjectID).Array()
 		assert.Equal(1, len(opSwpPolicyRule), "Should have only one Gateway Security Policy Rule")
+		assert.Equal(swpSessionMatcher, opSwpPolicyRule[0].Get("sessionMatcher").String(), fmt.Sprintf("Should have same session matcher: %s", swpSessionMatcher))
 
 		// Secure Web Proxy test
-		swpName := fmt.Sprintf("projects/%s/locations/%s/gateways/secure-web-proxy", projectID, location)
-		swpCertificate := fmt.Sprintf("projects/%s/locations/%s/certificates/swp-certificate", projectID, location)
-		swpSecurityPolicy := fmt.Sprintf("projects/%s/locations/%s/gatewaySecurityPolicies/swp-security-policy", projectID, location)
-		swpNetwork := fmt.Sprintf("projects/%s/global/networks/vpc-secure-cloud-function", projectID)
-		swpSubnetwork := fmt.Sprintf("projects/%s/regions/%s/subnetworks/sb-restricted-%s", projectID, location, location)
-		opSwpGateway := gcloud.Runf(t, "network-services gateways describe secure-web-proxy --location=%s --project=%s", location, projectID)
+		swpName := fmt.Sprintf("projects/%s/locations/%s/gateways/secure-web-proxy", networkProjectID, location)
+		swpCertificate := fmt.Sprintf("projects/%s/locations/%s/certificates/swp-certificate", networkProjectID, location)
+		swpSecurityPolicy := fmt.Sprintf("projects/%s/locations/%s/gatewaySecurityPolicies/swp-security-policy", networkProjectID, location)
+		swpNetwork := fmt.Sprintf("projects/%s/global/networks/vpc-secure-cloud-function", networkProjectID)
+		swpSubnetwork := fmt.Sprintf("projects/%s/regions/%s/subnetworks/sb-restricted-%s", networkProjectID, location, location)
+		opSwpGateway := gcloud.Runf(t, "network-services gateways describe secure-web-proxy --location=%s --project=%s", location, networkProjectID)
 		assert.Equal(swpName, opSwpGateway.Get("name").String(), fmt.Sprintf("SWP name should be %s", swpName))
 		assert.Equal("SECURE_WEB_GATEWAY", opSwpGateway.Get("type").String(), "SWP type should be SECURE_WEB_GATEWAY")
 		assert.Equal("10.0.0.10", opSwpGateway.Get("addresses").Array()[0].String(), "SWP first address should be 10.0.0.10")
