@@ -63,6 +63,23 @@ terraform-example-foundation
 terraform-google-cloud-functions
 ```
 
+### Update builder image
+
+1. Go to the trigger page in Google Cloud Console
+
+      ```bash
+      terraform -chdir="./gcp-bootstrap/envs/shared" init
+      export DEFAULT_REGION=$(terraform -chdir="./gcp-bootstrap/envs/shared" output -json common_config | jq '.default_region' --raw-output)
+      export CICD_PROJECT_ID=$(terraform -chdir="./gcp-bootstrap/envs/shared" output -raw cloudbuild_project_id)
+
+      echo "trigger page = https://console.cloud.google.com/cloud-build/triggers;region=${DEFAULT_REGION}?project=${CICD_PROJECT_ID}"
+      ```
+
+1. In the trigger page search for the line with the trigger with name `tf-cloud-builder-build` and description *Builds a Terraform runner image. Managed by Terraform.*
+1. Select the `RUN` option.
+1. On the pop-up select the `RUN TRIGGER` button.
+1. Wait for the build to finish.
+
 ### Update gcloud terraform vet policies
 
 the first step is to update the `gcloud terraform vet` policies constraints to allow usage of the APIs needed by the Secure Cloud Function.
@@ -362,6 +379,11 @@ will deployed in the Secure Cloud Function that will be created in step `5-app-i
       value       = var.enable_scf ? module.serverless_project[0].project_id : ""
     }
 
+    output "serverless_project_number" {
+      description = "The project number in which Secure Cloud Functions serverless resources will be created."
+      value       = var.enable_scf ? module.serverless_project[0].project_number : ""
+    }
+
     output "security_project_id" {
       description = "The ID of the project in which Secure Cloud Functions security resources will be created."
       value       = var.enable_scf ? module.security_project[0].project_id : ""
@@ -399,6 +421,11 @@ will deployed in the Secure Cloud Function that will be created in step `5-app-i
     output "serverless_project_id" {
       description = "The ID of the project in which Secure Cloud Functions serverless resources will be created."
       value       = module.env.serverless_project_id
+    }
+
+    output "serverless_project_number" {
+      description = "The project number in which Secure Cloud Functions serverless resources will be created."
+      value       = module.env.serverless_project_number
     }
 
     output "security_project_id" {
@@ -787,7 +814,6 @@ module "cloudfunction_source_bucket" {
 1. Get the serverless GCS service account:
 
     ```bash
-    terraform -chdir="gcp-projects/business_unit_1/production" init
     export serverless_project_gcs_sa=$(terraform -chdir="gcp-projects/business_unit_1/production" output -raw serverless_project_gcs_sa)
     echo "serverless_project_gcs_sa = ${serverless_project_gcs_sa}"
     ```
@@ -795,7 +821,6 @@ module "cloudfunction_source_bucket" {
 1. Get the serverless Cloud Build service account:
 
     ```bash
-    terraform -chdir="gcp-projects/business_unit_1/production" init
     export serverless_project_cb_sa=$(terraform -chdir="gcp-projects/business_unit_1/production" output -raw serverless_project_cb_sa)
     echo "serverless_project_cb_sa = ${serverless_project_cb_sa}"
     ```
@@ -827,7 +852,7 @@ module "cloudfunction_source_bucket" {
     ...
     ```
 
-1. Update file `gcp-networks/modules/base_env/variables.tf` to create a toggle for the deploy of the Secured Data Warehouse and the IP for the Secure Web Proxy:
+1. Update file `gcp-networks/modules/base_env/variables.tf` to create a toggle for the deploy of the Secured Cloud Function:
 
     ```hcl
     variable "enable_scf" {
@@ -965,7 +990,7 @@ priority  = 65430
  */
 
 resource "null_resource" "generate_certificate" {
-  count   = var.enable_scf ? 1 : 0
+  count = var.enable_scf ? 1 : 0
 
   triggers = {
     project_id = local.restricted_project_id
@@ -992,7 +1017,7 @@ resource "null_resource" "generate_certificate" {
 }
 
 resource "time_sleep" "wait_upload_certificate" {
-  count   = var.enable_scf ? 1 : 0
+  count = var.enable_scf ? 1 : 0
 
   create_duration  = "1m"
   destroy_duration = "3m"
@@ -1094,13 +1119,23 @@ chmod 755 gcp-networks/modules/base_env/generate_swp_certificate.sh
 
 1. Commit changes in the `gcp-networks` repository and push the code to the `production` branch.
 
-### 4-projects: Add the `restricted_serverless_network_connector_id` and `restricted_subnet_secure_web_proxy_ip` outputs in the production environment
+### 4-projects: include additional restricted outputs in the production environment
 
 This is required because the build in stage `5-app-infra` only has access to the remote state of the `4-projects` stage.
 
 1. Update file `gcp-projects/modules/base_env/outputs.tf` to add the outputs:
 
 ```hcl
+    output "restricted_host_project_id" {
+      description = "Restricted host project id."
+      value       = local.restricted_host_project_id
+    }
+
+    output "restricted_network_name" {
+      description = "Restricted network name."
+      value       = local.restricted_network_name
+    }
+
     output "restricted_serverless_network_connector_id" {
       description = "VPC serverless connector ID for the restricted network."
       value       = local.restricted_serverless_network_connector_id
@@ -1115,6 +1150,16 @@ This is required because the build in stage `5-app-infra` only has access to the
 1. Update file `gcp-projects/business_unit_1/production/outputs.tf` to add the outputs:
 
 ```hcl
+    output "restricted_host_project_id" {
+      description = "Restricted host project id."
+      value       = module.env.restricted_host_project_id
+    }
+
+    output "restricted_network_name" {
+      description = "Restricted network name."
+      value       = module.env.restricted_network_name
+    }
+
     output "restricted_serverless_network_connector_id" {
       description = "VPC serverless connector ID for the restricted network."
       value       = module.env.restricted_serverless_network_connector_id
@@ -1129,6 +1174,7 @@ This is required because the build in stage `5-app-infra` only has access to the
 1. Update file `gcp-projects/modules/base_env/example_secure_cloud_function_projects.tf` to add the new locals:
 
 ```hcl
+restricted_network_name                    = data.terraform_remote_state.network_env.outputs.restricted_network_name
 restricted_serverless_network_connector_id = try(data.terraform_remote_state.network_env.outputs.restricted_serverless_network_connector_id, "")
 restricted_subnet_secure_web_proxy_ip      = try(data.terraform_remote_state.network_env.outputs.restricted_subnet_secure_web_proxy_ip, {})
 ```
@@ -1321,10 +1367,13 @@ cp "${SCF_PATH}/functions/bq-to-cf/main.go" ./business_unit_1/production/functio
 locals {
   location                                   = data.terraform_remote_state.projects_env.outputs.default_region
   serverless_project_id                      = data.terraform_remote_state.projects_env.outputs.serverless_project_id
+  serverless_project_number                  = data.terraform_remote_state.projects_env.outputs.serverless_project_number
   security_project_id                        = data.terraform_remote_state.projects_env.outputs.security_project_id
+  restricted_host_project_id                 = data.terraform_remote_state.projects_env.outputs.restricted_host_project_id
+  restricted_network_name                    = data.terraform_remote_state.projects_env.outputs.restricted_network_name
   cloudfunction_source_bucket_name           = data.terraform_remote_state.projects_env.outputs.cloudfunction_source_bucket_name
   restricted_serverless_network_connector_id = data.terraform_remote_state.projects_env.outputs.restricted_serverless_network_connector_id
-  restricted_subnet_secure_web_proxy_ip      =data.terraform_remote_state.projects_env.outputs.restricted_subnet_secure_web_proxy_ip
+  restricted_subnet_secure_web_proxy_ip      = data.terraform_remote_state.projects_env.outputs.restricted_subnet_secure_web_proxy_ip
   serverless_service_account_email           = data.terraform_remote_state.projects_env.outputs.serverless_service_account_email
   repository_name                            = "rep-secure-cloud-function"
   table_name                                 = "tbl_test"
@@ -1521,11 +1570,13 @@ module "cloud_function_core" {
   function_name        = "secure-cloud-function-bigquery"
   function_description = "Logs when there is a new row in the BigQuery"
   project_id           = local.serverless_project_id
+  project_number       = local.serverless_project_number
   location             = local.location
   runtime              = "go118"
   entry_point          = "HelloCloudFunction"
   force_destroy        = true
   encryption_key       = module.cloud_function_kms.keys[local.key_name]
+  network_id           = "projects/${local.restricted_host_project_id}/global/networks/${local.restricted_network_name}"
 
   storage_source = {
     bucket = local.cloudfunction_source_bucket_name
@@ -1575,7 +1626,7 @@ module "cloud_function_core" {
     service_account_email          = local.serverless_service_account_email
     ingress_settings               = "ALLOW_INTERNAL_AND_GCLB"
     all_traffic_on_latest_revision = true
-    vpc_connector_egress_settings  = "PRIVATE_RANGES_ONLY"
+    vpc_connector_egress_settings  = "ALL_TRAFFIC"
 
     runtime_env_variables = {
       PROJECT_ID = local.serverless_project_id
@@ -1598,3 +1649,59 @@ module "cloud_function_core" {
 git checkout -b production
 git push origin production
 ```
+
+### 3-networks: Add flag to disable the Secure Web Proxy used by the Secure Cloud Function build process
+
+1. The usage of the Secure Web Proxy in the restricted host project will incur in additional costs.
+See the [Secure Web Proxy pricing information](https://cloud.google.com/secure-web-proxy/pricing) for details.
+1. Apply the following instructions to create a toggle to enable/disable the Secure Web Proxy
+1. Update file `gcp-networks/modules/base_env/variables.tf` to create a toggle for the deploy of the Secure Web Proxy:
+
+    ```hcl
+    variable "enable_swp" {
+      description = "Set to true to create the Secure Web Proxy needed by the Secure Cloud Function build process."
+      type        = bool
+      default     = false
+    }
+    ```
+
+1. Update file `gcp-networks/envs/production/main.tf` to set the toggle to `true` and set the `restricted_subnet_secure_web_proxy_ip`:
+
+    ```hcl
+    module "base_env" {
+      source = "../../modules/base_env"
+
+      env                                   = local.env
+      environment_code                      = local.environment_code
+      access_context_manager_policy_id      = var.access_context_manager_policy_id
+
+    ...
+
+      enable_scf = true
+      enable_swp = false
+
+      restricted_subnet_secure_web_proxy_ip = local.restricted_subnet_secure_web_proxy_ip
+    }
+    ```
+1. Update file `gcp-networks/modules/base_env/scf_secure_web_proxy.tf` and add the new flag:
+
+    ```hcl
+    resource "null_resource" "generate_certificate" {
+      count = var.enable_scf && var.enable_swp ? 1 : 0
+      ...
+    ```
+
+    ```hcl
+    resource "time_sleep" "wait_upload_certificate" {
+      count = var.enable_scf && var.enable_swp ? 1 : 0
+      ...
+    ```
+
+    ```hcl
+    module "secure_web_proxy" {
+      source = "github.com/GoogleCloudPlatform/terraform-google-cloud-functions//modules/secure-web-proxy"
+      count  = var.enable_scf && var.enable_swp ? 1 : 0
+      ...
+    ```
+
+1. Commit changes in the `gcp-networks` repository and push the code to the `production` branch.
