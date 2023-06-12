@@ -368,20 +368,20 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		// URL lists test
 		swpUrlListValues := []string{
 			"*google.com/go*",
-      		"*github.com/GoogleCloudPlatform*",
-      		"*github.com/cloudevents*",
-      		"*golang.org/x*",
-      		"*google.golang.org/*",
-      		"*github.com/golang/*",
-      		"*github.com/google/*",
-      		"*github.com/googleapis/*",
-      		"*github.com/json-iterator/go",
-      		"*github.com/modern-go/concurrent",
-      		"*github.com/modern-go/reflect2",
-      		"*go.opencensus.io",
-      		"*go.uber.org/atomic",
-      		"*go.uber.org/multierr",
-      		"*go.uber.org/zap"
+			"*github.com/GoogleCloudPlatform*",
+			"*github.com/cloudevents*",
+			"*golang.org/x*",
+			"*google.golang.org/*",
+			"*github.com/golang/*",
+			"*github.com/google/*",
+			"*github.com/googleapis/*",
+			"*github.com/json-iterator/go",
+			"*github.com/modern-go/concurrent",
+			"*github.com/modern-go/reflect2",
+			"*go.opencensus.io",
+			"*go.uber.org/atomic",
+			"*go.uber.org/multierr",
+			"*go.uber.org/zap",
 		}
 		opSwpUrlList := gcloud.Runf(t, "network-security url-lists list --location=%s --project=%s", location, networkProjectID).Array()
 		assert.Equal(1, len(opSwpUrlList), "Should have only one URL Lists")
