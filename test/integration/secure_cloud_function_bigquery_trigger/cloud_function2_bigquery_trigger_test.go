@@ -180,7 +180,7 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		"visionai.googleapis.com",
 		"vmmigration.googleapis.com",
 		"vpcaccess.googleapis.com",
-		"webrisk.googleapis.com",
+		"webrisk.googleapis.com",.Array()
 		"workflows.googleapis.com",
 		"workstations.googleapis.com",
 	}
@@ -359,19 +359,19 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		// Global Address test
 		// Networking Connection Peering test
 		opNetworkPeering := gcloud.Runf(t, "compute networks peerings list --network=%s --project=%s", networkName, projectID).Array()
-		assert.Equal(1, opNetworkPeering.len(), "Should have only one Network Peering.")
+		assert.Equal(1, len(opNetworkPeering), "Should have only one Network Peering.")
 
 		// Gateway Security Policy test
 		opSwpPolicy := gcloud.Runf(t, "network-security gateway-security-policies list --location=%s --project=%s", location, projectID).Array()
-		assert.Equal(1, opSwpPolicy.len(), "Should have only one Gateway Security Policy")
+		assert.Equal(1, len(opSwpPolicy), "Should have only one Gateway Security Policy")
 
 		// URL lists test
 		opSwpUrlList := gcloud.Runf(t, "network-security url-lists list --location=%s --project=%s", location, projectID).Array()
-		assert.Equal(1, opSwpUrlList.len(), "Should have only one URL Lists")
+		assert.Equal(1, len(opSwpUrlList), "Should have only one URL Lists")
 
 		// Gateway Security Policy Rule test
 		opSwpPolicyRule := gcloud.Runf(t, "network-security gateway-security-policies rules list --gateway-security-policy swp-security-policy --location=%s --project=%s", location, projectID).Array()
-		assert.Equal(1, opSwpPolicyRule.len(), "Should have only one Gateway Security Policy Rule")
+		assert.Equal(1, len(opSwpPolicyRule), "Should have only one Gateway Security Policy Rule")
 
 		// Secure Web Proxy test
 		swpName := fmt.Sprintf("projects/%s/locations/%s/gateways/secure-web-proxy", projectID, location)
@@ -382,9 +382,9 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		opSwpGateway := gcloud.Runf(t, "network-services gateways describe secure-web-proxy --location=%s --project=%s", location, projectID)
 		assert.Equal(swpName, opSwpGateway.Get("name").String(), fmt.Sprintf("SWP name should be %s", swpName))
 		assert.Equal("SECURE_WEB_GATEWAY", opSwpGateway.Get("type").String(), "SWP type should be SECURE_WEB_GATEWAY")
-		assert.Equal("10.0.0.10", opSwpGateway.Get("addresses")[0].String(), "SWP first address should be 10.0.0.10")
-		assert.Equal("443", opSwpGateway.Get("ports")[0].String(), "SWP ports should be 443")
-		assert.Equal(swpCertificate, opSwpGateway.Get("certificateUrls")[0].String(), fmt.Sprintf("SWP certificate should be %s"))
+		assert.Equal("10.0.0.10", opSwpGateway.Get("addresses").Array()[0].String(), "SWP first address should be 10.0.0.10")
+		assert.Equal("443", opSwpGateway.Get("ports").Array()[0].String(), "SWP ports should be 443")
+		assert.Equal(swpCertificate, opSwpGateway.Get("certificateUrls").Array()[0].String(), fmt.Sprintf("SWP certificate should be %s"))
 		assert.Equal(swpSecurityPolicy, opSwpGateway.Get("gatewaySecurityPolicy").String(), fmt.Sprintf("SWP gateway security policy should be %s", swpSecurityPolicy))
 		assert.Equal(swpNetwork, opSwpGateway.Get("network").String(), fmt.Sprintf("SWP network should be %s", swpNetwork))
 		assert.Equal(swpSubnetwork, opSwpGateway.Get("subnetwork").String(), fmt.Sprintf("SWP subnetwork should be %s", swpSubnetwork))
