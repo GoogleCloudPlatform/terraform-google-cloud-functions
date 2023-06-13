@@ -68,15 +68,6 @@ module "secure_harness" {
   }
 }
 
-resource "time_sleep" "wait_swp_and_certificate_to_destroy" {
-  destroy_duration = "5m"
-
-  depends_on = [
-    module.secure_harness,
-    time_sleep.wait_upload_certificate
-  ]
-}
-
 data "archive_file" "cf_bigquery_source" {
   type        = "zip"
   source_dir  = "${path.module}/functions/bq-to-cf/"
@@ -197,7 +188,6 @@ resource "time_sleep" "wait_upload_certificate" {
 }
 
 module "secure_web_proxy" {
-  # source = "/home/samir/Documents/Google/4_SERVERLESS/terraform-google-cloud-functions/modules/secure-web-proxy"
   source = "../../modules/secure-web-proxy"
 
   project_id          = module.secure_harness.network_project_id[0]
