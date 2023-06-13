@@ -45,11 +45,11 @@ func GetResultFieldStrSlice(rs []gjson.Result, field string) []string {
 }
 
 // GetOrgACMPolicyID gets the Organization Access Context Manager Policy ID
-func GetOrgACMPolicyID(t testing.TB, orgID string) *string {
+func GetOrgACMPolicyID(t testing.TB, orgID string) string {
 	filter := fmt.Sprintf("parent:organizations/%s", orgID)
 	id := gcloud.Runf(t, "access-context-manager policies list --organization %s --filter %s --quiet", orgID, filter).Array()
 	if len(id) == 0 {
-		return nil
+		return ""
 	}
 	return GetLastSplitElement(id[0].Get("name").String(), "/")
 }
@@ -59,14 +59,16 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 	policyID := GetOrgACMPolicyID(t, orgID)
 	createACM := false
 
-	if policyID == nil {
-		createACM = true
-		policyID = 0
-	}
-
 	vars := map[string]interface{}{
 		"create_access_context_manager_access_policy": createACM,
 		"access_context_manager_policy_id":            policyID,
+	}
+
+	if policyID == "" {
+		createACM = true
+		vars = {
+			"create_access_context_manager_access_policy": createACM,
+		}
 	}
 
 	restrictedServices := []string{
