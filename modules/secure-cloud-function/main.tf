@@ -76,7 +76,7 @@ resource "google_project_service_identity" "pubsub_sa" {
   service = "pubsub.googleapis.com"
 }
 
-module "cloud_serverless_security" {
+module "cloud_function_security" {
   source = "../secure-cloud-function-security"
 
   kms_project_id        = var.kms_project_id

@@ -22,7 +22,7 @@ import (
 	"net"
 	"os"
 
-	// Pre importing this dependency because it has a redirect that doesn't work with Secure Web Proxy
+	// Pre importing this dependency because there is a redirect that doesn't work with Secure Web Proxy
 	_ "golang.org/x/sync/errgroup"
 
 	"cloud.google.com/go/cloudsqlconn"
