@@ -61,14 +61,12 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 
 	if policyID == nil {
 		createACM = true
-		vars := map[string]interface{}{
-			"create_access_context_manager_access_policy": createACM,
-		}
-	} else {
-		vars := map[string]interface{}{
-			"create_access_context_manager_access_policy": createACM,
-			"access_context_manager_policy_id":            policyID,
-		}
+		policyID = 0
+	}
+
+	vars := map[string]interface{}{
+		"create_access_context_manager_access_policy": createACM,
+		"access_context_manager_policy_id":            policyID,
 	}
 
 	restrictedServices := []string{
