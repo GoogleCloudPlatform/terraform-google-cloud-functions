@@ -66,7 +66,7 @@ func TestCFInternalServer(t *testing.T) {
 
 	if policyID == "" {
 		createACM = true
-		vars := map[string]interface{}{
+		vars = map[string]interface{}{
 			"create_access_context_manager_access_policy": createACM,
 		}
 	}
