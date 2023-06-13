@@ -140,7 +140,7 @@ gatewaySecurityPolicy: ${google_network_security_gateway_security_policy.swp_sec
 network: ${var.network_id}
 subnetwork: ${var.subnetwork_id}
 scope: samplescope' > gateway.yaml
-      
+
 gcloud network-services gateways import ${var.proxy_name} \
 --source=gateway.yaml \
 --location=${var.region} \
