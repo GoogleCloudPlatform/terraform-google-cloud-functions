@@ -174,7 +174,7 @@ gcloud network-services gateways import ${var.proxy_name} \
 }
 
 resource "time_sleep" "wait_secure_web_proxy" {
-  create_duration  = "2m"
+  create_duration = "2m"
 
   depends_on = [
     null_resource.swp_deploy
