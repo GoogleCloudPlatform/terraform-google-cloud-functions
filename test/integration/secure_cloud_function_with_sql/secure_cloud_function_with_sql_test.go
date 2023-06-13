@@ -44,16 +44,14 @@ func TestGCF2CloudSQL(t *testing.T) {
 	orgID := utils.ValFromEnv(t, "TF_VAR_org_id")
 	policyID := GetOrgACMPolicyID(t, orgID)
 	createACM := false
-	if policyID == "" {
+	if policyID == nil {
 		createACM = true
-		vars := map[string]interface{}{
-			"create_access_context_manager_access_policy": createACM,
-		}
-	} else {
-		vars := map[string]interface{}{
-			"create_access_context_manager_access_policy": createACM,
-			"access_context_manager_policy_id":            policyID,
-		}
+		policyID = 0
+	}
+
+	vars := map[string]interface{}{
+		"create_access_context_manager_access_policy": createACM,
+		"access_context_manager_policy_id":            policyID,
 	}
 
 	cf2SQL := tft.NewTFBlueprintTest(t, tft.WithVars(vars))
