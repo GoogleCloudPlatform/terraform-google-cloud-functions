@@ -46,15 +46,13 @@ func TestGCF2CloudSQL(t *testing.T) {
 	createACM := false
 	if policyID == "" {
 		 createACM = true
-		 policyID = null
+		 policyID = nil
 	}
 	vars := map[string]interface{}{
 		"access_context_manager_policy_id": policyID,
 		"create_access_context_manager_access_policy" : createACM
 	}
-	vars := map[string]interface{}{
-		"access_context_manager_policy_id": policyID,
-	}
+
 	cf2SQL := tft.NewTFBlueprintTest(t, tft.WithVars(vars))
 
 	cf2SQL.DefineVerify(func(assert *assert.Assertions) {

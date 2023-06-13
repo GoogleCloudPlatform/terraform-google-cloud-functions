@@ -60,7 +60,7 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 	createACM := false
 	if policyID == "" {
 		 createACM = true
-		 policyID = null
+		 policyID = nil
 	}
 	vars := map[string]interface{}{
 		"access_context_manager_policy_id": policyID,
