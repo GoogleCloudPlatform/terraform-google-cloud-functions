@@ -46,7 +46,6 @@ func TestGCF2CloudSQL(t *testing.T) {
 	createACM := false
 	if policyID == "" {
 		createACM = true
-		policyID = nil
 	}
 	vars := map[string]interface{}{
 		"access_context_manager_policy_id":            policyID,
