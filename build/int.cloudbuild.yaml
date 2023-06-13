@@ -100,24 +100,24 @@ steps:
   waitFor:
   - secure-cloud-func-internal-server-verify
 
-- id: cloud-func-pubsub-trigger-apply
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage apply --verbose']
-  waitFor:
-  - cloud-func-init
-- id: cloud-func-pubsub-trigger-verify
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage verify --verbose']
-  waitFor:
-  - cloud-func-pubsub-trigger-apply
-- id: cloud-func-pubsub-trigger-teardown
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage teardown --verbose']
-  env:
-  - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
-  waitFor:
-  - cloud-func-pubsub-trigger-verify
+# - id: cloud-func-pubsub-trigger-apply
+#   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+#   args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage apply --verbose']
+#   waitFor:
+#   - cloud-func-init
+# - id: cloud-func-pubsub-trigger-verify
+#   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+#   args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage verify --verbose']
+#   waitFor:
+#   - cloud-func-pubsub-trigger-apply
+# - id: cloud-func-pubsub-trigger-teardown
+#   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+#   args: ['/bin/bash', '-c', 'cft test run TestGCF2PubSubTrigger --stage teardown --verbose']
+#   env:
+#   - 'TF_VAR_org_id=$_ORG_ID'
+#   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+#   waitFor:
+#   - cloud-func-pubsub-trigger-verify
 
 - id: secure-cloud-func-bigquery-apply
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'

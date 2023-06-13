@@ -61,7 +61,7 @@ module "secure_harness" {
     "prj-secure-cloud-function" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
   }
 
-  network_project_extra_apis = ["certificatemanager.googleapis.com", "networkservices.googleapis.com", "networksecurity.googleapis.com"]
+  network_project_extra_apis = ["networksecurity.googleapis.com", "networkservices.googleapis.com", "certificatemanager.googleapis.com"]
 
   serverless_project_extra_apis = {
     "prj-secure-cloud-function" = ["networksecurity.googleapis.com"]
@@ -72,7 +72,8 @@ resource "time_sleep" "wait_swp_and_certificate_to_destroy" {
   destroy_duration = "5m"
 
   depends_on = [
-    module.secure_harness
+    module.secure_harness,
+    time_sleep.wait_upload_certificate
   ]
 }
 
@@ -188,7 +189,7 @@ resource "null_resource" "generate_certificate" {
 
 resource "time_sleep" "wait_upload_certificate" {
   create_duration  = "1m"
-  destroy_duration = "3m"
+  destroy_duration = "1m"
 
   depends_on = [
     null_resource.generate_certificate
@@ -196,6 +197,7 @@ resource "time_sleep" "wait_upload_certificate" {
 }
 
 module "secure_web_proxy" {
+  # source = "/home/samir/Documents/Google/4_SERVERLESS/terraform-google-cloud-functions/modules/secure-web-proxy"
   source = "../../modules/secure-web-proxy"
 
   project_id          = module.secure_harness.network_project_id[0]
