@@ -277,7 +277,7 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		assert.Equal(1, len(allowSwpEgressRule.Get("allowed.0.ports").Array()), fmt.Sprintf("firewall rule %s should allow only one port", allowSwpEgressName))
 		assert.Equal("443", allowSwpEgressRule.Get("allowed.0.ports.0").String(), fmt.Sprintf("firewall rule %s should allow port 443", allowSwpEgressName))
 		firewallDestinationRanges := utils.GetResultStrSlice(allowSwpEgressRule.Get("destinationRanges").Array())
-		assert.Contains(swpRanges, firewallDestinationRanges, fmt.Sprintf("firewall rule %s destination ranges should be %v", allowSwpEgressName, swpRanges))
+		assert.Subset(swpRanges, firewallDestinationRanges, fmt.Sprintf("firewall rule %s destination ranges should be %v", allowSwpEgressName, swpRanges))
 
 		// VPC test
 		connectorName := "con-secure-cloud-function"
@@ -398,7 +398,7 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		opSwpUrlList := gcloud.Runf(t, "network-security url-lists list --location=%s --project=%s", location, networkProjectID).Array()
 		assert.Equal(1, len(opSwpUrlList), "Should have only one URL Lists")
 		urlLists := utils.GetResultStrSlice(opSwpUrlList[0].Get("values").Array())
-		assert.Contains(swpUrlListValues, urlLists, fmt.Sprintf("Should have same URL Lists value: %v", swpUrlListValues))
+		assert.Subset(swpUrlListValues, urlLists, fmt.Sprintf("Should have same URL Lists value: %v", swpUrlListValues))
 
 		// Gateway Security Policy Rule test
 		swpSessionMatcher := fmt.Sprintf("inUrlList(host(), 'projects/%s/locations/%s/urlLists/swp-url-lists')", networkProjectID, location)
