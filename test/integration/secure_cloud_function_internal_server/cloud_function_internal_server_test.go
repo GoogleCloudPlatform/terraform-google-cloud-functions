@@ -59,12 +59,12 @@ func TestCFInternalServer(t *testing.T) {
 	policyID := GetOrgACMPolicyID(t, orgID)
 	createACM := false
 	if policyID == "" {
-		 createACM = true
-		 policyID = nil
+		createACM = true
+		policyID = nil
 	}
 	vars := map[string]interface{}{
-		"access_context_manager_policy_id": policyID,
-		"create_access_context_manager_access_policy" : createACM
+		"access_context_manager_policy_id":            policyID,
+		"create_access_context_manager_access_policy": createACM,
 	}
 
 	cft := tft.NewTFBlueprintTest(t, tft.WithVars(vars))
