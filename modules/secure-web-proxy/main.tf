@@ -75,7 +75,7 @@ resource "google_service_networking_connection" "private_service_connect" {
 
 resource "time_sleep" "wait_network_config_propagation" {
   create_duration  = "1m"
-  destroy_duration = "5m"
+  destroy_duration = "2m"
 
   depends_on = [
     google_service_networking_connection.private_service_connect,
@@ -119,27 +119,6 @@ resource "google_network_security_gateway_security_policy_rule" "swp_security_po
   ]
 }
 
-resource "null_resource" "swp_generate_gateway_config" {
-  provisioner "local-exec" {
-    command = <<EOF
-      cat << EOF > gateway.yaml
-      name: projects/${var.project_id}/locations/${var.region}/gateways/${var.proxy_name}
-      type: SECURE_WEB_GATEWAY
-      addresses: ${local.swp_addresses}
-      ports: ${local.swp_ports}
-      certificateUrls: ${local.swp_certificates}
-      gatewaySecurityPolicy: ${google_network_security_gateway_security_policy.swp_security_policy.id}
-      network: ${var.network_id}
-      subnetwork: ${var.subnetwork_id}
-      scope: samplescope
-    EOF
-  }
-
-  depends_on = [
-    google_network_security_gateway_security_policy_rule.swp_security_policy_rule
-  ]
-}
-
 resource "null_resource" "swp_deploy" {
 
   triggers = {
@@ -152,10 +131,20 @@ resource "null_resource" "swp_deploy" {
   provisioner "local-exec" {
     when    = create
     command = <<EOF
-      gcloud network-services gateways import ${var.proxy_name} \
-        --source=gateway.yaml \
-        --location=${var.region} \
-        --project=${var.project_id}
+echo 'name: projects/${var.project_id}/locations/${var.region}/gateways/${var.proxy_name}
+type: SECURE_WEB_GATEWAY
+addresses: ${local.swp_addresses}
+ports: ${local.swp_ports}
+certificateUrls: ${local.swp_certificates}
+gatewaySecurityPolicy: ${google_network_security_gateway_security_policy.swp_security_policy.id}
+network: ${var.network_id}
+subnetwork: ${var.subnetwork_id}
+scope: samplescope' > gateway.yaml
+      
+gcloud network-services gateways import ${var.proxy_name} \
+--source=gateway.yaml \
+--location=${var.region} \
+--project=${var.project_id}
     EOF
   }
 
@@ -180,14 +169,12 @@ resource "null_resource" "swp_deploy" {
     google_network_security_gateway_security_policy.swp_security_policy,
     google_network_security_url_lists.swp_url_lists,
     google_network_security_gateway_security_policy_rule.swp_security_policy_rule,
-    null_resource.swp_generate_gateway_config,
     google_service_networking_connection.private_service_connect
   ]
 }
 
 resource "time_sleep" "wait_secure_web_proxy" {
-  create_duration  = "3m"
-  destroy_duration = "5m"
+  create_duration  = "2m"
 
   depends_on = [
     null_resource.swp_deploy
