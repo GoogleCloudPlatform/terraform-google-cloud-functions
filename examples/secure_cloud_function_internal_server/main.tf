@@ -179,7 +179,7 @@ module "secure_web_proxy" {
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
 
-  function_name             = "secure-function2-internal-server4"
+  function_name             = "secure-function2-internal-server"
   function_description      = "Secure cloud function example"
   location                  = local.location
   serverless_project_id     = module.secure_harness.serverless_project_ids[0]
