@@ -34,7 +34,3 @@ output "terraform_service_account" {
 output "access_level_members" {
   value = ["serviceAccount:${google_service_account.int_test.email}"]
 }
-
-output "create_access_context_manager_access_policy" {
-  value = false
-}

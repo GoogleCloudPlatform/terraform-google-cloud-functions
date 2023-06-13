@@ -57,6 +57,15 @@ func GetOrgACMPolicyID(t testing.TB, orgID string) string {
 func TestCFInternalServer(t *testing.T) {
 	orgID := utils.ValFromEnv(t, "TF_VAR_org_id")
 	policyID := GetOrgACMPolicyID(t, orgID)
+	createACM := false
+	if policyID == "" {
+		 createACM = true
+		 policyID = null
+	}
+	vars := map[string]interface{}{
+		"access_context_manager_policy_id": policyID,
+		"create_access_context_manager_access_policy" : createACM
+	}
 	vars := map[string]interface{}{
 		"access_context_manager_policy_id": policyID,
 	}
