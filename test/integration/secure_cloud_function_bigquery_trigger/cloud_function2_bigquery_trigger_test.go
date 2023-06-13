@@ -58,13 +58,19 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 	orgID := utils.ValFromEnv(t, "TF_VAR_org_id")
 	policyID := GetOrgACMPolicyID(t, orgID)
 	createACM := false
+
 	if policyID == "" {
 		createACM = true
+		vars := map[string]interface{}{
+			"create_access_context_manager_access_policy": createACM,
+		}
+	} else {
+		vars := map[string]interface{}{
+			"create_access_context_manager_access_policy": createACM,
+			"access_context_manager_policy_id":            policyID,
+		}
 	}
-	vars := map[string]interface{}{
-		"access_context_manager_policy_id":            policyID,
-		"create_access_context_manager_access_policy": createACM,
-	}
+
 	restrictedServices := []string{
 		"accessapproval.googleapis.com",
 		"adsdatahub.googleapis.com",
