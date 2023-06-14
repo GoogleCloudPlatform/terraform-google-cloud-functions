@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-locals {
-  swp_addresses    = "[ ${join(",", [for s in var.addresses : format("%q", s)])} ]"
-  swp_ports        = "[ ${join(",", [for s in var.ports : s])} ]"
-  swp_certificates = "[ ${join(",", [for s in var.certificates : format("%q", s)])} ]"
-}
-
 resource "google_compute_subnetwork" "swp_subnetwork_proxy" {
   name          = "sb-swp-${var.region}"
   ip_cidr_range = var.proxy_ip_range
@@ -122,22 +116,23 @@ resource "google_network_security_gateway_security_policy_rule" "swp_security_po
 resource "google_network_services_gateway" "secure_web_proxy" {
   provider = google-beta
 
+  project                              = var.project_id
   name                                 = var.proxy_name
+  location                             = var.region
   type                                 = "SECURE_WEB_GATEWAY"
-  addresses                            = local.swp_addresses
-  ports                                = local.swp_ports
-  certificate_urls                     = local.swp_certificates
+  addresses                            = var.addresses
+  ports                                = var.ports
+  certificate_urls                     = var.certificates
   gateway_security_policy              = google_network_security_gateway_security_policy.swp_security_policy.id
   network                              = var.network_id
   subnetwork                           = var.subnetwork_id
   scope                                = "samplescope"
-  location                             = var.region
   delete_swg_autogen_router_on_destroy = true
 
   depends_on = [
     google_compute_subnetwork.swp_subnetwork_proxy,
     google_service_networking_connection.private_service_connect,
-    google_network_security_gateway_security_policy.swp_security_policy
+    google_network_security_gateway_security_policy_rule.swp_security_policy_rule
   ]
 }
 
