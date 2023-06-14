@@ -137,7 +137,7 @@ resource "google_network_services_gateway" "secure_web_proxy" {
 }
 
 resource "time_sleep" "wait_secure_web_proxy" {
-  create_duration  = "2m"
+  create_duration = "2m"
 
   depends_on = [
     google_network_services_gateway.secure_web_proxy
