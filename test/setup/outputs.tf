@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+output "folder_id" {
+  value = google_folder.ci-iam-folder.folder_id
+}
+
 output "project_id" {
   value = module.project.project_id
 }
