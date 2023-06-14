@@ -77,12 +77,12 @@ module "secure_harness" {
 }
 
 resource "google_project_service" "network_project_apis" {
-  for_each = toset(["networkservices.googleapis.com", "certificatemanager.googleapis.com"])
-  project = module.secure_harness.network_project_id[0]
-  service  = each.value
+  for_each           = toset(["networkservices.googleapis.com", "certificatemanager.googleapis.com"])
+  project            = module.secure_harness.network_project_id[0]
+  service            = each.value
   disable_on_destroy = false
 
-  depends_on = [ module.secure_harness ]
+  depends_on = [module.secure_harness]
 }
 
 data "archive_file" "cf-internal-server-source" {
