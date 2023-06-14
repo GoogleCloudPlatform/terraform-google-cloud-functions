@@ -171,7 +171,8 @@ module "secure_web_proxy" {
   depends_on = [
     module.secure_harness,
     null_resource.generate_certificate,
-    time_sleep.wait_upload_certificate
+    time_sleep.wait_upload_certificate,
+    google_project_service.network_project_apis
   ]
 }
 
