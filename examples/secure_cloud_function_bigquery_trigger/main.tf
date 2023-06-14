@@ -197,8 +197,7 @@ resource "time_sleep" "wait_upload_certificate" {
 }
 
 module "secure_web_proxy" {
-  source = "/home/samir/Documents/Google/4_SERVERLESS/terraform-google-cloud-functions/modules/secure-web-proxy"
-  # source = "../../modules/secure-web-proxy"
+  source = "../../modules/secure-web-proxy"
 
   project_id          = module.secure_harness.network_project_id[0]
   region              = local.region
