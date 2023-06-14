@@ -61,7 +61,7 @@ module "secure_harness" {
   use_shared_vpc                              = true
   time_to_wait_vpc_sc_propagation             = "600s"
 
-  network_project_extra_apis = ["certificatemanager.googleapis.com", "networkservices.googleapis.com", "networksecurity.googleapis.com"]
+  network_project_extra_apis = ["networksecurity.googleapis.com"]
 
   security_project_extra_apis = ["secretmanager.googleapis.com"]
 
@@ -74,6 +74,15 @@ module "secure_harness" {
     "prj-secure-cloud-function" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
     "prj-secure-cloud-sql"      = []
   }
+}
+
+resource "google_project_service" "network_project_apis" {
+  for_each = toset(["networkservices.googleapis.com", "certificatemanager.googleapis.com"])
+  project = module.secure_harness.network_project_id[0]
+  service  = each.value
+  disable_on_destroy = false
+
+  depends_on = [ module.secure_harness ]
 }
 
 resource "google_project_service_identity" "pubsub_sa" {

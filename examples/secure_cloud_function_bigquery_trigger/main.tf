@@ -61,11 +61,20 @@ module "secure_harness" {
     "prj-secure-cloud-function" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
   }
 
-  network_project_extra_apis = ["networksecurity.googleapis.com", "networkservices.googleapis.com", "certificatemanager.googleapis.com"]
+  network_project_extra_apis = ["networksecurity.googleapis.com"]
 
   serverless_project_extra_apis = {
     "prj-secure-cloud-function" = ["networksecurity.googleapis.com"]
   }
+}
+
+resource "google_project_service" "network_project_apis" {
+  for_each = toset(["networkservices.googleapis.com", "certificatemanager.googleapis.com"])
+  project = module.secure_harness.network_project_id[0]
+  service  = each.value
+  disable_on_destroy = false
+
+  depends_on = [ module.secure_harness ]
 }
 
 data "archive_file" "cf_bigquery_source" {
@@ -188,7 +197,8 @@ resource "time_sleep" "wait_upload_certificate" {
 }
 
 module "secure_web_proxy" {
-  source = "../../modules/secure-web-proxy"
+  source = "/home/samir/Documents/Google/4_SERVERLESS/terraform-google-cloud-functions/modules/secure-web-proxy"
+  # source = "../../modules/secure-web-proxy"
 
   project_id          = module.secure_harness.network_project_id[0]
   region              = local.region
@@ -223,7 +233,8 @@ module "secure_web_proxy" {
   depends_on = [
     module.secure_harness,
     null_resource.generate_certificate,
-    time_sleep.wait_upload_certificate
+    time_sleep.wait_upload_certificate,
+    google_project_service.network_project_apis
   ]
 }
 
