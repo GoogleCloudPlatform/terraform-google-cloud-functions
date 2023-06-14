@@ -129,7 +129,10 @@ resource "null_resource" "generate_certificate" {
     EOT
   }
 
-  depends_on = [module.secure_harness]
+  depends_on = [
+    module.secure_harness,
+    google_project_service.network_project_apis
+  ]
 }
 
 resource "time_sleep" "wait_upload_certificate" {
@@ -171,8 +174,7 @@ module "secure_web_proxy" {
   depends_on = [
     module.secure_harness,
     null_resource.generate_certificate,
-    time_sleep.wait_upload_certificate,
-    google_project_service.network_project_apis
+    time_sleep.wait_upload_certificate
   ]
 }
 
