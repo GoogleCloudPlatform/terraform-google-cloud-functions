@@ -19,7 +19,7 @@ resource "random_id" "folder-rand" {
 }
 
 resource "google_folder" "ci-iam-folder" {
-  display_name = "ci-tests-iam-folder-${random_id.folder-rand.hex}"
+  display_name = "ci-cloud-functions-${random_id.folder-rand.hex}"
   parent       = "folders/${var.folder_id}"
 }
 
@@ -50,6 +50,7 @@ module "project" {
     "cloudbilling.googleapis.com",
     "cloudkms.googleapis.com",
     "bigquery.googleapis.com",
+    "certificatemanager.googleapis.com",
     "sql-component.googleapis.com",
     "sqladmin.googleapis.com",
     "servicenetworking.googleapis.com"

@@ -233,6 +233,13 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		assert.Equal(subnetName, subnet.Get("name").String(), fmt.Sprintf("subnet %s should exist", subnetName))
 		assert.Equal(subNetRange, subnet.Get("ipCidrRange").String(), fmt.Sprintf("IP CIDR range %s should be", subNetRange))
 
+		// Sub-network Proxy test
+		subnetProxyName := fmt.Sprintf("sb-swp-%s", location)
+		subnetProxyRange := "10.129.0.0/23"
+		subnetProxy := gcloud.Runf(t, "compute networks subnets describe %s --region %s --project %s", subnetProxyName, location, networkProjectID)
+		assert.Equal(subnetProxyName, subnetProxy.Get("name").String(), fmt.Sprintf("Subnet %s should exist", subnetProxyName))
+		assert.Equal(subnetProxyRange, subnetProxy.Get("ipCidrRange").String(), fmt.Sprintf("IP CIDR range %s should be", subnetProxyRange))
+
 		// Firewall - Deny all egress test
 		denyAllEgressName := "fw-e-shared-restricted-65535-e-d-all-all-all"
 		denyAllEgressRule := gcloud.Runf(t, "compute firewall-rules describe %s --project %s", denyAllEgressName, networkProjectID)
@@ -256,6 +263,21 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		assert.Equal("tcp", allowApiEgressRule.Get("allowed.0.IPProtocol").String(), fmt.Sprintf("firewall rule %s should allow tcp protocol", allowApiEgressName))
 		assert.Equal(1, len(allowApiEgressRule.Get("allowed.0.ports").Array()), fmt.Sprintf("firewall rule %s should allow only one port", allowApiEgressName))
 		assert.Equal("443", allowApiEgressRule.Get("allowed.0.ports.0").String(), fmt.Sprintf("firewall rule %s should allow port 443", allowApiEgressName))
+
+		// Firewall - Allow egress to Secure Web Proxy
+		allowSwpEgressName := "fw-allow-tcp-443-egress-to-secure-web-proxy"
+		swpRanges := []string{subnetProxyRange, subNetRange}
+		allowSwpEgressRule := gcloud.Runf(t, "compute firewall-rules describe %s --project %s", allowSwpEgressName, networkProjectID)
+		assert.Equal(allowSwpEgressName, allowSwpEgressRule.Get("name").String(), fmt.Sprintf("firewall rule %s should exist", allowSwpEgressName))
+		assert.Equal("EGRESS", allowSwpEgressRule.Get("direction").String(), fmt.Sprintf("firewall rule %s direction should be EGRESS", allowSwpEgressName))
+		assert.True(allowSwpEgressRule.Get("logConfig.enable").Bool(), fmt.Sprintf("firewall rule %s should have log configuration enabled", allowSwpEgressName))
+		assert.Equal(1, len(allowSwpEgressRule.Get("allowed").Array()), fmt.Sprintf("firewall rule %s should have only one allowed", allowSwpEgressName))
+		assert.Equal(2, len(allowSwpEgressRule.Get("allowed.0").Map()), fmt.Sprintf("firewall rule %s should have only one protocol and ports", allowSwpEgressName))
+		assert.Equal("tcp", allowSwpEgressRule.Get("allowed.0.IPProtocol").String(), fmt.Sprintf("firewall rule %s should allow tcp protocol", allowSwpEgressName))
+		assert.Equal(1, len(allowSwpEgressRule.Get("allowed.0.ports").Array()), fmt.Sprintf("firewall rule %s should allow only one port", allowSwpEgressName))
+		assert.Equal("443", allowSwpEgressRule.Get("allowed.0.ports.0").String(), fmt.Sprintf("firewall rule %s should allow port 443", allowSwpEgressName))
+		firewallDestinationRanges := utils.GetResultStrSlice(allowSwpEgressRule.Get("destinationRanges").Array())
+		assert.Subset(swpRanges, firewallDestinationRanges, fmt.Sprintf("firewall rule %s destination ranges should be %v", allowSwpEgressName, swpRanges))
 
 		// VPC test
 		connectorName := "con-secure-cloud-function"
@@ -346,6 +368,60 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 		assert.Equal(location, opDataset.Get("location").String(), fmt.Sprintf("Should have same location: %s", location))
 		assert.Equal(bqKmsKey, opDataset.Get("encryptionConfiguration.kmsKeyName").String(), fmt.Sprintf("Should have the KMS Key: %s", bqKmsKey))
 
+		// Global Address test
+		// Networking Connection Peering test
+		opNetworkPeering := gcloud.Runf(t, "compute networks peerings list --network=%s --project=%s", networkName, networkProjectID).Array()
+		assert.Equal(1, len(opNetworkPeering), "Should have only one Network Peering.")
+
+		// Gateway Security Policy test
+		opSwpPolicy := gcloud.Runf(t, "network-security gateway-security-policies list --location=%s --project=%s", location, networkProjectID).Array()
+		assert.Equal(1, len(opSwpPolicy), "Should have only one Gateway Security Policy")
+
+		// URL lists test
+		swpUrlListValues := []string{
+			"*google.com/go*",
+			"*github.com/GoogleCloudPlatform*",
+			"*github.com/cloudevents*",
+			"*golang.org/x*",
+			"*google.golang.org/*",
+			"*github.com/golang/*",
+			"*github.com/google/*",
+			"*github.com/googleapis/*",
+			"*github.com/json-iterator/go",
+			"*github.com/modern-go/concurrent",
+			"*github.com/modern-go/reflect2",
+			"*go.opencensus.io",
+			"*go.uber.org/atomic",
+			"*go.uber.org/multierr",
+			"*go.uber.org/zap",
+		}
+		opSwpUrlList := gcloud.Runf(t, "network-security url-lists list --location=%s --project=%s", location, networkProjectID).Array()
+		assert.Equal(1, len(opSwpUrlList), "Should have only one URL Lists")
+		urlLists := utils.GetResultStrSlice(opSwpUrlList[0].Get("values").Array())
+		assert.Subset(swpUrlListValues, urlLists, fmt.Sprintf("Should have same URL Lists value: %v", swpUrlListValues))
+
+		// Gateway Security Policy Rule test
+		swpSessionMatcher := fmt.Sprintf("inUrlList(host(), 'projects/%s/locations/%s/urlLists/swp-url-lists')", networkProjectID, location)
+		opSwpPolicyRule := gcloud.Runf(t, "network-security gateway-security-policies rules list --gateway-security-policy swp-security-policy --location=%s --project=%s", location, networkProjectID).Array()
+		assert.Equal(1, len(opSwpPolicyRule), "Should have only one Gateway Security Policy Rule")
+		assert.Equal(swpSessionMatcher, opSwpPolicyRule[0].Get("sessionMatcher").String(), fmt.Sprintf("Should have same session matcher: %s", swpSessionMatcher))
+
+		// Secure Web Proxy test
+		swpName := fmt.Sprintf("projects/%s/locations/%s/gateways/secure-web-proxy", networkProjectID, location)
+		swpCertificate := fmt.Sprintf("projects/%s/locations/%s/certificates/swp-certificate", networkProjectID, location)
+		swpSecurityPolicy := fmt.Sprintf("projects/%s/locations/%s/gatewaySecurityPolicies/swp-security-policy", networkProjectID, location)
+		swpNetwork := fmt.Sprintf("projects/%s/global/networks/vpc-secure-cloud-function", networkProjectID)
+		swpSubnetwork := fmt.Sprintf("projects/%s/regions/%s/subnetworks/sb-restricted-%s", networkProjectID, location, location)
+		opSwpGateway := gcloud.Runf(t, "network-services gateways describe secure-web-proxy --location=%s --project=%s", location, networkProjectID)
+		assert.Equal(swpName, opSwpGateway.Get("name").String(), fmt.Sprintf("SWP name should be %s", swpName))
+		assert.Equal("SECURE_WEB_GATEWAY", opSwpGateway.Get("type").String(), "SWP type should be SECURE_WEB_GATEWAY")
+		assert.Equal("10.0.0.10", opSwpGateway.Get("addresses").Array()[0].String(), "SWP first address should be 10.0.0.10")
+		assert.Equal("443", opSwpGateway.Get("ports").Array()[0].String(), "SWP ports should be 443")
+		assert.Equal(swpCertificate, opSwpGateway.Get("certificateUrls").Array()[0].String(), fmt.Sprintf("SWP certificate should be %s", swpCertificate))
+		assert.Equal(swpSecurityPolicy, opSwpGateway.Get("gatewaySecurityPolicy").String(), fmt.Sprintf("SWP gateway security policy should be %s", swpSecurityPolicy))
+		assert.Equal(swpNetwork, opSwpGateway.Get("network").String(), fmt.Sprintf("SWP network should be %s", swpNetwork))
+		assert.Equal(swpSubnetwork, opSwpGateway.Get("subnetwork").String(), fmt.Sprintf("SWP subnetwork should be %s", swpSubnetwork))
+		assert.Equal("samplescope", opSwpGateway.Get("scope").String(), "SWP scope should be samplescope")
 	})
 	bqt.Test()
 }
