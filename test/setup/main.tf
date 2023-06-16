@@ -50,6 +50,7 @@ module "project" {
     "cloudbilling.googleapis.com",
     "cloudkms.googleapis.com",
     "bigquery.googleapis.com",
+    "certificatemanager.googleapis.com",
     "sql-component.googleapis.com",
     "sqladmin.googleapis.com",
     "servicenetworking.googleapis.com"

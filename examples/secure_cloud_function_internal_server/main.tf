@@ -1,29 +1,28 @@
-/**
- * Copyright 2023 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+# /**
+#  * Copyright 2023 Google LLC
+#  *
+#  * Licensed under the Apache License, Version 2.0 (the "License");
+#  * you may not use this file except in compliance with the License.
+#  * You may obtain a copy of the License at
+#  *
+#  *      http://www.apache.org/licenses/LICENSE-2.0
+#  *
+#  * Unless required by applicable law or agreed to in writing, software
+#  * distributed under the License is distributed on an "AS IS" BASIS,
+#  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  * See the License for the specific language governing permissions and
+#  * limitations under the License.
+#  */
 
 locals {
-  location        = "us-west1"
-  region          = "us-west1"
-  repository_name = "rep-secure-cloud-function"
-  table_name      = "tbl_test"
-  kms_bigquery    = "key-secure-bigquery"
-  subnet_ip       = "10.0.0.0/28"
+  location           = "us-west1"
+  region             = "us-west1"
+  zone               = "us-west1-b"
+  repository_name    = "rep-secure-cloud-function"
+  network_ip         = "10.0.0.3"
+  webserver_instance = "webserver"
+  subnet_ip          = "10.0.0.0/28"
 }
-
 resource "random_id" "random_folder_suffix" {
   byte_length = 2
 }
@@ -55,16 +54,25 @@ module "secure_harness" {
   ingress_policies                            = var.ingress_policies
   serverless_type                             = "CLOUD_FUNCTION"
   use_shared_vpc                              = true
-  time_to_wait_vpc_sc_propagation             = "600s"
+  time_to_wait_vpc_sc_propagation             = "660s"
 
   service_account_project_roles = {
-    "prj-secure-cloud-function" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
+    "prj-secure-cloud-function" = [
+      "roles/eventarc.eventReceiver",
+      "roles/viewer",
+      "roles/compute.networkViewer",
+      "roles/run.invoker"
+    ]
   }
 
-  network_project_extra_apis = ["networksecurity.googleapis.com"]
+  network_project_extra_apis = [
+    "networksecurity.googleapis.com"
+  ]
 
   serverless_project_extra_apis = {
-    "prj-secure-cloud-function" = ["networksecurity.googleapis.com"]
+    "prj-secure-cloud-function" = [
+      "networksecurity.googleapis.com"
+    ]
   }
 }
 
@@ -77,86 +85,23 @@ resource "google_project_service" "network_project_apis" {
   depends_on = [module.secure_harness]
 }
 
-data "archive_file" "cf_bigquery_source" {
+data "archive_file" "cf-internal-server-source" {
   type        = "zip"
-  source_dir  = "${path.module}/functions/bq-to-cf/"
-  output_path = "functions/cloudfunction-bq-source-${random_id.random_folder_suffix.hex}.zip"
+  source_dir  = "${path.module}/function"
+  output_path = "function/cloudfunction-${random_id.random_folder_suffix.hex}.zip"
 }
 
-resource "google_storage_bucket_object" "cf_bigquery_source_zip" {
-  source       = data.archive_file.cf_bigquery_source.output_path
+resource "google_storage_bucket_object" "function-source" {
+  source       = data.archive_file.cf-internal-server-source.output_path
   content_type = "application/zip"
 
   # Append to the MD5 checksum of the files's content
   # to force the zip to be updated as soon as a change occurs
-  name   = "src-${data.archive_file.cf_bigquery_source.output_md5}.zip"
+  name   = "src-${data.archive_file.cf-internal-server-source.output_md5}.zip"
   bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
 
   depends_on = [
-    data.archive_file.cf_bigquery_source
-  ]
-}
-
-data "google_bigquery_default_service_account" "bq_sa" {
-  project = module.secure_harness.serverless_project_ids[0]
-}
-
-module "bigquery_kms" {
-  source  = "terraform-google-modules/kms/google"
-  version = "~> 2.2"
-
-  project_id           = module.secure_harness.security_project_id
-  location             = local.location
-  keyring              = "krg-secure-bigquery"
-  keys                 = [local.kms_bigquery]
-  set_decrypters_for   = [local.kms_bigquery]
-  set_encrypters_for   = [local.kms_bigquery]
-  decrypters           = ["serviceAccount:${data.google_bigquery_default_service_account.bq_sa.email}"]
-  encrypters           = ["serviceAccount:${data.google_bigquery_default_service_account.bq_sa.email}"]
-  prevent_destroy      = false
-  key_rotation_period  = "2592000s"
-  key_protection_level = "HSM"
-
-  depends_on = [
-    module.secure_harness
-  ]
-}
-
-module "bigquery" {
-  source  = "terraform-google-modules/bigquery/google"
-  version = "~> 5.4"
-
-  dataset_id                  = "dst_secure_cloud_function"
-  dataset_name                = "dst-secure-cloud-function"
-  description                 = "Dataset to trigger a secure Cloud Function"
-  project_id                  = module.secure_harness.serverless_project_ids[0]
-  location                    = local.location
-  default_table_expiration_ms = 3600000
-  encryption_key              = module.bigquery_kms.keys[local.kms_bigquery]
-
-  tables = [
-    {
-      table_id          = local.table_name,
-      schema            = file("${path.module}/templates/bigquery_schema.template")
-      time_partitioning = null,
-      range_partitioning = {
-        field = "Card_PIN",
-        range = {
-          start    = "1"
-          end      = "100",
-          interval = "10",
-        },
-      },
-      expiration_time = 2524604400000, # 2050/01/01
-      clustering      = [],
-      labels = {
-        env      = "development"
-        billable = "true"
-      }
-  }]
-
-  depends_on = [
-    module.secure_harness
+    data.archive_file.cf-internal-server-source
   ]
 }
 
@@ -191,8 +136,7 @@ resource "null_resource" "generate_certificate" {
 }
 
 resource "time_sleep" "wait_upload_certificate" {
-  create_duration  = "1m"
-  destroy_duration = "1m"
+  create_duration = "1m"
 
   depends_on = [
     null_resource.generate_certificate
@@ -224,12 +168,7 @@ module "secure_web_proxy" {
     "*github.com/google/*",
     "*github.com/googleapis/*",
     "*github.com/json-iterator/go",
-    "*github.com/modern-go/concurrent",
-    "*github.com/modern-go/reflect2",
-    "*go.opencensus.io",
-    "*go.uber.org/atomic",
-    "*go.uber.org/multierr",
-    "*go.uber.org/zap"
+    "*dl.google.com/*"
   ]
 
   depends_on = [
@@ -242,8 +181,8 @@ module "secure_web_proxy" {
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
 
-  function_name             = "secure-cloud-function-bigquery"
-  function_description      = "Logs when there is a new row in the BigQuery"
+  function_name             = "secure-function2-internal-server"
+  function_description      = "Secure cloud function example"
   location                  = local.location
   serverless_project_id     = module.secure_harness.serverless_project_ids[0]
   serverless_project_number = module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]
@@ -257,56 +196,41 @@ module "secure_cloud_function" {
   create_subnet             = false
   shared_vpc_name           = module.secure_harness.service_vpc[0].network.name
   prevent_destroy           = false
-  ip_cidr_range             = local.subnet_ip
+  ip_cidr_range             = "10.0.0.0/28"
   network_id                = module.secure_harness.service_vpc[0].network.id
 
-  # IPs used on Secure Web Proxy
   build_environment_variables = {
     HTTP_PROXY  = "http://10.0.0.10:443"
     HTTPS_PROXY = "http://10.0.0.10:443" # Using http because is a self-signed certification (just for test porpuse)
   }
 
-  labels = {
-    env      = "development"
-    billable = "true"
-  }
-
   storage_source = {
     bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
-    object = google_storage_bucket_object.cf_bigquery_source_zip.name
+    object = google_storage_bucket_object.function-source.name
   }
 
   environment_variables = {
     PROJECT_ID = module.secure_harness.serverless_project_ids[0]
     NAME       = "cloud function v2"
+    TARGET_IP  = local.network_ip
   }
 
   event_trigger = {
-    event_type            = "google.cloud.audit.log.v1.written"
-    trigger_region        = local.region
+    event_type            = "google.cloud.storage.object.v1.finalized"
     service_account_email = module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]
     retry_policy          = "RETRY_POLICY_RETRY"
     event_filters = [{
-      attribute       = "serviceName"
-      attribute_value = "bigquery.googleapis.com"
-      },
-      {
-        attribute       = "methodName"
-        attribute_value = "google.cloud.bigquery.v2.JobService.InsertJob"
-      },
-      {
-        attribute       = "resourceName"
-        attribute_value = module.bigquery.bigquery_tables[local.table_name]["id"]
-        operator        = "match-path-pattern" # This allows path patterns to be used in the value field
+      attribute       = "bucket"
+      attribute_value = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
     }]
   }
   runtime     = "go118"
-  entry_point = "HelloCloudFunction"
+  entry_point = "helloHTTP"
 
   depends_on = [
-    module.secure_harness,
-    module.bigquery,
-    google_storage_bucket_object.cf_bigquery_source_zip,
+    google_compute_instance.internal_server,
+    google_storage_bucket_object.function-source,
+    module.internal_server_firewall_rule,
     module.secure_web_proxy
   ]
 }

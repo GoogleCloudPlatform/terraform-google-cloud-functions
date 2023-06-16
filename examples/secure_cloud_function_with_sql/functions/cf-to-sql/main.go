@@ -22,6 +22,9 @@ import (
 	"net"
 	"os"
 
+	// Pre importing this dependency because there is a redirect that doesn't work with Secure Web Proxy
+	_ "golang.org/x/sync/errgroup"
+
 	"cloud.google.com/go/cloudsqlconn"
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 	"github.com/cloudevents/sdk-go/v2/event"
