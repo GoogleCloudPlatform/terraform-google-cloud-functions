@@ -17,7 +17,7 @@
 
 module "cloud_serverless_network" {
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-net"
-  version = "~> 0.7"
+  version = "~> 0.8"
 
   connector_name            = var.connector_name
   subnet_name               = var.subnet_name
@@ -130,6 +130,7 @@ module "cloud_function_core" {
   encryption_key              = module.cloud_function_security.key_self_link
   bucket_lifecycle_rules      = var.bucket_lifecycle_rules
   bucket_cors                 = var.bucket_cors
+  network_id                  = var.network_id
 
   service_config = {
     max_instance_count             = var.max_scale_instances

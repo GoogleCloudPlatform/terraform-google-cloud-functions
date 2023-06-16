@@ -61,6 +61,7 @@ module "secure_cloud_function_core" {
 | function\_name | The name of the Cloud Function to create. | `string` | n/a | yes |
 | labels | Labels to be assigned to resources. | `map(any)` | `{}` | no |
 | location | Cloud Function deployment location. | `string` | `"us-east4"` | no |
+| network\_id | VPC network ID which is going to be used to connect the WorkerPool. | `string` | n/a | yes |
 | project\_id | The project ID to deploy to. | `string` | n/a | yes |
 | project\_number | The project number to deploy to. | `number` | `null` | no |
 | repo\_source | The source repository where the Cloud Function Source is stored. Do not use combined with source\_path. | <pre>object({<br>    project_id   = optional(string)<br>    repo_name    = string<br>    branch_name  = string<br>    dir          = optional(string)<br>    tag_name     = optional(string)<br>    commit_sha   = optional(string)<br>    invert_regex = optional(bool, false)<br>  })</pre> | `null` | no |

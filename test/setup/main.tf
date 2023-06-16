@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
+resource "random_id" "folder-rand" {
+  byte_length = 2
+}
+
+resource "google_folder" "ci-iam-folder" {
+  display_name = "ci-cloud-functions-${random_id.folder-rand.hex}"
+  parent       = "folders/${var.folder_id}"
+}
+
 module "project" {
   source  = "terraform-google-modules/project-factory/google"
   version = "~> 14.0"
@@ -21,7 +30,7 @@ module "project" {
   name                    = "ci-cloud-functions"
   random_project_id       = "true"
   org_id                  = var.org_id
-  folder_id               = var.folder_id
+  folder_id               = google_folder.ci-iam-folder.id
   billing_account         = var.billing_account
   default_service_account = "keep"
 
@@ -41,6 +50,7 @@ module "project" {
     "cloudbilling.googleapis.com",
     "cloudkms.googleapis.com",
     "bigquery.googleapis.com",
+    "certificatemanager.googleapis.com",
     "sql-component.googleapis.com",
     "sqladmin.googleapis.com",
     "servicenetworking.googleapis.com"
