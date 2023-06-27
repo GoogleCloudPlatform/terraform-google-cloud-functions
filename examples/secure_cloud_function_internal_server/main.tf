@@ -28,8 +28,9 @@ resource "random_id" "random_folder_suffix" {
 }
 
 module "secure_harness" {
-  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.8"
+  # source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
+  # version = "~> 0.8"
+  source = "git::https://github.com/Samir-Cit/terraform-google-cloud-run//modules/secure-serverless-harness/?ref=feat/modules-change"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-security"
@@ -52,7 +53,7 @@ module "secure_harness" {
   artifact_registry_repository_name           = local.repository_name
   egress_policies                             = var.egress_policies
   ingress_policies                            = var.ingress_policies
-  serverless_type                             = "CLOUD_FUNCTION"
+  api_to_enable                               = "cloudfunctions.googleapis.com"
   use_shared_vpc                              = true
   time_to_wait_vpc_sc_propagation             = "660s"
 
@@ -74,6 +75,25 @@ module "secure_harness" {
       "networksecurity.googleapis.com"
     ]
   }
+}
+
+module "cloudfunction_source_bucket" {
+  source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
+  version = "~>3.4"
+
+  project_id    = module.secure_harness.serverless_project_ids[0]
+  name          = "bkt-${local.location}-${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}-cfv2-zip-files"
+  location      = local.location
+  storage_class = "REGIONAL"
+  force_destroy = true
+
+  encryption = {
+    default_kms_key_name = module.secure_harness.artifact_registry_key
+  }
+
+  depends_on = [
+    module.secure_harness
+  ]
 }
 
 resource "google_project_service" "network_project_apis" {
@@ -98,7 +118,7 @@ resource "google_storage_bucket_object" "function-source" {
   # Append to the MD5 checksum of the files's content
   # to force the zip to be updated as soon as a change occurs
   name   = "src-${data.archive_file.cf-internal-server-source.output_md5}.zip"
-  bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
+  bucket = module.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
 
   depends_on = [
     data.archive_file.cf-internal-server-source
@@ -205,7 +225,7 @@ module "secure_cloud_function" {
   }
 
   storage_source = {
-    bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
+    bucket = module.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
     object = google_storage_bucket_object.function-source.name
   }
 
@@ -221,7 +241,7 @@ module "secure_cloud_function" {
     retry_policy          = "RETRY_POLICY_RETRY"
     event_filters = [{
       attribute       = "bucket"
-      attribute_value = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
+      attribute_value = module.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
     }]
   }
   runtime     = "go118"
