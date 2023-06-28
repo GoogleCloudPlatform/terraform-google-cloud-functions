@@ -58,7 +58,7 @@ module "secure_harness" {
   artifact_registry_repository_name           = local.repository_name
   egress_policies                             = var.egress_policies
   ingress_policies                            = var.ingress_policies
-  api_to_enable                               = "cloudfunctions.googleapis.com"
+  base_serverless_api                         = "cloudfunctions.googleapis.com"
   use_shared_vpc                              = true
   time_to_wait_vpc_sc_propagation             = "600s"
 
@@ -67,7 +67,7 @@ module "secure_harness" {
   security_project_extra_apis = ["secretmanager.googleapis.com"]
 
   serverless_project_extra_apis = {
-    "prj-secure-cloud-function" = ["servicenetworking.googleapis.com", "sqladmin.googleapis.com", "cloudscheduler.googleapis.com", "networksecurity.googleapis.com"],
+    "prj-secure-cloud-function" = ["networksecurity.googleapis.com", "cloudfunctions.googleapis.com", "cloudbuild.googleapis.com", "eventarc.googleapis.com", "eventarcpublishing.googleapis.com"],
     "prj-secure-cloud-sql"      = ["sqladmin.googleapis.com", "sql-component.googleapis.com", "servicenetworking.googleapis.com"]
   }
 
