@@ -158,7 +158,3 @@ the resources of this module:
   * Compute Shared VPC Admin: `roles/compute.xpnAdmin`
 * Billing:
   * Billing User: `roles/billing.user`
-
-## Secure Web Proxy
-
-Please refer to [Secure Web Proxy documentation](../../docs/secure-web-proxy.md) for more details about pricing and how manually to delete.
