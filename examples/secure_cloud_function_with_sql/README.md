@@ -41,6 +41,8 @@ The resources and services that this example will create or enable are:
     * A Security URL Lists resource
   * Create the Secure Web Proxy/Gateway (SWP/SWG) instance
 
+_Note: Please refer to [Secure Web Proxy documentation](../../docs/secure-web-proxy.md) for more details about pricing and how manually delete it._
+
 * The **secure-cloud-serverless-security** module will:
   * Create KMS Keyring and Key for [customer managed encryption keys](https://cloud.google.com/run/docs/securing/using-cmek) in the **KMS Project** to be used by Cloud Function (2nd Gen)
   * Enable the following Organization Policies related to Cloud Function (2nd Gen) in the **Serverless Project**:
