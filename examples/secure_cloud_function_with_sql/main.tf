@@ -33,9 +33,8 @@ resource "random_id" "random_folder_suffix" {
 }
 
 module "secure_harness" {
-  # source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  # version = "~> 0.8"
-  source = "git::https://github.com/Samir-Cit/terraform-google-cloud-run//modules/secure-serverless-harness/?ref=feat/modules-change"
+  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
+  version = "~> 0.8"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-security"
@@ -350,7 +349,6 @@ resource "null_resource" "create_user_pwd" {
 }
 
 resource "google_storage_bucket_iam_member" "object_admin" {
-  #bucket = module.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[1]].name
   bucket = module.cloud_sql_temp_bucket.name
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${module.safer_mysql_db.instance_service_account_email_address}"
@@ -362,8 +360,7 @@ resource "google_storage_bucket_object" "cloud_sql_dump_file" {
 
   # Append to the MD5 checksum of the files's content
   # to force the zip to be updated as soon as a change occurs
-  name = "assets/sample-db-data.sql"
-  #bucket = module.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[1]].name
+  name   = "assets/sample-db-data.sql"
   bucket = module.cloud_sql_temp_bucket.name
 
   depends_on = [
@@ -373,23 +370,11 @@ resource "google_storage_bucket_object" "cloud_sql_dump_file" {
 
 resource "null_resource" "create_and_populate_db" {
 
-  # triggers = {
-  #   instance  = module.safer_mysql_db.instance_name,
-  #   file_name = "${module.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[1]].name}/${google_storage_bucket_object.cloud_sql_dump_file.name}"
-  # }
   triggers = {
     instance  = module.safer_mysql_db.instance_name,
     file_name = "${module.cloud_sql_temp_bucket.name}/${google_storage_bucket_object.cloud_sql_dump_file.name}"
   }
 
-  # provisioner "local-exec" {
-  #   command = <<EOT
-  #   gcloud sql import sql ${module.safer_mysql_db.instance_name} \
-  #   --project ${module.secure_harness.serverless_project_ids[1]} \
-  #   gs://${module.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[1]].name}/${google_storage_bucket_object.cloud_sql_dump_file.name} \
-  #   --database=${local.db_name} --impersonate-service-account=${var.terraform_service_account} -q
-  #   EOT
-  # }
   provisioner "local-exec" {
     command = <<EOT
     gcloud sql import sql ${module.safer_mysql_db.instance_name} \
@@ -419,8 +404,7 @@ resource "google_storage_bucket_object" "cf_cloudsql_source_zip" {
 
   # Append to the MD5 checksum of the files's content
   # to force the zip to be updated as soon as a change occurs
-  name = "src-${data.archive_file.cf_cloudsql_source.output_md5}.zip"
-  #bucket = module.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
+  name   = "src-${data.archive_file.cf_cloudsql_source.output_md5}.zip"
   bucket = module.cloudfunction_source_bucket.name
 
   depends_on = [
@@ -522,7 +506,6 @@ module "secure_cloud_function" {
   }
 
   storage_source = {
-    #bucket = module.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
     bucket = module.cloudfunction_source_bucket.name
     object = google_storage_bucket_object.cf_cloudsql_source_zip.name
   }
