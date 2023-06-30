@@ -110,7 +110,7 @@ resource "google_storage_bucket_object" "cf_bigquery_source_zip" {
   # Append to the MD5 checksum of the files's content
   # to force the zip to be updated as soon as a change occurs
   name   = "src-${data.archive_file.cf_bigquery_source.output_md5}.zip"
-  bucket = module.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
+  bucket = module.cloudfunction_source_bucket.name
 
   depends_on = [
     data.archive_file.cf_bigquery_source
@@ -292,7 +292,7 @@ module "secure_cloud_function" {
   }
 
   storage_source = {
-    bucket = module.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
+    bucket = module.cloudfunction_source_bucket.name
     object = google_storage_bucket_object.cf_bigquery_source_zip.name
   }
 
