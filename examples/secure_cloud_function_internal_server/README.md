@@ -167,3 +167,16 @@ A service account with the following roles must be used to provision the resourc
   * Compute Shared VPC Admin: `roles/compute.xpnAdmin`
 * Billing:
   * Billing User: `roles/billing.user`
+
+### Required APIs enabled at Service Account project
+
+The service account project must have the following APIs enabled:
+
+* Access Context Manager API: `accesscontextmanager.googleapis.com`
+* Cloud Billing API: `cloudbilling.googleapis.com`
+* Cloud Build API: `cloudbuild.googleapis.com`
+* Cloud Key Management Service (KMS) API: `cloudkms.googleapis.com`
+* Cloud Pub/Sub API: `pubsub.googleapis.com`
+* Cloud Resource Manager API: `cloudresourcemanager.googleapis.com`
+* Identity and Access Management (IAM) API: `iam.googleapis.com`
+* Service Networking API: `servicenetworking.googleapis.com`
