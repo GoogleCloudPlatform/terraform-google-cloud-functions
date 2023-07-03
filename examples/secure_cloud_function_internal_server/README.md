@@ -129,7 +129,7 @@ To provision this example, run the following commands from within this directory
 
 ### Testing
 
-You can see the Secure Cloud Function running, doing a insert at Bigquery table.
+You can see the Secure Cloud Function running, uploading a file on the bucket.
 
 * Go to [Cloud Storage console](https://console.cloud.google.com/storage/)
 * Select your Serverless project
