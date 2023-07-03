@@ -131,14 +131,46 @@ To provision this example, run the following commands from within this directory
 
 You can see the Secure Cloud Function running, uploading a file on the bucket.
 
-* Go to [Cloud Storage console](https://console.cloud.google.com/storage/)
-* Select your Serverless project
-* Select the bucket with pattern `bkt-<LOCATION>-<PROJECT-NUMBER>-cfv2-zip-files`
-* Upload a file
-* Go to the [Cloud Function console](https://console.cloud.google.com/functions)
-* Select your project and Cloud Function
-* Go to logs
+* Go to [Cloud Storage console](https://console.cloud.google.com/storage/).
+* Select your Serverless project.
+* Select the bucket with pattern `bkt-<LOCATION>-<PROJECT-NUMBER>-cfv2-zip-files`.
+* Upload a file.
+* Go to the [Cloud Function console](https://console.cloud.google.com/functions).
+* Select your project and Cloud Function.
+* Go to the logs.
 * When upload is done, you can see the Cloud Function accessing the internal server logs.
+
+If you want to look at the WebServer logs you will need:
+
+* Enable a firewall rule to allow SSH at Web server machine:
+
+```sh
+gcloud compute firewall-rules create allow-ssh \
+--direction ingress --action=ALLOW --rules=tcp:22 --rules all  \
+--network <YOUR-NETWORK> \
+--project=<YOUR-NETWORK-PROJECT>
+```
+
+* Grant `IAP-secured Tunnel User` role at your user, at Web Server project:
+
+```sh
+gcloud projects add-iam-policy-binding <YOUR-SERVERLESS-PROJECT-ID> \
+--member=user:<YOUR-USER-EMAIL> \
+--role=roles/iap.tunnelResourceAccessor
+```
+
+* Go the the [Compute instances console](https://console.cloud.google.com/compute/instances).
+* Select the serverless project.
+* Click at SSH button.
+* When the VM console open, execute:
+
+```sh
+tail -f /tmp/request_logs.log
+```
+
+* You can upload a new file at the bucket, and see new logs at WebServer and Cloud Function.
+
+_**Note:** Disable the firewall rule after your tests: `gcloud compute firewall-rules update allow-ssh  --disabled --project="<YOUR-NETWORK-PROJECT>" --quiet`_
 
 ## Requirements
 
