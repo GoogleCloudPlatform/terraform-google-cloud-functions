@@ -115,6 +115,16 @@ The resources and services that this example will create or enable are:
 | service\_vpc\_subnet\_name | The sub-network name created in harness. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+
+To provision this example, run the following from within this directory:
+
+* `mv terraform.tfvars.example terraform.tfvars` to rename the example `tfvars` file.
+* Fill the `terraform.tfvars` with your values.
+* `terraform init` to get the plugins.
+* `terraform plan` to see the infrastructure plan.
+* `terraform apply` to apply the infrastructure build.
+* `terraform destroy` to destroy the built infrastructure.
+
 ## Requirements
 
 ### Software
