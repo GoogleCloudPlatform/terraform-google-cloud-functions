@@ -127,6 +127,19 @@ To provision this example, run the following commands from within this directory
 * `terraform apply` to apply the infrastructure build.
 * `terraform destroy` to destroy the built infrastructure.
 
+### Testing
+
+You can see the Secure Cloud Function running, doing a insert at Bigquery table.
+
+* Go to [Cloud Storage console](https://console.cloud.google.com/storage/)
+* Select your Serverless project
+* Select the bucket with pattern `bkt-<LOCATION>-<PROJECT-NUMBER>-cfv2-zip-files`
+* Upload a file
+* Go to the [Cloud Function console](https://console.cloud.google.com/functions)
+* Select your project and Cloud Function
+* Go to logs
+* When upload is done, you can see the Cloud Function accessing the internal server logs.
+
 ## Requirements
 
 ### Software
