@@ -129,7 +129,7 @@ _Note: Please refer to [Secure Web Proxy documentation](../../docs/secure-web-pr
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
-To provision this example, run the following from within this directory:
+To provision this example, run the following commands from within this directory:
 
 * `mv terraform.tfvars.example terraform.tfvars` to rename the example `tfvars` file.
 * Fill the `terraform.tfvars` with your values.
@@ -137,6 +137,25 @@ To provision this example, run the following from within this directory:
 * `terraform plan` to see the infrastructure plan.
 * `terraform apply` to apply the infrastructure build.
 * `terraform destroy` to destroy the built infrastructure.
+
+### Testing
+
+You can see the Secure Cloud Function running, doing a insert at Bigquery table.
+
+* Go to [BigQuery console](https://console.cloud.google.com/bigquery)
+* Select your Serverless project
+* Create a new Query
+* Run the following INSERT command
+
+```sql
+INSERT INTO `<YOUR-PROJECT-ID>.dst_secure_cloud_function.tbl_test` VALUES
+("AX","American Express","American Express","30006041298416","Gerson Beahan","688","09/2008","04/2013","26",9287,"77443")
+```
+
+* Go to the [Cloud Function console](https://console.cloud.google.com/functions)
+* Select your project and Cloud Function
+* Go to logs
+* When the insert is done, you can see the Cloud Function the logs with the buckets and regions at your Serverless project.
 
 ## Requirements
 
@@ -150,12 +169,24 @@ The following dependencies must be available:
 
 ### APIs
 
+### Required APIs enabled at Service Account project
+
+The service account project must have the following APIs enabled:
+
+* Access Context Manager API: `accesscontextmanager.googleapis.com`
+* Cloud Billing API: `cloudbilling.googleapis.com`
+* Cloud Build API: `cloudbuild.googleapis.com`
+* Cloud Key Management Service (KMS) API: `cloudkms.googleapis.com`
+* Cloud Pub/Sub API: `pubsub.googleapis.com`
+* Cloud Resource Manager API: `cloudresourcemanager.googleapis.com`
+* Identity and Access Management (IAM) API: `iam.googleapis.com`
+* Service Networking API: `servicenetworking.googleapis.com`
+
 ### Service Account
 
 A service account with the following roles must be used to provision
 the resources of this module:
 
-* Shared VPC Project
 * Organization Level
   * Access Context Manager Admin: `roles/accesscontextmanager.policyAdmin`
   * Organization Policy Admin: `roles/orgpolicy.policyAdmin`
