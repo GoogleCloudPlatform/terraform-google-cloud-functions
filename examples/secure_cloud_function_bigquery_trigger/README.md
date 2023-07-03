@@ -155,7 +155,7 @@ INSERT INTO `<YOUR-PROJECT-ID>.dst_secure_cloud_function.tbl_test` VALUES
 * Go to the [Cloud Function console](https://console.cloud.google.com/functions)
 * Select your project and Cloud Function
 * Go to logs
-* When the insert is done, you can see the Cloud Function the logs with the buckets and regions at your Serverless project.
+* When the insert is done, you can see the logs with the buckets and regions at your Serverless Project Cloud Function Logs.
 
 ## Requirements
 
