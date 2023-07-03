@@ -129,6 +129,15 @@ _Note: Please refer to [Secure Web Proxy documentation](../../docs/secure-web-pr
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
+To provision this example, run the following from within this directory:
+
+* `mv terraform.tfvars.example terraform.tfvars` to rename the example `tfvars` file.
+* Fill the `terraform.tfvars` with your values.
+* `terraform init` to get the plugins.
+* `terraform plan` to see the infrastructure plan.
+* `terraform apply` to apply the infrastructure build.
+* `terraform destroy` to destroy the built infrastructure.
+
 ## Requirements
 
 ### Software
@@ -140,7 +149,6 @@ The following dependencies must be available:
 * [Google Cloud SDK CLI](https://cloud.google.com/sdk/docs/install) > 428.0.0
 
 ### APIs
-#TODO: Fill with APIs needed on SA project
 
 ### Service Account
 
