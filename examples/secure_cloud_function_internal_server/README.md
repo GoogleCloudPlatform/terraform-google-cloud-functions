@@ -118,7 +118,7 @@ _Note: Please refer to [Secure Web Proxy documentation](../../docs/secure-web-pr
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
-To provision this example, run the following from within this directory:
+To provision this example, run the following commands from within this directory:
 
 * `mv terraform.tfvars.example terraform.tfvars` to rename the example `tfvars` file.
 * Fill the `terraform.tfvars` with your values.
