@@ -145,9 +145,12 @@ If you want to look at the WebServer logs you will need:
 * Enable a firewall rule to allow SSH at Web server machine:
 
 ```sh
-gcloud compute firewall-rules create allow-ssh \
---direction ingress --action=ALLOW --rules=tcp:22 --rules all  \
---network <YOUR-NETWORK> \
+gcloud compute firewall-rules create allow-ssh-ingress-from-iap \
+--direction=INGRESS \
+--action=allow \
+--rules=tcp:22 \
+--source-ranges=35.235.240.0/20 \
+--network=<YOUR-NETWORK> \
 --project=<YOUR-NETWORK-PROJECT>
 ```
 
@@ -170,7 +173,7 @@ tail -f /tmp/request_logs.log
 
 * You can upload a new file at the bucket, and see new logs at WebServer and Cloud Function.
 
-_**Note:** Disable the firewall rule after your tests: `gcloud compute firewall-rules update allow-ssh  --disabled --project="<YOUR-NETWORK-PROJECT>" --quiet`_
+_**Note:** Disable the firewall rule after your tests: `gcloud compute firewall-rules update allow-ssh-ingress-from-iap --disabled --project="<YOUR-NETWORK-PROJECT>" --quiet`_
 
 ## Requirements
 
