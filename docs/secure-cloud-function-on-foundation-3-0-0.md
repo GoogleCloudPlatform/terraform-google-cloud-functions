@@ -104,7 +104,7 @@ The APIs to add are:
 
 1. The APIs should be included in the `services` list in the file [serviceusage_allow_basic_apis.yaml](https://github.com/terraform-google-modules/terraform-example-foundation/blob/v3.0.0/policy-library/policies/constraints/serviceusage_allow_basic_apis.yaml#L30)
 1. Update `gcp-policies/policies/constraints/serviceusage_allow_basic_apis.yaml` file in your policy repository (gcp-policies) for the CI/CD pipeline.
-1. It is also necessary to update the file `gcp-policies/policies/constraints/gcp_network_enable_flow_logs_v1.yaml` to allow the creation of subnetworks of purpose type `REGIONAL_MANAGED_PROXY`.
+1. It is also necessary to update the file `gcp-policies/policies/templates/gcp_network_enable_flow_logs_v1.yaml` to allow the creation of subnetworks of purpose type `REGIONAL_MANAGED_PROXY`. Replace the existing section of the code block with the following version.
 
     ```yaml
 
@@ -122,7 +122,7 @@ The APIs to add are:
 
 1. Commit changes in the `gcp-policies` repository and push the code.
 1. Update `gcp-policies-app-infra/policies/constraints/serviceusage_allow_basic_apis.yaml` file in your policy repository (gcp-policies-app-infra) for the App Infra pipeline.
-1. Update `gcp-policies-app-infra/policies/constraints/gcp_network_enable_flow_logs_v1.yaml` file in your policy repository (gcp-policies-app-infra) for the App Infra pipeline.
+1. Update `gcp-policies-app-infra/policies/templates/gcp_network_enable_flow_logs_v1.yaml` file in your policy repository (gcp-policies-app-infra) for the App Infra pipeline.
 1. Commit changes in the `gcp-policies-app-infra` repository and push the code.
 
 ### 1-org: Enforce Cloud Function Organization Policies
@@ -138,13 +138,13 @@ The Secure Cloud Function requires five Organization Policies related to Cloud F
 For the Terraform Example Foundation deploy, we will use the `terraform-google-modules/org-policy/google` [module](https://registry.terraform.io/modules/terraform-google-modules/org-policy/google/latest)
 instead of the specific Secure Cloud Function Security [module](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/tree/main/modules/secure-cloud-function-security) because the Secure Cloud Function Security module also creates KMS resources.
 
-To apply these Organization Policies in Parent Level (Organization or Folder level), add the code below in the `1-org` step.
+To apply these Organization Policies in Parent Level (Organization or Folder level), add the code below in the `gcp-org` repository.
 
 **Note:** You can also apply these Organization Policies to the folder `production` or directly to the projects that will be created for the Secure Cloud Function.
 If you want to apply to the Secure Cloud Function projects, this step must be applied after step [4-projects: Create Serverless project, security project, and additional harness in the production environment](#4-projects-create-serverless-project-security-project-and-additional-harness-in-the-production-environment).
 See the [org-policy module](https://github.com/terraform-google-modules/terraform-google-org-policy/tree/master#variables) documentation on how to apply the policies to projects.
 
-1. Add Organization Policies related to Secure Cloud Function at `1-org/envs/shared/org_policy.tf`
+1. Add Organization Policies related to Secure Cloud Function at `gcp-org/envs/shared/org_policy.tf`
 
     1. Boolean policy: Add policy `"cloudfunctions.requireVPCConnector"` to the [boolean_type_organization_policies](https://github.com/terraform-google-modules/terraform-example-foundation/blob/v3.0.0/1-org/envs/shared/org_policy.tf#LL27C1-L43C5) list:
 
@@ -169,7 +169,7 @@ See the [org-policy module](https://github.com/terraform-google-modules/terrafor
           ])
         ```
 
-    1. List policies: Copy the following code to file [org_policy.tf](https://github.com/terraform-google-modules/terraform-example-foundation/blob/v3.0.0/1-org/envs/shared/org_policy.tf)
+    1. List policies: Copy the following code to the same file [org_policy.tf](https://github.com/terraform-google-modules/terraform-example-foundation/blob/v3.0.0/1-org/envs/shared/org_policy.tf)
 
       ```hcl
       /******************************************
@@ -236,7 +236,7 @@ See the [org-policy module](https://github.com/terraform-google-modules/terrafor
 Environment step terraform service account needs to be added to the restricted VPC-SC perimeter because in the following step
 you will enable an additional API in the restricted shared VPC project.
 
-1. Update file [modules/base_env/main.tf](https://github.com/terraform-google-modules/terraform-example-foundation/blob/v3.0.0/3-networks-dual-svpc/modules/base_env/main.tf#L213) in the `production` branch adding the Environment step terraform service account to the perimeter:
+1. Update file [modules/base_env/main.tf](https://github.com/terraform-google-modules/terraform-example-foundation/blob/v3.0.0/3-networks-dual-svpc/modules/base_env/main.tf#L213) in the `production` branch adding the Environment step terraform service account to the perimeter by updating the value for the variable `members` in the `restricted_shared_vpc` module:
 
     ```hcl
       members = distinct(concat([
@@ -810,19 +810,19 @@ will deployed in the Secure Cloud Function that will be created in step `5-app-i
 1. Get the serverless GCS service account:
 
     ```bash
-    export serverless_project_gcs_sa=$(terraform -chdir="gcp-projects/business_unit_1/production" output -raw serverless_project_gcs_sa)
-    echo "serverless_project_gcs_sa = ${serverless_project_gcs_sa}"
+    export SERVERLESS_PROJECT_GCS_SA=$(terraform -chdir="gcp-projects/business_unit_1/production" output -raw serverless_project_gcs_sa)
+    echo "SERVERLESS_PROJECT_GCS_SA = ${SERVERLESS_PROJECT_GCS_SA}"
     ```
 
 1. Get the serverless Cloud Build service account:
 
     ```bash
-    export serverless_project_cb_sa=$(terraform -chdir="gcp-projects/business_unit_1/production" output -raw serverless_project_cb_sa)
-    echo "serverless_project_cb_sa = ${serverless_project_cb_sa}"
+    export SERVERLESS_PROJECT_CB_SA=$(terraform -chdir="gcp-projects/business_unit_1/production" output -raw serverless_project_cb_sa)
+    echo "SERVERLESS_PROJECT_CB_SA = ${SERVERLESS_PROJECT_CB_SA}"
     ```
 
 
-1. Update file `gcp-networks/envs/production/main.tf` replace the `perimeter_additional_members` line adding the app infra service account email from the previous step:
+1. Update file `gcp-networks/envs/production/main.tf` replace the value for the variable `perimeter_additional_members` adding the three new Service Account: APP_INFRA_SA_EMAIL, SERVERLESS_PROJECT_GCS_SA, and  SERVERLESS_PROJECT_CB_SA. Replace their place holders with the values from the outputs of the commands from the previous steps:
 
     ```hcl
     perimeter_additional_members = concat(var.perimeter_additional_members, [
@@ -832,29 +832,30 @@ will deployed in the Secure Cloud Function that will be created in step `5-app-i
     ])
     ```
 
-1. Update file `gcp-networks/envs/production/main.tf` to include a new local `restricted_subnet_web_proxy_ip`:
+1. Update file `gcp-networks/envs/production/main.tf` to include a new **local** `restricted_subnet_web_proxy_ip`:
 
     ```hcl
-    ...
-    restricted_subnet_primary_ranges = {
-      (local.default_region1) = "10.8.192.0/21"
-      (local.default_region2) = "10.9.192.0/21"
-    }
 
-    restricted_subnet_web_proxy_ip = {
+    restricted_subnet_secure_web_proxy_ip = {
       (local.default_region1) = "10.8.192.10"
       (local.default_region2) = "10.9.192.10"
     }
-    ...
+
     ```
 
-1. Update file `gcp-networks/modules/base_env/variables.tf` to create a toggle for the deploy of the Secured Cloud Function:
+1. Update file `gcp-networks/modules/base_env/variables.tf` to create a toggle for the deploy of the Secured Cloud Function and the Secure Web Proxy IPs:
 
     ```hcl
     variable "enable_scf" {
       description = "Set to true to create the infrastructure needed by the Secure Cloud Function."
       type        = bool
       default     = false
+    }
+
+    variable "restricted_subnet_secure_web_proxy_ip" {
+     description = "The IPs the will be used by the Secure Web Proxy instance."
+     type        = map(string)
+     default     = {}
     }
     ```
 
@@ -1107,7 +1108,7 @@ will deployed in the Secure Cloud Function that will be created in step `5-app-i
     generate_self_signed_certificate
     ```
 
-1. Ensure that the file `generate_swp_certificate.sh` has the correct permissions
+1. Ensure that the file `generate_swp_certificate.sh` has the execute permission
 
     ```bash
     chmod 755 gcp-networks/modules/base_env/generate_swp_certificate.sh
