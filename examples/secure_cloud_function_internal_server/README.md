@@ -149,6 +149,14 @@ If you want to look at the WebServer logs you can:
 * Go to More Actions and click in View Logs.
 * When a file is upload at the bucket, Cloud Function will hit the internal server and a `Hello World log` will appear.
 
+```sh
+2023/07/06 17:21:49 Message returned from internal server: ----------- hello world --------------
+```
+
+```sh
+startup-script: 10.0.0.4 - - [06/Jul/2023 17:21:49] "GET /index.html HTTP/1.1" 200 -
+```
+
 #### Do SSH to internal server machine
 
 * Enable a firewall rule to allow SSH at Web server machine:
@@ -181,6 +189,14 @@ tail -f /tmp/request_logs.log
 ```
 
 * You can upload a new file at the bucket, and see new logs at WebServer and Cloud Function.
+
+```sh
+2023/07/06 17:21:49 Message returned from internal server: ----------- hello world --------------
+```
+
+```sh
+startup-script: 10.0.0.4 - - [06/Jul/2023 17:21:49] "GET /index.html HTTP/1.1" 200 -
+```
 
 _**Note:** Disable the firewall rule after your tests: `gcloud compute firewall-rules update allow-ssh-ingress-from-iap --disabled --project="<YOUR-NETWORK-PROJECT>" --quiet`_
 

@@ -62,7 +62,7 @@ resource "google_compute_instance" "internal_server" {
     }
   }
   tags                    = ["https-server", "allow-google-apis"]
-  metadata_startup_script = replace(file("${abspath(path.module)}/web_server/internal_server_setup.sh"), "{PROXY_IP}", local.proxy_ip)
+  metadata_startup_script = replace(file("${abspath(path.module)}/web_server/internal_server_setup.sh"), "!PROXY_IP!", local.proxy_ip)
 
   network_interface {
     subnetwork         = module.secure_harness.service_subnet[0]
