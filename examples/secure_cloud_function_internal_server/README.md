@@ -76,7 +76,7 @@ _Note: Please refer to [Secure Web Proxy documentation](../../docs/secure-web-pr
 
 * In addition to all the secure-cloud-function resources created, this example will also create:
   * A Webserver Instance
-  * A startup script will be added in the internal server to create the webserver using Python code
+  * A startup script will be added in the internal server to create the Webserver using Python code
   * A Storage Bucket to store Cloud Function source Code
   * A Firewall rule to allow to connect on Webserver using Private IP
 
@@ -140,7 +140,16 @@ You can see the Secure Cloud Function running, uploading a file on the bucket.
 * Go to the logs.
 * When upload is done, you can see the Cloud Function accessing the internal server logs.
 
-If you want to look at the WebServer logs you will need:
+If you want to look at the WebServer logs you can:
+
+#### Use Cloud Logging
+
+* Go the the [Compute instances console](https://console.cloud.google.com/compute/instances).
+* Select the serverless project.
+* Go to More Actions and click in View Logs.
+* When a file is upload at the bucket, Cloud Function will hit the internal server and a `Hello World log` will appear.
+
+#### Do SSH to internal server machine
 
 * Enable a firewall rule to allow SSH at Web server machine:
 
@@ -188,30 +197,31 @@ The following dependencies must be available:
 
 The Secure Cloud Function Internal Server Example will enable the following APIs to the Serverless Project:
 
-* Google VPC Access API: `vpcaccess.googleapis.com`
-* Compute API: `compute.googleapis.com`
-* Container Registry API: `container.googleapis.com`
 * Artifact Registry API: `artifactregistry.googleapis.com`
+* Cloud Build API: `cloudbuild.googleapis.com`
 * Cloud Function API: `cloudfunctions.googleapis.com`
 * Cloud Run API: `run.googleapis.com`
-* Service Networking API: `servicenetworking.googleapis.com`
 * Cloud KMS API: `cloudkms.googleapis.com`
+* Compute API: `compute.googleapis.com`
+* Config Monitoring for Ops API: `opsconfigmonitoring.googleapis.com`
+* Container Registry API: `container.googleapis.com`
 * Container Scanning API: `containerscanning.googleapis.com`
+* Google VPC Access API: `vpcaccess.googleapis.com`
 * Eventarc API: `eventarc.googleapis.com`
 * Eventarc Publishing API: `eventarcpublishing.googleapis.com`
-* Cloud Build API: `cloudbuild.googleapis.com`
+* Service Networking API: `servicenetworking.googleapis.com`
 
 The Secure Cloud Function with Internal Server Example will enable the following APIs to the VPC Project:
 
-* Google VPC Access API: `vpcaccess.googleapis.com`
 * Compute API: `compute.googleapis.com`
-* Service Networking API: `servicenetworking.googleapis.com`
 * DNS API: `dns.googleapis.com`
+* Google VPC Access API: `vpcaccess.googleapis.com`
+* Service Networking API: `servicenetworking.googleapis.com`
 
 The Secure Cloud Function with Internal Server Example will enable the following APIs to the Security Project:
 
-* Cloud KMS API: `cloudkms.googleapis.com`
 * Artifact Registry API: `artifactregistry.googleapis.com`
+* Cloud KMS API: `cloudkms.googleapis.com`
 
 ### Service Account
 
