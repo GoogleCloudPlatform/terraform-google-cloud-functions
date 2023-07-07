@@ -74,7 +74,6 @@ module "secure_harness" {
 
   serverless_project_extra_apis = {
     "prj-secure-cloud-function" = [
-      "networksecurity.googleapis.com",
       "opsconfigmonitoring.googleapis.com"
     ]
   }
@@ -83,6 +82,15 @@ module "secure_harness" {
 resource "google_project_service" "network_project_apis" {
   for_each           = toset(["networkservices.googleapis.com", "certificatemanager.googleapis.com"])
   project            = module.secure_harness.network_project_id[0]
+  service            = each.value
+  disable_on_destroy = false
+
+  depends_on = [module.secure_harness]
+}
+
+resource "google_project_service" "serverless_project_apis" {
+  for_each           = toset(["networksecurity.googleapis.com"])
+  project            = module.secure_harness.serverless_project_ids[0]
   service            = each.value
   disable_on_destroy = false
 
@@ -135,7 +143,8 @@ resource "null_resource" "generate_certificate" {
 
   depends_on = [
     module.secure_harness,
-    google_project_service.network_project_apis
+    google_project_service.network_project_apis,
+    google_project_service.serverless_project_apis
   ]
 }
 
