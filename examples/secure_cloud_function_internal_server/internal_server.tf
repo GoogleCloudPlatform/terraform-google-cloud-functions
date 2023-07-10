@@ -23,7 +23,7 @@ resource "google_project_service_identity" "compute_identity_sa" {
 
 module "compute_service_account" {
   source     = "terraform-google-modules/service-accounts/google"
-  version    = "~> 3.0"
+  version    = "~> 4.0"
   project_id = module.secure_harness.serverless_project_ids[0]
   names      = ["sa-compute-instance"]
 }
