@@ -935,7 +935,7 @@ will deployed in the Secure Cloud Function that will be created in step `5-app-i
 
     module "serverless_connector" {
       source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-net"
-      version = "~> 0.7"
+      version = "~> 0.9"
       count   = var.enable_scf ? 1 : 0
 
       connector_name            = "serverless-connector"
@@ -944,11 +944,11 @@ will deployed in the Secure Cloud Function that will be created in step `5-app-i
       vpc_project_id            = local.restricted_project_id
       serverless_project_id     = local.serverless_project_id
       shared_vpc_name           = module.restricted_shared_vpc.network_name
-      connector_on_host_project = false
       ip_cidr_range             = "10.4.0.0/28"
-      create_subnet             = true
       resource_names_suffix     = "scf"
-      serverless_type           = "CLOUD_FUNCTION"
+      create_subnet             = true
+      connector_on_host_project = false
+      enable_load_balancer_fw   = false
 
       serverless_service_identity_email = google_project_service_identity.serverless_sa[0].email
     }
