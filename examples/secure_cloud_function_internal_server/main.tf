@@ -69,11 +69,20 @@ module "secure_harness" {
   }
 
   network_project_extra_apis = [
-    "networksecurity.googleapis.com"
+    "networksecurity.googleapis.com",
+    "networkservices.googleapis.com",
+    "certificatemanager.googleapis.com"
   ]
 
   serverless_project_extra_apis = {
-    "prj-secure-cloud-function" = ["opsconfigmonitoring.googleapis.com", "cloudfunctions.googleapis.com", "cloudbuild.googleapis.com", "eventarc.googleapis.com", "eventarcpublishing.googleapis.com"]
+    "prj-secure-cloud-function" = [
+      "opsconfigmonitoring.googleapis.com",
+      "cloudfunctions.googleapis.com",
+      "cloudbuild.googleapis.com",
+      "eventarc.googleapis.com",
+      "eventarcpublishing.googleapis.com",
+      "networksecurity.googleapis.com"
+    ]
   }
 }
 
@@ -94,24 +103,6 @@ module "cloudfunction_source_bucket" {
   depends_on = [
     module.secure_harness
   ]
-}
-
-resource "google_project_service" "network_project_apis" {
-  for_each           = toset(["networkservices.googleapis.com", "certificatemanager.googleapis.com"])
-  project            = module.secure_harness.network_project_id[0]
-  service            = each.value
-  disable_on_destroy = false
-
-  depends_on = [module.secure_harness]
-}
-
-resource "google_project_service" "serverless_project_apis" {
-  for_each           = toset(["networksecurity.googleapis.com"])
-  project            = module.secure_harness.serverless_project_ids[0]
-  service            = each.value
-  disable_on_destroy = false
-
-  depends_on = [module.secure_harness]
 }
 
 data "archive_file" "cf-internal-server-source" {
@@ -159,9 +150,7 @@ resource "null_resource" "generate_certificate" {
   }
 
   depends_on = [
-    module.secure_harness,
-    google_project_service.network_project_apis,
-    google_project_service.serverless_project_apis
+    module.secure_harness
   ]
 }
 
