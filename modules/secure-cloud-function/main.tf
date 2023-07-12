@@ -17,11 +17,11 @@
 
 module "cloud_serverless_network" {
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-net"
-  version = "~> 0.8"
+  version = "~> 0.9"
 
   connector_name            = var.connector_name
   subnet_name               = var.subnet_name
-  serverless_type           = "CLOUD_FUNCTION"
+  enable_load_balancer_fw   = "false"
   location                  = var.location
   vpc_project_id            = var.vpc_project_id
   serverless_project_id     = var.serverless_project_id

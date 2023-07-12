@@ -30,7 +30,7 @@ resource "random_id" "random_folder_suffix" {
 
 module "secure_harness" {
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.8"
+  version = "~> 0.9"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-security"
@@ -53,7 +53,7 @@ module "secure_harness" {
   artifact_registry_repository_name           = local.repository_name
   egress_policies                             = var.egress_policies
   ingress_policies                            = var.ingress_policies
-  serverless_type                             = "CLOUD_FUNCTION"
+  base_serverless_api                         = "cloudfunctions.googleapis.com"
   use_shared_vpc                              = true
   time_to_wait_vpc_sc_propagation             = "600s"
 
@@ -64,8 +64,27 @@ module "secure_harness" {
   network_project_extra_apis = ["networksecurity.googleapis.com"]
 
   serverless_project_extra_apis = {
-    "prj-secure-cloud-function" = ["networksecurity.googleapis.com"]
+    "prj-secure-cloud-function" = ["networksecurity.googleapis.com", "cloudfunctions.googleapis.com", "cloudbuild.googleapis.com", "eventarc.googleapis.com", "eventarcpublishing.googleapis.com"]
   }
+}
+
+module "cloudfunction_source_bucket" {
+  source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
+  version = "~>3.4"
+
+  project_id    = module.secure_harness.serverless_project_ids[0]
+  name          = "bkt-${local.location}-${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}-cfv2-zip-files"
+  location      = local.location
+  storage_class = "REGIONAL"
+  force_destroy = true
+
+  encryption = {
+    default_kms_key_name = module.secure_harness.artifact_registry_key
+  }
+
+  depends_on = [
+    module.secure_harness
+  ]
 }
 
 resource "google_project_service" "network_project_apis" {
@@ -90,7 +109,7 @@ resource "google_storage_bucket_object" "cf_bigquery_source_zip" {
   # Append to the MD5 checksum of the files's content
   # to force the zip to be updated as soon as a change occurs
   name   = "src-${data.archive_file.cf_bigquery_source.output_md5}.zip"
-  bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
+  bucket = module.cloudfunction_source_bucket.name
 
   depends_on = [
     data.archive_file.cf_bigquery_source
@@ -124,7 +143,7 @@ module "bigquery_kms" {
 
 module "bigquery" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "~> 5.4"
+  version = "~> 6.0"
 
   dataset_id                  = "dst_secure_cloud_function"
   dataset_name                = "dst-secure-cloud-function"
@@ -272,7 +291,7 @@ module "secure_cloud_function" {
   }
 
   storage_source = {
-    bucket = module.secure_harness.cloudfunction_source_bucket[module.secure_harness.serverless_project_ids[0]].name
+    bucket = module.cloudfunction_source_bucket.name
     object = google_storage_bucket_object.cf_bigquery_source_zip.name
   }
 
