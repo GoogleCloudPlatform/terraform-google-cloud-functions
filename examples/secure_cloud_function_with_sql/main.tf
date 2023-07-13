@@ -50,7 +50,7 @@ module "secure_harness" {
   private_service_connect_ip                  = "10.3.0.5"
   create_access_context_manager_access_policy = var.create_access_context_manager_access_policy
   access_context_manager_policy_id            = var.access_context_manager_policy_id
-  access_level_members                        = var.access_level_members
+  access_level_members                        = distinct(concat(var.access_level_members, ["serviceAccount:${var.terraform_service_account}"]))
   key_name                                    = "key-secure-artifact-registry"
   keyring_name                                = "krg-secure-artifact-registry"
   prevent_destroy                             = false

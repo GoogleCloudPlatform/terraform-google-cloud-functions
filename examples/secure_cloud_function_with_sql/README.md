@@ -144,6 +144,27 @@ _Note: Please refer to [Secure Web Proxy documentation](../../docs/secure-web-pr
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
+To provision this example, run the following commands from within this directory:
+
+* `mv terraform.tfvars.example terraform.tfvars` to rename the example `tfvars` file.
+* Fill the `terraform.tfvars` with your values.
+* `terraform init` to get the plugins.
+* `terraform plan` to see the infrastructure plan.
+* `terraform apply` to apply the infrastructure build.
+* `terraform destroy` to destroy the built infrastructure.
+
+### Testing
+
+You can see the Secure Cloud Function running, forcing the Scheduler job to run.
+
+* Go to [Cloud Scheduler console](https://console.cloud.google.com/cloudscheduler/).
+* Select your Serverless project.
+* Click in Actions at your Cloud Scheduler job and click in Force run.
+* Go to the [Cloud Function console](https://console.cloud.google.com/functions).
+* Select your project and Cloud Function.
+* Go to logs.
+* When upload is done, you can see the Cloud Function logs consulting the Cloud SQL Database.
+
 ## Requirements
 
 ### Software
@@ -210,3 +231,17 @@ the resources of this module:
   * Compute Shared VPC Admin: `roles/compute.xpnAdmin`
 * Billing:
   * Billing User: `roles/billing.user`
+
+### Required APIs enabled at Service Account project
+
+The service account project must have the following APIs enabled:
+
+* Access Context Manager API: `accesscontextmanager.googleapis.com`
+* Cloud Billing API: `cloudbilling.googleapis.com`
+* Cloud Build API: `cloudbuild.googleapis.com`
+* Cloud Key Management Service (KMS) API: `cloudkms.googleapis.com`
+* Cloud Pub/Sub API: `pubsub.googleapis.com`
+* Cloud SQL Admin API: `sqladmin.googleapis.com`
+* Cloud Resource Manager API: `cloudresourcemanager.googleapis.com`
+* Identity and Access Management (IAM) API: `iam.googleapis.com`
+* Service Networking API: `servicenetworking.googleapis.com`
