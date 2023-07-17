@@ -803,8 +803,8 @@ will deployed in the Secure Cloud Function that will be created in step `5-app-i
 
     ```bash
     terraform -chdir="gcp-projects/business_unit_1/production" init
-    export serverless_project_id=$(terraform -chdir="gcp-projects/business_unit_1/production" output -raw serverless_project_id)
-    echo "serverless_project_id = ${serverless_project_id}"
+    export SERVERLESS_PROJECT_ID=$(terraform -chdir="gcp-projects/business_unit_1/production" output -raw serverless_project_id)
+    echo "SERVERLESS_PROJECT_ID = ${SERVERLESS_PROJECT_ID}"
     ```
 
 1. Get the serverless GCS service account:
@@ -954,7 +954,7 @@ will deployed in the Secure Cloud Function that will be created in step `5-app-i
     }
     ```
 
-1. Replace `SERVERLESS_PROJECT_ID` with the `serverless_project_id` form the previous step
+1. Replace `SERVERLESS_PROJECT_ID` with the `SERVERLESS_PROJECT_ID` from the previous step
 1. Update the `target_tags` property in the file [restricted_shared_vpc/firewall.tf](https://github.com/terraform-google-modules/terraform-example-foundation/blob/v3.0.0/3-networks-dual-svpc/modules/restricted_shared_vpc/firewall.tf#LL69C1-L69C38) adding the tag `"vpc-connector"` to the firewall rule that allows Google private API access.
 
     ```hcl
@@ -1180,12 +1180,21 @@ This is required because the build in stage `5-app-infra` only has access to the
 
 ### 5-app-infra: Deploy the Secure Cloud Function with Bigquery and Eventarc
 
-1. Clone the new repo created in step 4-projects/shared:
+1. Go to the builds page of the **App Infra** project in Google Cloud Console to follow the build execution of the next steps:
 
     ```bash
+    export DEFAULT_REGION=$(terraform -chdir="gcp-bootstrap/envs/shared" output -json common_config | jq '.default_region' --raw-output)
+    echo ${DEFAULT_REGION}
+
     export INFRA_PIPELINE_PROJECT_ID=$(terraform -chdir="gcp-projects/business_unit_1/shared/" output -raw cloudbuild_project_id)
     echo ${INFRA_PIPELINE_PROJECT_ID}
 
+    echo "builds page = https://console.cloud.google.com/cloud-build/builds;region=${DEFAULT_REGION}?project=${INFRA_PIPELINE_PROJECT_ID}"
+    ```
+
+1. Clone the new repo created in step 4-projects/shared:
+
+    ```bash
     gcloud source repos clone bu1-scf-app --project=${INFRA_PIPELINE_PROJECT_ID}
     ```
 
@@ -1332,7 +1341,7 @@ We consider that the `terraform-example-foundation` directory is at the same lev
     sed -i "s/REMOTE_STATE_BUCKET/${remote_state_bucket}/" ./business_unit_1/production/terraform.tfvars
     ```
 
-1. Copy Cloud Function code and BigQuery template form the `terraform-google-cloud-functions` repo
+1. Copy Cloud Function code and BigQuery template from the `terraform-google-cloud-functions` repo
 We consider that the `terraform-google-cloud-functions` directory is at the same level of the `bu1-scf-app` directory.
 
     ```bash
@@ -1639,13 +1648,36 @@ We consider that the `terraform-google-cloud-functions` directory is at the same
     }
     ```
 
-1. Commit changes in the `bu1-scf-app` repository and push the code to the `plan` branch.
+1. Commit changes in the `bu1-scf-app` repository and push the code to the `plan` branch. Wait for the `plan` build to finish before proceeding with the next step.
+
+    ```bash
+    git add .
+    git commit -m "Secure Cloud Function initial commit"
+    git push --set-upstream origin plan
+    ```
+
 1. Merge changes to the production branch and push the branch.
 
     ```bash
     git checkout -b production
-    git push origin production
+    git push --set-upstream origin production
     ```
+
+1. You can see the Secure Cloud Function running, doing an insert at the Bigquery table.
+    1. Go to the [BigQuery console](https://console.cloud.google.com/bigquery).
+    1. Select the Serverless project created.
+    1. Create a new Query.
+    1. Run the following INSERT command:
+
+        ```sql
+        INSERT INTO `<SERVERLESS_PROJECT_ID>.dst_secure_cloud_function.tbl_test` VALUES
+        ("AX","American Express","American Express","30006041298416","Gerson Beahan","688","09/2008","04/2013","26",9287,"77443")
+        ```
+
+    1. Go to the [Cloud Function console](https://console.cloud.google.com/functions).
+    1. Select the Serverless project and the `secure-cloud-function-bigquery` Cloud Function.
+    1. Go to the logs.
+    1. After the insert is processed, you can see the logs with the buckets and regions at the Serverless Project Cloud Function Logs.
 
 ### 3-networks: Add flag to disable the Secure Web Proxy used by the Secure Cloud Function build process
 
