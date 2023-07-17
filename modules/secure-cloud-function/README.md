@@ -59,8 +59,9 @@ The resources/services/activations/deletions that this module will create/trigge
 Basic usage of this module is as follows:
 
 ```hcl
-module "secure_cloud_run" {
-  source                    = "../../modules/secure-cloud-function"
+module "secure_cloud_function" {
+  source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function"
+  version = "~> 0.3"
 
   function_name             = <FUNCTION-NAME>
   function_description      = <FUNCTION-DESCRIPTION>
