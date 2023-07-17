@@ -1025,8 +1025,9 @@ will deployed in the Secure Cloud Function that will be created in step `5-app-i
     }
 
     module "secure_web_proxy" {
-      source = "github.com/GoogleCloudPlatform/terraform-google-cloud-functions//modules/secure-web-proxy"
+      source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-web-proxy"
       count   = var.enable_scf ? 1 : 0
+      version = "~> 0.4.0"
 
       project_id          = local.restricted_project_id
       region              = local.default_region
@@ -1571,7 +1572,8 @@ We consider that the `terraform-google-cloud-functions` directory is at the same
     }
 
     module "cloud_function_core" {
-      source = "github.com/GoogleCloudPlatform/terraform-google-cloud-functions//modules/secure-cloud-function-core"
+      source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function-core"
+      version = "~> 0.4.0"
 
       function_name        = "secure-cloud-function-bigquery"
       function_description = "Logs when there is a new row in the BigQuery"
