@@ -76,7 +76,7 @@ _Note: Please refer to [Secure Web Proxy documentation](../../docs/secure-web-pr
 
 * In addition to all the secure-cloud-function resources created, this example will also create:
   * A Webserver Instance
-  * A startup script will be added in the internal server to create the webserver using Python code
+  * A startup script will be added in the internal server to create the Webserver using Python code
   * A Storage Bucket to store Cloud Function source Code
   * A Firewall rule to allow to connect on Webserver using Private IP
 
@@ -117,6 +117,89 @@ _Note: Please refer to [Secure Web Proxy documentation](../../docs/secure-web-pr
 | service\_vpc\_subnet\_name | The sub-network name created in harness. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+
+To provision this example, run the following commands from within this directory:
+
+* `mv terraform.tfvars.example terraform.tfvars` to rename the example `tfvars` file.
+* Fill the `terraform.tfvars` with your values.
+* `terraform init` to get the plugins.
+* `terraform plan` to see the infrastructure plan.
+* `terraform apply` to apply the infrastructure build.
+* `terraform destroy` to destroy the built infrastructure.
+
+### Testing
+
+You can see the Secure Cloud Function running, uploading a file on the bucket.
+
+* Go to [Cloud Storage console](https://console.cloud.google.com/storage/).
+* Select your Serverless project.
+* Select the bucket with pattern `bkt-<LOCATION>-<PROJECT-NUMBER>-cfv2-zip-files`.
+* Upload a file.
+* Go to the [Cloud Function console](https://console.cloud.google.com/functions).
+* Select your project and Cloud Function.
+* Go to the logs.
+* When upload is done, you can see the Cloud Function accessing the internal server logs.
+
+If you want to look at the WebServer logs you can:
+
+#### Use Cloud Logging
+
+* Go the the [Compute instances console](https://console.cloud.google.com/compute/instances).
+* Select the serverless project.
+* Go to More Actions and click in View Logs.
+* When a file is upload at the bucket, Cloud Function will hit the internal server and a `Hello World log` will appear.
+
+```sh
+2023/07/06 17:21:49 Message returned from internal server: ----------- hello world --------------
+```
+
+```sh
+startup-script: 10.0.0.4 - - [06/Jul/2023 17:21:49] "GET /index.html HTTP/1.1" 200 -
+```
+
+#### Do SSH to internal server machine
+
+* Enable a firewall rule to allow SSH at Web server machine:
+
+```sh
+gcloud compute firewall-rules create allow-ssh-ingress-from-iap \
+--direction=INGRESS \
+--action=allow \
+--rules=tcp:22 \
+--source-ranges=35.235.240.0/20 \
+--network=<YOUR-NETWORK> \
+--project=<YOUR-NETWORK-PROJECT>
+```
+
+* Grant `IAP-secured Tunnel User` role at your user, at Web Server project:
+
+```sh
+gcloud projects add-iam-policy-binding <YOUR-SERVERLESS-PROJECT-ID> \
+--member=user:<YOUR-USER-EMAIL> \
+--role=roles/iap.tunnelResourceAccessor
+```
+
+* Go the the [Compute instances console](https://console.cloud.google.com/compute/instances).
+* Select the serverless project.
+* Click at SSH button.
+* When the VM console open, execute:
+
+```sh
+tail -f /tmp/request_logs.log
+```
+
+* You can upload a new file at the bucket, and see new logs at WebServer and Cloud Function.
+
+```sh
+2023/07/06 17:21:49 Message returned from internal server: ----------- hello world --------------
+```
+
+```sh
+startup-script: 10.0.0.4 - - [06/Jul/2023 17:21:49] "GET /index.html HTTP/1.1" 200 -
+```
+
+_**Note:** Disable the firewall rule after your tests: `gcloud compute firewall-rules update allow-ssh-ingress-from-iap --disabled --project="<YOUR-NETWORK-PROJECT>" --quiet`_
+
 ## Requirements
 
 ### Software
@@ -130,30 +213,31 @@ The following dependencies must be available:
 
 The Secure Cloud Function Internal Server Example will enable the following APIs to the Serverless Project:
 
-* Google VPC Access API: `vpcaccess.googleapis.com`
-* Compute API: `compute.googleapis.com`
-* Container Registry API: `container.googleapis.com`
 * Artifact Registry API: `artifactregistry.googleapis.com`
+* Cloud Build API: `cloudbuild.googleapis.com`
 * Cloud Function API: `cloudfunctions.googleapis.com`
 * Cloud Run API: `run.googleapis.com`
-* Service Networking API: `servicenetworking.googleapis.com`
 * Cloud KMS API: `cloudkms.googleapis.com`
+* Compute API: `compute.googleapis.com`
+* Config Monitoring for Ops API: `opsconfigmonitoring.googleapis.com`
+* Container Registry API: `container.googleapis.com`
 * Container Scanning API: `containerscanning.googleapis.com`
+* Google VPC Access API: `vpcaccess.googleapis.com`
 * Eventarc API: `eventarc.googleapis.com`
 * Eventarc Publishing API: `eventarcpublishing.googleapis.com`
-* Cloud Build API: `cloudbuild.googleapis.com`
+* Service Networking API: `servicenetworking.googleapis.com`
 
 The Secure Cloud Function with Internal Server Example will enable the following APIs to the VPC Project:
 
-* Google VPC Access API: `vpcaccess.googleapis.com`
 * Compute API: `compute.googleapis.com`
-* Service Networking API: `servicenetworking.googleapis.com`
 * DNS API: `dns.googleapis.com`
+* Google VPC Access API: `vpcaccess.googleapis.com`
+* Service Networking API: `servicenetworking.googleapis.com`
 
 The Secure Cloud Function with Internal Server Example will enable the following APIs to the Security Project:
 
-* Cloud KMS API: `cloudkms.googleapis.com`
 * Artifact Registry API: `artifactregistry.googleapis.com`
+* Cloud KMS API: `cloudkms.googleapis.com`
 
 ### Service Account
 
@@ -169,3 +253,16 @@ A service account with the following roles must be used to provision the resourc
   * Compute Shared VPC Admin: `roles/compute.xpnAdmin`
 * Billing:
   * Billing User: `roles/billing.user`
+
+### Required APIs enabled at Service Account project
+
+The service account project must have the following APIs enabled:
+
+* Access Context Manager API: `accesscontextmanager.googleapis.com`
+* Cloud Billing API: `cloudbilling.googleapis.com`
+* Cloud Build API: `cloudbuild.googleapis.com`
+* Cloud Key Management Service (KMS) API: `cloudkms.googleapis.com`
+* Cloud Pub/Sub API: `pubsub.googleapis.com`
+* Cloud Resource Manager API: `cloudresourcemanager.googleapis.com`
+* Identity and Access Management (IAM) API: `iam.googleapis.com`
+* Service Networking API: `servicenetworking.googleapis.com`

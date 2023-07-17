@@ -15,6 +15,33 @@
 # limitations under the License.
 #
 
+export HTTPS_PROXY=!PROXY_IP!:443
+export HTTP_PROXY=!PROXY_IP!:443
+export https_proxy=https://!PROXY_IP!:443
+export http_proxy=http://!PROXY_IP!:443
+
+tee -a /etc/apt/apt.conf.d/80proxy <<'EOF'
+Acquire::http::proxy "http://!PROXY_IP!:443/";
+Acquire::https::proxy "https://!PROXY_IP!:443/";
+Acquire::ftp::proxy "ftp://!PROXY_IP!:443/";
+EOF
+
+tee -a /etc/apt/apt.conf.d/99verify-peer.conf <<'EOF'
+Acquire { https::Verify-Peer false }
+EOF
+
+tee -a ~/.wgetrc <<'EOF'
+use_proxy = on
+http_proxy = http://!PROXY_IP!:443/
+https_proxy = http://!PROXY_IP!:443/
+ftp_proxy = http://!PROXY_IP!:443/
+EOF
+
+curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh --proxy-insecure
+
+sudo bash add-google-cloud-ops-agent-repo.sh --also-install
+sleep 60
+
 tee -a /tmp/index.html <<'EOF'
 ----------- hello world --------------
 EOF
