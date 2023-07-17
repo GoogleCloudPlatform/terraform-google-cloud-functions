@@ -30,8 +30,9 @@ to be used by Cloud Function (2nd Gen).
 ## Usage
 
 ```hcl
-module "cloud_function_security" {
-  source = "../secure-cloud-function-security"
+module "secure_cloud_function_security" {
+  source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-serverless-security"
+  version = "~> 0.3"
 
   kms_project_id        = <KMS PROJECT ID>
   location              = <KMS LOCATION>
