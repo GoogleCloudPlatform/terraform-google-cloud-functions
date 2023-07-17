@@ -29,9 +29,10 @@ module "compute_service_account" {
 }
 
 resource "google_project_iam_member" "service_account_roles" {
-  project = module.secure_harness.serverless_project_ids[0]
-  member  = "serviceAccount:${module.compute_service_account.email}"
-  role    = "roles/compute.instanceAdmin.v1"
+  for_each = toset(["roles/compute.instanceAdmin.v1", "roles/logging.logWriter", "roles/monitoring.metricWriter", "roles/iam.serviceAccountTokenCreator"])
+  project  = module.secure_harness.serverless_project_ids[0]
+  member   = "serviceAccount:${module.compute_service_account.email}"
+  role     = each.value
 
   depends_on = [module.compute_service_account]
 }
@@ -60,8 +61,8 @@ resource "google_compute_instance" "internal_server" {
       image = "debian-cloud/debian-11"
     }
   }
-  tags                    = ["https-server"]
-  metadata_startup_script = file("${abspath(path.module)}/web_server/internal_server_setup.sh")
+  tags                    = ["https-server", "allow-google-apis"]
+  metadata_startup_script = replace(file("${abspath(path.module)}/web_server/internal_server_setup.sh"), "!PROXY_IP!", local.proxy_ip)
 
   network_interface {
     subnetwork         = module.secure_harness.service_subnet[0]
@@ -76,7 +77,8 @@ resource "google_compute_instance" "internal_server" {
 
   depends_on = [
     google_service_account_iam_member.service_account_user,
-    module.secure_harness
+    module.secure_harness,
+    module.secure_web_proxy
   ]
 }
 

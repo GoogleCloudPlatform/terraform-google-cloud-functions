@@ -22,6 +22,9 @@ locals {
   network_ip         = "10.0.0.3"
   webserver_instance = "webserver"
   subnet_ip          = "10.0.0.0/28"
+  proxy_ip           = "10.0.0.10"
+
+  private_service_connect_ip = "10.3.0.5"
 }
 resource "random_id" "random_folder_suffix" {
   byte_length = 2
@@ -42,7 +45,7 @@ module "secure_harness" {
   location                                    = local.location
   vpc_name                                    = "vpc-secure-cloud-function"
   subnet_ip                                   = local.subnet_ip
-  private_service_connect_ip                  = "10.3.0.5"
+  private_service_connect_ip                  = local.private_service_connect_ip
   create_access_context_manager_access_policy = var.create_access_context_manager_access_policy
   access_context_manager_policy_id            = var.access_context_manager_policy_id
   access_level_members                        = distinct(concat(var.access_level_members, ["serviceAccount:${var.terraform_service_account}"]))
@@ -54,7 +57,7 @@ module "secure_harness" {
   ingress_policies                            = var.ingress_policies
   base_serverless_api                         = "cloudfunctions.googleapis.com"
   use_shared_vpc                              = true
-  time_to_wait_vpc_sc_propagation             = "660s"
+  time_to_wait_vpc_sc_propagation             = "680s"
 
   service_account_project_roles = {
     "prj-secure-cloud-function" = [
@@ -66,11 +69,20 @@ module "secure_harness" {
   }
 
   network_project_extra_apis = [
-    "networksecurity.googleapis.com"
+    "networksecurity.googleapis.com",
+    "networkservices.googleapis.com",
+    "certificatemanager.googleapis.com"
   ]
 
   serverless_project_extra_apis = {
-    "prj-secure-cloud-function" = ["networksecurity.googleapis.com", "cloudfunctions.googleapis.com", "cloudbuild.googleapis.com", "eventarc.googleapis.com", "eventarcpublishing.googleapis.com"]
+    "prj-secure-cloud-function" = [
+      "opsconfigmonitoring.googleapis.com",
+      "cloudfunctions.googleapis.com",
+      "cloudbuild.googleapis.com",
+      "eventarc.googleapis.com",
+      "eventarcpublishing.googleapis.com",
+      "networksecurity.googleapis.com"
+    ]
   }
 }
 
@@ -91,15 +103,6 @@ module "cloudfunction_source_bucket" {
   depends_on = [
     module.secure_harness
   ]
-}
-
-resource "google_project_service" "network_project_apis" {
-  for_each           = toset(["networkservices.googleapis.com", "certificatemanager.googleapis.com"])
-  project            = module.secure_harness.network_project_id[0]
-  service            = each.value
-  disable_on_destroy = false
-
-  depends_on = [module.secure_harness]
 }
 
 data "archive_file" "cf-internal-server-source" {
@@ -147,8 +150,7 @@ resource "null_resource" "generate_certificate" {
   }
 
   depends_on = [
-    module.secure_harness,
-    google_project_service.network_project_apis
+    module.secure_harness
   ]
 }
 
@@ -169,7 +171,7 @@ module "secure_web_proxy" {
   subnetwork_id       = "projects/${module.secure_harness.network_project_id[0]}/regions/${local.region}/subnetworks/${module.secure_harness.service_subnet[0]}"
   subnetwork_ip_range = local.subnet_ip
   certificates        = ["projects/${module.secure_harness.network_project_id[0]}/locations/${local.region}/certificates/swp-certificate"]
-  addresses           = ["10.0.0.10"]
+  addresses           = [local.proxy_ip]
   ports               = [443]
   proxy_ip_range      = "10.129.0.0/23"
 
@@ -185,7 +187,10 @@ module "secure_web_proxy" {
     "*github.com/google/*",
     "*github.com/googleapis/*",
     "*github.com/json-iterator/go",
-    "*dl.google.com/*"
+    "*dl.google.com/*",
+    "*debian.map.fastly.net/*",
+    "*deb.debian.org/*",
+    "*packages.cloud.google.com/*"
   ]
 
   depends_on = [
@@ -217,8 +222,8 @@ module "secure_cloud_function" {
   network_id                = module.secure_harness.service_vpc[0].network.id
 
   build_environment_variables = {
-    HTTP_PROXY  = "http://10.0.0.10:443"
-    HTTPS_PROXY = "http://10.0.0.10:443" # Using http because is a self-signed certification (just for test porpuse)
+    HTTP_PROXY  = "http://${local.proxy_ip}:443"
+    HTTPS_PROXY = "http://${local.proxy_ip}:443" # Using http because is a self-signed certification (just for test porpuse)
   }
 
   storage_source = {
