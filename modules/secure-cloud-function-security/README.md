@@ -32,7 +32,7 @@ to be used by Cloud Function (2nd Gen).
 ```hcl
 module "secure_cloud_function_security" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-serverless-security"
-  version = "~> 0.3"
+  version = "~> 0.4"
 
   kms_project_id        = <KMS PROJECT ID>
   location              = <KMS LOCATION>
