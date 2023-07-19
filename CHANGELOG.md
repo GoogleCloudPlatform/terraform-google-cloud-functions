@@ -8,6 +8,33 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.4.0](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.3.0...v0.4.0) (2023-07-17)
+
+
+### Features
+
+* add instructions to deploy the Secure Cloud Function on top of the Terraform Example Foundation v3.0.0 ([#37](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/37)) ([f458a1c](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/f458a1c965397158181151ca7cac0527d1395476))
+* Adding Secure Web Proxy to examples ([#43](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/43)) ([99f9bfe](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/99f9bfe7eb4f358d4efbd1f8660ddbe14b90e932))
+* Adds example of secure-cloud-function triggered by BigQuery ([#26](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/26)) ([2ac3d91](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/2ac3d91cab2895006c2e6afed7bceab8ecd1a168))
+* Adds Secure Web Proxy private module ([#34](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/34)) ([17717c1](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/17717c1e10ee3d3691a543f6df4d3c564f1f3c0e))
+* adds secure-cloud-function + cloud sql example ([#30](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/30)) ([8d1005c](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/8d1005c2fec2227e4e839358cc175b3448327d8a))
+* support upstream serverless module attribute changes ([#55](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/55)) ([749071a](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/749071ab124833654f98e093418693d1a7059bb5))
+
+
+### Bug Fixes
+
+* Add instructions on Bigquery example ([#57](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/57)) ([42bf7a6](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/42bf7a6f5a8c4b6d6d77079a70c0ce561188fd52))
+* Add instructions on Internal server example ([#56](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/56)) ([a8c6b68](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/a8c6b68e4785a7e55298b3d28e38c6d7dc48455f))
+* Add test instructions for foundation deploy ([#61](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/61)) ([ff9b9b4](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/ff9b9b4f7d17227f368f60e7423df31aa9139146))
+* adds public source/version in sub-modules at READMEs ([#62](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/62)) ([0d84594](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/0d84594110afcf5fc5195e7cfe80fc0f4445018e))
+* Changes connector egress setting and org policies ([#47](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/47)) ([94158d9](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/94158d95371c052df439f312bea94be6a5984631))
+* Cloud Sql example instructions ([#58](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/58)) ([185b7ef](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/185b7ef7adc1766667d72c9a4065c2276d6656c0))
+* Fix foundation deploy instructions ([#59](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/59)) ([a95daa4](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/a95daa4e3a4861c65842c6e3c2267d769030bb20))
+* Fix README in Cloud SQL Example ([#38](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/38)) ([749e871](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/749e871da42d4b69140d68992a971809d474e514))
+* Fixes roles and apis on modules readmes ([#39](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/39)) ([787eb14](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/787eb14bfe34f9c51160f0451f5017e39b4cca67))
+* Renames secure-cloud-serverless-security module to secure-cloud-function-security ([#41](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/41)) ([b7cfd69](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/b7cfd693ed43cffb2ae7603f7e06d3f6125b649c))
+* Secure Web Proxy fix ([#46](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/46)) ([1743c51](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/1743c514e3c7b74c79114c2ada5cc2dd6840a1fa))
+
 ## [0.3.0](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.2.0...v0.3.0) (2023-05-17)
 
 
