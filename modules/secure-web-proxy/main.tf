@@ -78,7 +78,6 @@ resource "time_sleep" "wait_network_config_propagation" {
 }
 
 resource "google_network_security_gateway_security_policy" "swp_security_policy" {
-  provider    = google-beta
   name        = "swp-security-policy"
   project     = var.project_id
   location    = var.region
@@ -86,7 +85,6 @@ resource "google_network_security_gateway_security_policy" "swp_security_policy"
 }
 
 resource "google_network_security_url_lists" "swp_url_lists" {
-  provider    = google-beta
   name        = "swp-url-lists"
   project     = var.project_id
   location    = var.region
@@ -95,7 +93,6 @@ resource "google_network_security_url_lists" "swp_url_lists" {
 }
 
 resource "google_network_security_gateway_security_policy_rule" "swp_security_policy_rule" {
-  provider                = google-beta
   name                    = "swp-security-policy-rule"
   project                 = var.project_id
   location                = var.region
@@ -114,8 +111,6 @@ resource "google_network_security_gateway_security_policy_rule" "swp_security_po
 }
 
 resource "google_network_services_gateway" "secure_web_proxy" {
-  provider = google-beta
-
   project                              = var.project_id
   name                                 = var.proxy_name
   location                             = var.region
