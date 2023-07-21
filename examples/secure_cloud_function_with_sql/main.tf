@@ -477,6 +477,14 @@ data "google_secret_manager_secret_version" "latest_version" {
   depends_on = [null_resource.create_user_pwd]
 }
 
+resource "google_project_iam_member" "network_service_agent_editor" {
+  project = module.secure_harness.network_project_id[0]
+  role    = "roles/editor"
+  member  = "serviceAccount:${module.secure_harness.network_project_id[0]}@cloudservices.gserviceaccount.com"
+
+  depends_on = [module.secure_harness]
+}
+
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
 
@@ -543,6 +551,7 @@ module "secure_cloud_function" {
     google_secret_manager_secret_iam_member.member,
     null_resource.create_and_populate_db,
     null_resource.create_user_pwd,
-    module.secure_web_proxy
+    module.secure_web_proxy,
+    google_project_iam_member.network_service_agent_editor
   ]
 }

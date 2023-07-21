@@ -258,6 +258,14 @@ module "secure_web_proxy" {
   ]
 }
 
+resource "google_project_iam_member" "network_service_agent_editor" {
+  project = module.secure_harness.network_project_id[0]
+  role    = "roles/editor"
+  member  = "serviceAccount:${module.secure_harness.network_project_id[0]}@cloudservices.gserviceaccount.com"
+
+  depends_on = [module.secure_harness]
+}
+
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
 
@@ -326,6 +334,7 @@ module "secure_cloud_function" {
     module.secure_harness,
     module.bigquery,
     google_storage_bucket_object.cf_bigquery_source_zip,
-    module.secure_web_proxy
+    module.secure_web_proxy,
+    google_project_iam_member.network_service_agent_editor
   ]
 }
