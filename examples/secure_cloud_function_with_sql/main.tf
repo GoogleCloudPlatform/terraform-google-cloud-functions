@@ -478,7 +478,7 @@ data "google_secret_manager_secret_version" "latest_version" {
 }
 
 resource "google_project_iam_member" "network_service_agent_editor" {
-  project = module.secure_harness.serverless_project_ids[0]
+  project = module.secure_harness.network_project_id[0]
   role    = "roles/editor"
   member  = "serviceAccount:${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}@cloudservices.gserviceaccount.com"
 
