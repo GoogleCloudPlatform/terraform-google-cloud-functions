@@ -25,19 +25,21 @@ locals {
   proxy_ip           = "10.0.0.10"
 
   private_service_connect_ip = "10.3.0.5"
+  cloud_services_sa          = "${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}@cloudservices.gserviceaccount.com"
 }
 resource "random_id" "random_folder_suffix" {
   byte_length = 2
 }
 
 module "secure_harness" {
-  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.9"
+  # source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
+  # version = "~> 0.9"
+  source = "git::https://github.com/amandakarina/terraform-google-cloud-run//modules/secure-serverless-harness?ref=fix/fix-vpc-connector-issue"
 
   billing_account                             = var.billing_account
-  security_project_name                       = "prj-security"
-  network_project_name                        = "prj-restricted-shared"
-  serverless_project_names                    = ["prj-secure-cloud-function"]
+  security_project_name                       = "prj-scf-security"
+  network_project_name                        = "prj-scf-restricted-shared"
+  serverless_project_names                    = ["prj-scf-internal-server"]
   org_id                                      = var.org_id
   parent_folder_id                            = var.folder_id
   serverless_folder_suffix                    = random_id.random_folder_suffix.hex
@@ -60,7 +62,7 @@ module "secure_harness" {
   time_to_wait_vpc_sc_propagation             = "680s"
 
   service_account_project_roles = {
-    "prj-secure-cloud-function" = [
+    "prj-scf-internal-server" = [
       "roles/eventarc.eventReceiver",
       "roles/viewer",
       "roles/compute.networkViewer",
@@ -75,7 +77,7 @@ module "secure_harness" {
   ]
 
   serverless_project_extra_apis = {
-    "prj-secure-cloud-function" = [
+    "prj-scf-internal-server" = [
       "opsconfigmonitoring.googleapis.com",
       "cloudfunctions.googleapis.com",
       "cloudbuild.googleapis.com",
@@ -203,7 +205,7 @@ module "secure_web_proxy" {
 resource "google_project_iam_member" "network_service_agent_editor" {
   project = module.secure_harness.network_project_id[0]
   role    = "roles/editor"
-  member  = "serviceAccount:${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}@cloudservices.gserviceaccount.com"
+  member  = "serviceAccount:${local.cloud_services_sa}"
 
   depends_on = [module.secure_harness]
 }

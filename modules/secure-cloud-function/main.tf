@@ -16,8 +16,10 @@
 
 
 module "cloud_serverless_network" {
-  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-net"
-  version = "~> 0.9"
+  # source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-net"
+  # version = "~> 0.9"
+
+  source = "git::https://github.com/amandakarina/terraform-google-cloud-run//modules/secure-serverless-net?ref=fix/fix-vpc-connector-issue"
 
   connector_name            = var.connector_name
   subnet_name               = var.subnet_name
