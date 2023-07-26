@@ -32,9 +32,8 @@ resource "random_id" "random_folder_suffix" {
 }
 
 module "secure_harness" {
-  # source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  # version = "~> 0.9"
-  source = "git::https://github.com/amandakarina/terraform-google-cloud-run//modules/secure-serverless-harness?ref=fix/fix-vpc-connector-issue"
+  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
+  version = "~> 0.9.1"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-scf-security"
