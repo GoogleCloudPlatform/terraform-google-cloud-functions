@@ -83,6 +83,7 @@ resource "google_cloudfunctions2_function" "function" {
       max_instance_count    = service_config.value.max_instance_count
       min_instance_count    = service_config.value.min_instance_count
       available_memory      = service_config.value.available_memory
+      available_cpu         = service_config.value.available_cpu
       timeout_seconds       = service_config.value.timeout_seconds
       environment_variables = service_config.value.runtime_env_variables != null ? service_config.value.runtime_env_variables : {}
 

@@ -116,6 +116,7 @@ variable "service_config" {
     max_instance_count    = optional(string, 100)
     min_instance_count    = optional(string, 1)
     available_memory      = optional(string, "256M")
+    available_cpu         = optional(string, 1)
     timeout_seconds       = optional(string, 60)
     runtime_env_variables = optional(map(string), null)
     runtime_secret_env_variables = optional(set(object({
