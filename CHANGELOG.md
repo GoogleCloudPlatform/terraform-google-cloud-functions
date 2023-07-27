@@ -8,6 +8,13 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.4.1](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.4.0...v0.4.1) (2023-07-27)
+
+
+### Bug Fixes
+
+* Change Secure Web Proxy creation to use terraform resource instead of gcloud command ([#52](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/52)) ([f167312](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/f1673128280ec1b447a1aafbb55319e380c142b9))
+
 ## [0.4.0](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.3.0...v0.4.0) (2023-07-17)
 
 
