@@ -74,6 +74,8 @@ func TestCFInternalServer(t *testing.T) {
 	cft := tft.NewTFBlueprintTest(t, tft.WithVars(vars))
 
 	cft.DefineVerify(func(assert *assert.Assertions) {
+		// Removing DefaultVerify because Cloud Function API is changing the build_config/source/storage_source/generation and this modification is breaking the build validation.
+		// cft.DefaultVerify(assert)
 
 		location := "us-west1"
 		networkProjectID := cft.GetStringOutput("network_project_id")
