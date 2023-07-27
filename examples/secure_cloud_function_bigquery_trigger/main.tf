@@ -22,6 +22,8 @@ locals {
   table_name      = "tbl_test"
   kms_bigquery    = "key-secure-bigquery"
   subnet_ip       = "10.0.0.0/28"
+
+  cloud_services_sa = "${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}@cloudservices.gserviceaccount.com"
 }
 
 resource "random_id" "random_folder_suffix" {
@@ -30,12 +32,12 @@ resource "random_id" "random_folder_suffix" {
 
 module "secure_harness" {
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.9"
+  version = "~> 0.9.1"
 
   billing_account                             = var.billing_account
-  security_project_name                       = "prj-security"
-  network_project_name                        = "prj-restricted-shared"
-  serverless_project_names                    = ["prj-secure-cloud-function"]
+  security_project_name                       = "prj-scf-security"
+  network_project_name                        = "prj-scf-restricted-shared"
+  serverless_project_names                    = ["prj-scf-bq-trigger"]
   org_id                                      = var.org_id
   parent_folder_id                            = var.folder_id
   serverless_folder_suffix                    = random_id.random_folder_suffix.hex
@@ -58,13 +60,13 @@ module "secure_harness" {
   time_to_wait_vpc_sc_propagation             = "630s"
 
   service_account_project_roles = {
-    "prj-secure-cloud-function" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
+    "prj-scf-bq-trigger" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
   }
 
   network_project_extra_apis = ["networksecurity.googleapis.com"]
 
   serverless_project_extra_apis = {
-    "prj-secure-cloud-function" = ["networksecurity.googleapis.com", "cloudfunctions.googleapis.com", "cloudbuild.googleapis.com", "eventarc.googleapis.com", "eventarcpublishing.googleapis.com"]
+    "prj-scf-bq-trigger" = ["networksecurity.googleapis.com", "cloudfunctions.googleapis.com", "cloudbuild.googleapis.com", "eventarc.googleapis.com", "eventarcpublishing.googleapis.com"]
   }
 }
 
@@ -258,6 +260,14 @@ module "secure_web_proxy" {
   ]
 }
 
+resource "google_project_iam_member" "network_service_agent_editor" {
+  project = module.secure_harness.network_project_id[0]
+  role    = "roles/editor"
+  member  = "serviceAccount:${local.cloud_services_sa}"
+
+  depends_on = [module.secure_harness]
+}
+
 module "secure_cloud_function" {
   source = "../../modules/secure-cloud-function"
 
@@ -326,6 +336,7 @@ module "secure_cloud_function" {
     module.secure_harness,
     module.bigquery,
     google_storage_bucket_object.cf_bigquery_source_zip,
-    module.secure_web_proxy
+    module.secure_web_proxy,
+    google_project_iam_member.network_service_agent_editor
   ]
 }

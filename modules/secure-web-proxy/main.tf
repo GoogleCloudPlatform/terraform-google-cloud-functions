@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-locals {
-  swp_addresses    = "[ ${join(",", [for s in var.addresses : format("%q", s)])} ]"
-  swp_ports        = "[ ${join(",", [for s in var.ports : s])} ]"
-  swp_certificates = "[ ${join(",", [for s in var.certificates : format("%q", s)])} ]"
-}
-
 resource "google_compute_subnetwork" "swp_subnetwork_proxy" {
   name          = "sb-swp-${var.region}"
   ip_cidr_range = var.proxy_ip_range
@@ -84,7 +78,6 @@ resource "time_sleep" "wait_network_config_propagation" {
 }
 
 resource "google_network_security_gateway_security_policy" "swp_security_policy" {
-  provider    = google-beta
   name        = "swp-security-policy"
   project     = var.project_id
   location    = var.region
@@ -92,7 +85,6 @@ resource "google_network_security_gateway_security_policy" "swp_security_policy"
 }
 
 resource "google_network_security_url_lists" "swp_url_lists" {
-  provider    = google-beta
   name        = "swp-url-lists"
   project     = var.project_id
   location    = var.region
@@ -101,7 +93,6 @@ resource "google_network_security_url_lists" "swp_url_lists" {
 }
 
 resource "google_network_security_gateway_security_policy_rule" "swp_security_policy_rule" {
-  provider                = google-beta
   name                    = "swp-security-policy-rule"
   project                 = var.project_id
   location                = var.region
@@ -119,57 +110,24 @@ resource "google_network_security_gateway_security_policy_rule" "swp_security_po
   ]
 }
 
-resource "null_resource" "swp_deploy" {
-
-  triggers = {
-    proxy_name = var.proxy_name
-    project_id = var.project_id
-    location   = var.region
-    network_id = var.network_id
-  }
-
-  provisioner "local-exec" {
-    when    = create
-    command = <<EOF
-echo 'name: projects/${var.project_id}/locations/${var.region}/gateways/${var.proxy_name}
-type: SECURE_WEB_GATEWAY
-addresses: ${local.swp_addresses}
-ports: ${local.swp_ports}
-certificateUrls: ${local.swp_certificates}
-gatewaySecurityPolicy: ${google_network_security_gateway_security_policy.swp_security_policy.id}
-network: ${var.network_id}
-subnetwork: ${var.subnetwork_id}
-scope: samplescope' > gateway.yaml
-
-gcloud network-services gateways import ${var.proxy_name} \
---source=gateway.yaml \
---location=${var.region} \
---project=${var.project_id}
-    EOF
-  }
-
-  provisioner "local-exec" {
-    when    = destroy
-    command = <<EOF
-      gcloud network-services gateways delete ${self.triggers.proxy_name} \
-        --location=${self.triggers.location} \
-        --project=${self.triggers.project_id} \
-        --quiet
-
-      NETWORK_NUMBER=$(gcloud compute networks describe ${self.triggers.network_id} --project=${self.triggers.project_id} --format='value(id)')
-      gcloud compute routers delete swg-autogen-router-$NETWORK_NUMBER \
-        --region=${self.triggers.location} \
-        --project=${self.triggers.project_id} \
-        --quiet
-    EOF
-  }
+resource "google_network_services_gateway" "secure_web_proxy" {
+  project                              = var.project_id
+  name                                 = var.proxy_name
+  location                             = var.region
+  type                                 = "SECURE_WEB_GATEWAY"
+  addresses                            = var.addresses
+  ports                                = var.ports
+  certificate_urls                     = var.certificates
+  gateway_security_policy              = google_network_security_gateway_security_policy.swp_security_policy.id
+  network                              = var.network_id
+  subnetwork                           = var.subnetwork_id
+  scope                                = "samplescope"
+  delete_swg_autogen_router_on_destroy = true
 
   depends_on = [
     google_compute_subnetwork.swp_subnetwork_proxy,
-    google_network_security_gateway_security_policy.swp_security_policy,
-    google_network_security_url_lists.swp_url_lists,
-    google_network_security_gateway_security_policy_rule.swp_security_policy_rule,
-    google_service_networking_connection.private_service_connect
+    google_service_networking_connection.private_service_connect,
+    google_network_security_gateway_security_policy_rule.swp_security_policy_rule
   ]
 }
 
@@ -177,6 +135,6 @@ resource "time_sleep" "wait_secure_web_proxy" {
   create_duration = "2m"
 
   depends_on = [
-    null_resource.swp_deploy
+    google_network_services_gateway.secure_web_proxy
   ]
 }

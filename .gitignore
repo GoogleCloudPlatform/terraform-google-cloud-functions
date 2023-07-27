@@ -51,3 +51,4 @@ credentials.json
 **/*.zip
 
 **.vscode
+**.pem
