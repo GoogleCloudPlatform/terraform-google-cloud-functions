@@ -55,6 +55,10 @@ resource "google_cloudfunctions2_function" "function" {
 
     worker_pool       = var.worker_pool
     docker_repository = var.docker_repository
+
+    lifecycle {
+      ignore_changes = [build_config[0].source[0].storage_source[0].generation]
+    }
   }
 
   dynamic "event_trigger" {
