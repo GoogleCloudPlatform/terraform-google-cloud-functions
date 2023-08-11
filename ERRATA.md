@@ -15,7 +15,7 @@ For CloudFunction
 - `constraints/cloudfunctions.allowedVpcConnectorEgressSettings`. The constraint default value is `PRIVATE_RANGES_ONLY` and in the secure-cloud-function-security module we are using `ALL_TRAFFIC` as default.
 
 For CloudRun
--`constraints/run.allowedIngress`. The constraint default value is "all" and in the secure-cloud-function-security module we are using `is:internal-and-cloud-load-balancing`
+- `constraints/run.allowedIngress`. The constraint default value is "all" and in the secure-cloud-function-security module we are using `is:internal-and-cloud-load-balancing`
 
 #### Deployment mode
 The secure-cloud-function-security module is also used in the secure-foundation deployment mode.
