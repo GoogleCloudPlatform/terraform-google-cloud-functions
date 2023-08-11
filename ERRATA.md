@@ -17,5 +17,5 @@ The constraints being enforced on the Google Cloud Functions are the Google *Clo
 not the corresponding Google Cloud Functions constraints.
 
 #### Notes 
-The Secure Web Proxy should only be available during the build process execution and it should be part of a defined deployment process that guarantees that the Secure Web Proxy will be enabled only during the time necessary for the Cloud Build builds execution instead of the whole time. This improvement should be in a future release.
+The Secure Web Proxy should only be available during the build process execution and it should be part of a defined deployment process that guarantees that the Secure Web Proxy will be enabled only during the time necessary for the Cloud Build builds execution instead of the whole time.
 
