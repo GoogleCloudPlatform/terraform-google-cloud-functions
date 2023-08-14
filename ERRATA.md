@@ -8,7 +8,7 @@ This is an overview of the delta between the example Secure Serverless Functions
 
 #### Constraints
 
-The constraints being enforced on the Google Cloud Functions are the Google *Cloud Run constraints*:
+The constraints below are using opinionated values instead of the constraints default values:
 
 - `constraints/cloudfunctions.allowedIngressSettings`. The constraint default value is `ALLOW_ALL` and in the secure-cloud-function-security module we are using `ALLOW_INTERNAL_ONLY` as default.
 - `constraints/cloudfunctions.requireVPCConnector`. The constraint default value is `enforce:null` and in the secure-cloud-function-security module we are using `enforce:true` as default.
@@ -17,5 +17,5 @@ The constraints being enforced on the Google Cloud Functions are the Google *Clo
 not the corresponding Google Cloud Functions constraints.
 
 #### Notes 
-The Secure Web Proxy should only be available during the build process execution and it should be part of a defined deployment process that guarantees that the Secure Web Proxy will be enabled only during the time necessary for the Cloud Build builds execution instead of the whole time.
+The Secure Web Proxy should only be available during the build process execution and it should be part of a defined deployment process that guarantees that the Secure Web Proxy will be enabled only during the time necessary for the Cloud Build builds execution instead of the whole time. The build process execution should be defined by the build team and not by the example.
 
