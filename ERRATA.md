@@ -8,13 +8,26 @@ This is an overview of the delta between the example Secure Serverless Functions
 
 #### Constraints
 
-The constraints below are using opinionated values instead of the constraints default values:
+The following constraints are being used for this blueprint:
 
-- `constraints/cloudfunctions.allowedIngressSettings: ["ALLOW_INTERNAL_ONLY"]` 
-- `constraints/cloudfunctions.requireVPCConnector: [TRUE]`
-- `constraints/cloudfunctions.allowedVpcConnectorEgressSettings: ["ALL_TRAFFIC"]`
-- `constraints/run.allowedIngress: ["is:internal-and-cloud-load-balancing"]`
+Cloud Functions
+- `constraints/cloudfunctions.allowedIngressSettings` 
+- `constraints/cloudfunctions.requireVPCConnector`
+- `constraints/cloudfunctions.allowedVpcConnectorEgressSettings`
+
+Cloud Run
+- `constraints/run.allowedIngress`
+- `constraints/run.allowedVPCEgress`
+
+The Cloud Run constraints are taking place over the Cloud Functions constraints. This behaviour happens because the Cloud Run is using Cloud Function Gen2.
+
+#### Secure Web Proxy
+
+The [Secure Web Proxy](https://cloud.google.com/secure-web-proxy) is designed to allow Cloud Function code to search for code dependencies on the internet if required. It should only be available during the build process execution.
+
+The Secure Web Proxy should be part of a defined deployment process that guarantees that it will be enabled only during the time necessary for the Cloud Build builds execution. The management of the Secure Web Proxy should be part of the build process instead of being running the whole time.
 
 #### Notes 
-The Secure Web Proxy should only be available during the build process execution and it should be part of a defined deployment process that guarantees that the Secure Web Proxy will be enabled only during the time necessary for the Cloud Build builds execution instead of the whole time. The build process execution should be defined by the build team and not by the example.
+
+Please refer to [this documentation](https://github.com/renato-rudnicki/terraform-google-cloud-functions/blob/errata/docs/secure-web-proxy.md) for more details about how manually delete the Secure Web Proxy.
 
