@@ -19,11 +19,11 @@ Cloud Run
 - `constraints/run.allowedIngress`
 - `constraints/run.allowedVPCEgress`
 
-The Cloud Run constraints are taking place over the Cloud Functions constraints. This behaviour happens because the Cloud Run is using Cloud Function Gen2.
+For this version, the Cloud Run constraints are being enforced instead of the Cloud Functions constraints during the deploy of Secured Cloud Function. This behaviour happens because Cloud Function Gen2 is using Cloud Run as the execution platform. 
 
 #### Secure Web Proxy
 
-The [Secure Web Proxy](https://cloud.google.com/secure-web-proxy) is designed to allow Cloud Function code to search for code dependencies on the internet if required. It should only be available during the build process execution.
+The [Secure Web Proxy](https://cloud.google.com/secure-web-proxy) is used to allow Cloud Functions build process to download code dependencies from external repositories in the internet. It should only be available during the build process execution.
 
 The Secure Web Proxy should be part of a defined deployment process that guarantees that it will be enabled only during the time necessary for the Cloud Build builds execution. The management of the Secure Web Proxy should be part of the build process instead of being running the whole time.
 
