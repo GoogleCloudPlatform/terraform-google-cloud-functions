@@ -80,7 +80,7 @@ module "secure_harness" {
 
 module "cloudfunction_source_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = "~>3.4"
+  version = "~> 4.0"
 
   project_id    = module.secure_harness.serverless_project_ids[0]
   name          = "bkt-${local.location}-${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}-cfv2-zip-files"
@@ -99,7 +99,7 @@ module "cloudfunction_source_bucket" {
 
 module "cloud_sql_temp_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = "~>3.4"
+  version = "~> 4.0"
 
   project_id    = module.secure_harness.serverless_project_ids[1]
   name          = "bkt-${local.location}-${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[1]]}-temp-files"
@@ -257,7 +257,7 @@ module "secure_web_proxy" {
 
 module "safer_mysql_db" {
   source               = "GoogleCloudPlatform/sql-db/google//modules/mysql"
-  version              = "~> 15.0"
+  version              = "~> 16.0"
   name                 = "csql-test"
   db_name              = local.db_name
   random_instance_name = true
