@@ -1,6 +1,6 @@
 module example.com/cloudsql
 
-go 1.18
+go 1.20.11
 
 require (
 	cloud.google.com/go/cloudsqlconn v1.2.3 // indirect
