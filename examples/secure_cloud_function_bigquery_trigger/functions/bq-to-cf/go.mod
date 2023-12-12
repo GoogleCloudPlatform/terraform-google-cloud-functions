@@ -3,9 +3,9 @@ module example.com/module/helloworld
 go 1.18
 
 require (
-	cloud.google.com/go/storage v1.29.0
-	github.com/GoogleCloudPlatform/functions-framework-go v1.6.1
-	github.com/cloudevents/sdk-go/v2 v2.13.0
-	golang.org/x/oauth2 v0.6.0
-	google.golang.org/api v0.113.0
+	cloud.google.com/go/storage v1.35.1
+	github.com/GoogleCloudPlatform/functions-framework-go v1.8.0
+	github.com/cloudevents/sdk-go/v2 v2.14.0
+	golang.org/x/oauth2 v0.15.0
+	google.golang.org/api v0.153.0
 )
