@@ -215,7 +215,8 @@ resource "time_sleep" "wait_upload_certificate" {
 }
 
 module "secure_web_proxy" {
-  source = "../../modules/secure-web-proxy"
+  source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-web-proxy"
+  version = "~> 0.4"
 
   project_id          = module.secure_harness.network_project_id[0]
   region              = local.region
@@ -488,7 +489,8 @@ resource "google_project_iam_member" "network_service_agent_editor" {
 }
 
 module "secure_cloud_function" {
-  source = "../../modules/secure-cloud-function"
+  source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function"
+  version = "~> 0.4"
 
   function_name             = "secure-cloud-function-cloud-sql"
   function_description      = "Read from Cloud SQL"
