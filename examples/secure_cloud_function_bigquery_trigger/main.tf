@@ -251,7 +251,8 @@ module "secure_web_proxy" {
     "*go.opencensus.io",
     "*go.uber.org/atomic",
     "*go.uber.org/multierr",
-    "*go.uber.org/zap"
+    "*go.uber.org/zap",
+    "*googlesource.com"
   ]
 
   depends_on = [
