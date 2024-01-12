@@ -69,6 +69,10 @@ module "secure_harness" {
     ]
   }
 
+  security_project_extra_apis = [
+    "compute.googleapis.com"
+  ]
+
   network_project_extra_apis = [
     "networksecurity.googleapis.com",
     "networkservices.googleapis.com",
