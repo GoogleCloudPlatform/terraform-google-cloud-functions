@@ -126,13 +126,13 @@ resource "google_cloudfunctions2_function" "function" {
   labels = var.labels != null ? var.labels : {}
 }
 
-// IAM for invoking HTTP functions (roles/cloudfunctions.invoker)
-resource "google_cloudfunctions2_function_iam_member" "invokers" {
+// IAM for invoking HTTP functions (roles/run.invoker)
+resource "google_cloud_run_service_iam_member" "invokers" {
   for_each       = toset(contains(keys(var.members), "invokers") ? var.members["invokers"] : [])
   location       = google_cloudfunctions2_function.function.location
   project        = google_cloudfunctions2_function.function.project
-  cloud_function = google_cloudfunctions2_function.function.name
-  role           = "roles/cloudfunctions.invoker"
+  service        = google_cloudfunctions2_function.function.name
+  role           = "roles/run.invoker"
   member         = each.value
 
   depends_on = [
@@ -140,13 +140,13 @@ resource "google_cloudfunctions2_function_iam_member" "invokers" {
   ]
 }
 
-// Read and write access to all functions-related resources (roles/cloudfunctions.developer)
-resource "google_cloudfunctions2_function_iam_member" "developers" {
+// Read and write access to all functions-related resources (roles/run.developer)
+resource "google_cloud_run_service_iam_member" "developers" {
   for_each       = toset(contains(keys(var.members), "developers") ? var.members["developers"] : [])
   location       = google_cloudfunctions2_function.function.location
   project        = google_cloudfunctions2_function.function.project
-  cloud_function = google_cloudfunctions2_function.function.name
-  role           = "roles/cloudfunctions.developer"
+  service        = google_cloudfunctions2_function.function.name
+  role           = "roles/run.developer"
   member         = each.value
 
   depends_on = [
