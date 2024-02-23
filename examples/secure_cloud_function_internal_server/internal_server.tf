@@ -84,7 +84,7 @@ resource "google_compute_instance" "internal_server" {
 
 module "internal_server_firewall_rule" {
   source       = "terraform-google-modules/network/google//modules/firewall-rules"
-  version      = "~> 7.0"
+  version      = "~> 9.0"
   project_id   = module.secure_harness.network_project_id[0]
   network_name = module.secure_harness.service_vpc[0].network.name
 
