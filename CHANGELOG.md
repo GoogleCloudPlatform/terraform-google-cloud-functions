@@ -8,6 +8,13 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.5.0](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.4.1...v0.5.0) (2024-02-23)
+
+
+### Features
+
+* Add available_cpu to service_config ([#65](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/65)) ([178cb1d](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/178cb1d4def363c3c6984bb5d854d7823a97e867))
+
 ## [0.4.1](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.4.0...v0.4.1) (2023-07-27)
 
 
