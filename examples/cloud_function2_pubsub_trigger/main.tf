@@ -29,7 +29,7 @@ resource "google_storage_bucket_object" "function-source" {
 
 module "pubsub" {
   source  = "terraform-google-modules/pubsub/google"
-  version = "~> 5.0"
+  version = "~> 6.0"
 
   topic      = "function2-topic"
   project_id = var.project_id
