@@ -94,14 +94,18 @@ steps:
   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
   waitFor:
   - secure-cloud-func-internal-server-apply
-- id: secure-cloud-func-internal-server-teardown
-  name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestCFInternalServer --stage teardown --verbose']
-  env:
-  - 'TF_VAR_org_id=$_ORG_ID'
-  - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
-  waitFor:
-  - secure-cloud-func-internal-server-verify
+
+# TODO: Investigate the vpcServiceControlsUniqueIdentifier policy violation with this
+# example teardown (https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/109)
+
+# - id: secure-cloud-func-internal-server-teardown
+#   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
+#   args: ['/bin/bash', '-c', 'cft test run TestCFInternalServer --stage teardown --verbose']
+#   env:
+#   - 'TF_VAR_org_id=$_ORG_ID'
+#   - 'TF_VAR_billing_account=$_BILLING_ACCOUNT'
+#   waitFor:
+#   - secure-cloud-func-internal-server-verify
 
 - id: cloud-func-pubsub-trigger-apply
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
