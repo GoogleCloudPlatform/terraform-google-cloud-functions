@@ -57,7 +57,7 @@ module "secure_harness" {
   ingress_policies                            = var.ingress_policies
   base_serverless_api                         = "cloudfunctions.googleapis.com"
   use_shared_vpc                              = true
-  time_to_wait_vpc_sc_propagation             = "630s"
+  time_to_wait_vpc_sc_propagation             = "300s"
 
   service_account_project_roles = {
     "prj-scf-bq-trigger" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
