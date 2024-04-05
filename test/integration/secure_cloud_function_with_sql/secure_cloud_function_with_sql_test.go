@@ -23,8 +23,25 @@ import (
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/utils"
 	"github.com/stretchr/testify/assert"
+)
 
-	"github.com/GoogleCloudPlatform/terraform-google-cloud-functions/test/integration/testutils"
+var (
+	RetryableTransientErrors = map[string]string{
+		// Error code 409 for concurrent policy changes.
+		".*Error 409.*There were concurrent policy changes.*": "Concurrent policy changes.",
+
+		// API Rate limit exceeded errors can be retried.
+		".*rateLimitExceeded.*": "Rate limit exceeded.",
+
+		// Project deletion is eventually consistent. Even if google_project resources inside the folder are deleted there may be a deletion error.
+		".*FOLDER_TO_DELETE_NON_EMPTY_VIOLATION.*": "Failed to delete non empty folder.",
+
+		// Granting IAM Roles is eventually consistent.
+		".*Error 403.*Permission.*denied on resource.*": "Permission denied on resource.",
+
+		// Editing VPC Service Controls is eventually consistent.
+		".*Error 403.*Request is prohibited by organization's policy.*vpcServiceControlsUniqueIdentifier.*": "Request is prohibited by organization's policy.",
+	}
 )
 
 // GetOrgACMPolicyID gets the Organization Access Context Manager Policy ID
@@ -61,7 +78,7 @@ func TestGCF2CloudSQL(t *testing.T) {
 
 	cf2SQL := tft.NewTFBlueprintTest(t,
 		tft.WithVars(vars),
-		tft.WithRetryableTerraformErrors(testutils.RetryableTransientErrors, 5, 1*time.Minute),
+		tft.WithRetryableTerraformErrors(RetryableTransientErrors, 5, 1*time.Minute),
 	)
 
 	cf2SQL.DefineVerify(func(assert *assert.Assertions) {
