@@ -24,6 +24,8 @@ import (
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/tidwall/gjson"
+
+	"github.com/GoogleCloudPlatform/terraform-google-cloud-functions/test/integration/testutils"
 )
 
 type Protocols struct {
@@ -71,7 +73,10 @@ func TestCFInternalServer(t *testing.T) {
 		}
 	}
 
-	cft := tft.NewTFBlueprintTest(t, tft.WithVars(vars))
+	cft := tft.NewTFBlueprintTest(t,
+		tft.WithVars(vars),
+		tft.WithRetryableTerraformErrors(testutils.RetryableTransientErrors, 5, 1*time.Minute),
+	)
 
 	cft.DefineVerify(func(assert *assert.Assertions) {
 		// Removing DefaultVerify because Cloud Function API is changing the build_config/source/storage_source/generation and this modification is breaking the build validation.
