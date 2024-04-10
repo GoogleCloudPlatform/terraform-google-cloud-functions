@@ -57,7 +57,7 @@ module "secure_harness" {
   ingress_policies                            = var.ingress_policies
   base_serverless_api                         = "cloudfunctions.googleapis.com"
   use_shared_vpc                              = true
-  time_to_wait_vpc_sc_propagation             = "630s"
+  time_to_wait_vpc_sc_propagation             = "300s"
 
   service_account_project_roles = {
     "prj-scf-bq-trigger" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
@@ -145,7 +145,7 @@ module "bigquery_kms" {
 
 module "bigquery" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "~> 6.0"
+  version = "~> 7.0"
 
   dataset_id                  = "dst_secure_cloud_function"
   dataset_name                = "dst-secure-cloud-function"
