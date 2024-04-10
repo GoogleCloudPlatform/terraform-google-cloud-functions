@@ -36,7 +36,7 @@ resource "random_id" "random_folder_suffix" {
 
 module "secure_harness" {
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.9.1"
+  version = "~> 0.10.0"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-scf-security"
@@ -80,7 +80,7 @@ module "secure_harness" {
 
 module "cloudfunction_source_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = "~>3.4"
+  version = "~> 5.0"
 
   project_id    = module.secure_harness.serverless_project_ids[0]
   name          = "bkt-${local.location}-${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}-cfv2-zip-files"
@@ -99,7 +99,7 @@ module "cloudfunction_source_bucket" {
 
 module "cloud_sql_temp_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = "~>3.4"
+  version = "~> 5.0"
 
   project_id    = module.secure_harness.serverless_project_ids[1]
   name          = "bkt-${local.location}-${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[1]]}-temp-files"
@@ -465,7 +465,7 @@ resource "google_cloud_scheduler_job" "job" {
 
 module "pubsub" {
   source  = "terraform-google-modules/pubsub/google"
-  version = "~> 5.0"
+  version = "~> 6.0"
 
   topic              = "tpc-cloud-function-sql"
   project_id         = module.secure_harness.serverless_project_ids[0]
