@@ -5,7 +5,7 @@ go 1.18
 require (
 	cloud.google.com/go/cloudsqlconn v1.2.3
 	github.com/GoogleCloudPlatform/functions-framework-go v1.7.1
-	github.com/cloudevents/sdk-go/v2 v2.14.0
+	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/go-sql-driver/mysql v1.7.1
 	golang.org/x/sync v0.1.0
 )
