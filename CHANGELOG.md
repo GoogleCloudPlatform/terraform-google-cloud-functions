@@ -8,6 +8,35 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.5.0](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.4.1...v0.5.0) (2024-05-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deps:** Update Terraform terraform-google-modules/cloud-storage/google to v6 ([#123](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/123))
+* **TPG>=5.12:** Update Terraform GoogleCloudPlatform/cloud-run/google to ~> 0.11.0 ([#125](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/125))
+* **deps:** Update Terraform terraform-google-modules/network/google to v9 ([#99](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/99))
+* **deps:** Update Terraform terraform-google-modules/pubsub/google to v6 ([#100](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/100))
+* **deps:** Update Terraform terraform-google-modules/cloud-storage/google to v5 ([#98](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/98))
+
+### Features
+
+* Add available_cpu to service_config ([#65](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/65)) ([178cb1d](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/178cb1d4def363c3c6984bb5d854d7823a97e867))
+* **deps:** Update Terraform Google Provider to &gt;= 4.48, &lt; 6 ([#117](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/117)) ([8836a87](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/8836a8794d0d2934c3ddab2e64c14c87d3e90c4e))
+* updated the role for CF Gen 2 ([#88](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/88)) ([33e9efa](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/33e9efa1c2cea37cc64ea4f44aa6a4ce3568c259))
+
+
+### Bug Fixes
+
+* **deps:** Allow Terraform Google Provider to v5 ([#74](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/74)) ([38e7ed2](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/38e7ed2e3fb6770164f28259dbc62204ea2fd483))
+* **deps:** Update Terraform GoogleCloudPlatform/cloud-run/google to ~&gt; 0.10.0 ([#96](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/96)) ([d06a9ad](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/d06a9ad5070e3daf29687d7accac990bb2b08352))
+* **deps:** Update Terraform terraform-google-modules/cloud-storage/google to v5 ([#98](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/98)) ([fb92c16](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/fb92c16dcec51a66a729e3446a2ba0401c8f73a7))
+* **deps:** Update Terraform terraform-google-modules/cloud-storage/google to v6 ([#123](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/123)) ([459c88f](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/459c88ff2348f6c5d0275d233c8b27f051d3b992))
+* **deps:** Update Terraform terraform-google-modules/network/google to v9 ([#99](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/99)) ([2188cec](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/2188cec9d754c442ccfadb8f54b77935173a99a3))
+* **deps:** Update Terraform terraform-google-modules/pubsub/google to v6 ([#100](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/100)) ([bc4fe56](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/bc4fe56900dd95e48f2b7a1236869db6e32a18f7))
+* remove duplicate group_cloud_run_developer ([#113](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/113)) ([69a64c0](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/69a64c0c96778f70f398d6a5eede0f4f4b2615ec))
+* **TPG>=5.12:** Update Terraform GoogleCloudPlatform/cloud-run/google to ~&gt; 0.11.0 ([#125](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/125)) ([0c64ca2](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/0c64ca2e9c2a2883f9e87131fa05b1ad298be08f))
+
 ## [0.4.1](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.4.0...v0.4.1) (2023-07-27)
 
 
