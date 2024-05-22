@@ -17,7 +17,7 @@ The resources/services/activations/deletions that this module will create/trigge
 ```hcl
 module "secure_cloud_function_core" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function-core"
-  version = "~> 0.4"
+  version = "~> 0.5"
 
   function_name               = <FUNCTION-NAME>
   function_description        = <FUNCTION-DESCRIPTION>
