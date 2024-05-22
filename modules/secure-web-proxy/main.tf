@@ -61,6 +61,7 @@ resource "google_service_networking_connection" "private_service_connect" {
   network                 = var.network_id
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.private_ip_allocation.name]
+  deletion_policy         = "ABANDON"
 
   depends_on = [
     google_compute_global_address.private_ip_allocation

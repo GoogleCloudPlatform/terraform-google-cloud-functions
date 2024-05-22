@@ -17,7 +17,7 @@
 
 module "cloud_serverless_network" {
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-net"
-  version = "~> 0.10.0"
+  version = "~> 0.11.0"
 
   connector_name            = var.connector_name
   subnet_name               = var.subnet_name
