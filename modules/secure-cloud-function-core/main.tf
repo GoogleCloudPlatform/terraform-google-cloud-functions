@@ -24,7 +24,7 @@ data "google_project" "project" {
 
 module "cloudfunction_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = "~> 5.0"
+  version = "~> 6.0"
 
   project_id      = var.project_id
   labels          = var.labels
