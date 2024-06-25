@@ -28,7 +28,7 @@ resource "google_cloudfunctions2_function" "function" {
     runtime               = var.runtime
     entry_point           = var.entrypoint
     environment_variables = var.build_env_variables
-
+    service_account       = var.build_service_account
     source {
       dynamic "storage_source" {
         for_each = var.repo_source == null ? [var.storage_source] : []

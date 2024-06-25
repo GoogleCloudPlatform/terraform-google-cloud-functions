@@ -155,3 +155,9 @@ variable "members" {
     error_message = "The supported keys are invokers and developers."
   }
 }
+
+variable "build_service_account" {
+  type        = string
+  description = "Cloud Function Build Service Account Email."
+  default     = null
+}
