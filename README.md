@@ -46,7 +46,7 @@ Functional examples are included in the
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | build\_env\_variables | User-provided build-time environment variables | `map(string)` | `null` | no |
-| build\_service\_account | Cloud Function Build Service Account Email. | `string` | `null` | no |
+| build\_service\_account | Cloud Function Build Service Account Id. This is The fully-qualified name of the service account to be used for building the container. | `string` | `null` | no |
 | description | Short description of the function | `string` | `null` | no |
 | docker\_repository | User managed repository created in Artifact Registry optionally with a customer managed encryption key. | `string` | `null` | no |
 | entrypoint | The name of the function (as defined in source code) that will be executed. Defaults to the resource name suffix, if not specified | `string` | n/a | yes |

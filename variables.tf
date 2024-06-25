@@ -158,6 +158,6 @@ variable "members" {
 
 variable "build_service_account" {
   type        = string
-  description = "Cloud Function Build Service Account Email."
+  description = "Cloud Function Build Service Account Id. This is The fully-qualified name of the service account to be used for building the container."
   default     = null
 }
