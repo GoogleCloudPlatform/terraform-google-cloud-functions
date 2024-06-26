@@ -8,6 +8,18 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.6.0](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.5.0...v0.6.0) (2024-06-26)
+
+
+### Features
+
+* add build service account argument ([#130](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/130)) ([d17cfa7](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/d17cfa7f14bbe31c2ddb6aa882a12a83cee4de56))
+
+
+### Bug Fixes
+
+* **deps:** Update Terraform GoogleCloudPlatform/cloud-run/google to ~&gt; 0.12.0 ([#128](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/128)) ([74de747](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/74de7477a07d93452518251a95a5254953fa6f71))
+
 ## [0.5.0](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.4.1...v0.5.0) (2024-05-22)
 
 
