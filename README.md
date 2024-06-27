@@ -12,7 +12,12 @@ The resources/services/activations/deletions that this module will create/trigge
 This module assumes that below mentioned prerequisites are in place before consuming the module.
 
 * APIs are enabled
-* Permissions are available
+* Permissions are available.
+* You have explicitly granted the necessary IAM roles for the underlying service account used by Cloud Build, `build_service_account`. If `build_service_account` is not specified, then the default compute service account is used, which has [no default IAM roles in new organizations]([url](https://cloud.google.com/resource-manager/docs/secure-by-default-organizations#organization_policies_enforced_on_organization_resources)). At a minimum, the following IAM roles are required for the build service account:
+    * `roles/logging.logWriter`
+    * `roles/storage.objectViewer`
+    * `roles/artifactregistry.writer`
+
 
 ## Usage
 
