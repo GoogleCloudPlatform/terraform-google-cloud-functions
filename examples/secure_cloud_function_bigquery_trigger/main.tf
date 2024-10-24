@@ -145,7 +145,7 @@ module "bigquery_kms" {
 
 module "bigquery" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "~> 7.0"
+  version = "~> 8.0"
 
   dataset_id                  = "dst_secure_cloud_function"
   dataset_name                = "dst-secure-cloud-function"
