@@ -258,7 +258,7 @@ module "secure_web_proxy" {
 
 module "safer_mysql_db" {
   source               = "GoogleCloudPlatform/sql-db/google//modules/mysql"
-  version              = "~> 20.0"
+  version              = "~> 23.0"
   name                 = "csql-test"
   db_name              = local.db_name
   random_instance_name = true
