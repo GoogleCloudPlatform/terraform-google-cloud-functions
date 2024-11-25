@@ -65,10 +65,10 @@ module "secure_harness" {
     "prj-scf-bq-trigger" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
   }
 
-  network_project_extra_apis = ["networksecurity.googleapis.com"]
+  network_project_extra_apis = ["compute.googleapis.com", "networksecurity.googleapis.com"]
 
   serverless_project_extra_apis = {
-    "prj-scf-bq-trigger" = ["networksecurity.googleapis.com", "cloudfunctions.googleapis.com", "cloudbuild.googleapis.com", "eventarc.googleapis.com", "eventarcpublishing.googleapis.com"]
+    "prj-scf-bq-trigger" = ["compute.googleapis.com", "networksecurity.googleapis.com", "cloudfunctions.googleapis.com", "cloudbuild.googleapis.com", "eventarc.googleapis.com", "eventarcpublishing.googleapis.com"]
   }
 }
 

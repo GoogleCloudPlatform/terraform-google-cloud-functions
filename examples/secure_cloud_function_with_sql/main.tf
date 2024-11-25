@@ -65,13 +65,13 @@ module "secure_harness" {
   project_deletion_policy                     = "DELETE"
   folder_deletion_protection                  = false
 
-  network_project_extra_apis = ["networksecurity.googleapis.com"]
+  network_project_extra_apis = ["compute.googleapis.com", "networksecurity.googleapis.com"]
 
-  security_project_extra_apis = ["secretmanager.googleapis.com"]
+  security_project_extra_apis = ["compute.googleapis.com", "secretmanager.googleapis.com"]
 
   serverless_project_extra_apis = {
-    "prj-scf-access-sql" = ["servicenetworking.googleapis.com", "sqladmin.googleapis.com", "cloudscheduler.googleapis.com", "networksecurity.googleapis.com", "cloudfunctions.googleapis.com", "cloudbuild.googleapis.com", "eventarc.googleapis.com", "eventarcpublishing.googleapis.com"],
-    "prj-scf-cloud-sql"  = ["sqladmin.googleapis.com", "sql-component.googleapis.com", "servicenetworking.googleapis.com"]
+    "prj-scf-access-sql" = ["compute.googleapis.com", "servicenetworking.googleapis.com", "sqladmin.googleapis.com", "cloudscheduler.googleapis.com", "networksecurity.googleapis.com", "cloudfunctions.googleapis.com", "cloudbuild.googleapis.com", "eventarc.googleapis.com", "eventarcpublishing.googleapis.com"],
+    "prj-scf-cloud-sql"  = ["compute.googleapis.com", "sqladmin.googleapis.com", "sql-component.googleapis.com", "servicenetworking.googleapis.com"]
   }
 
   service_account_project_roles = {

@@ -72,6 +72,7 @@ module "secure_harness" {
   }
 
   network_project_extra_apis = [
+    "compute.googleapis.com",
     "networksecurity.googleapis.com",
     "networkservices.googleapis.com",
     "certificatemanager.googleapis.com"
@@ -79,6 +80,7 @@ module "secure_harness" {
 
   serverless_project_extra_apis = {
     "prj-scf-internal-server" = [
+      "compute.googleapis.com",
       "opsconfigmonitoring.googleapis.com",
       "cloudfunctions.googleapis.com",
       "cloudbuild.googleapis.com",
