@@ -33,7 +33,7 @@ resource "random_id" "random_folder_suffix" {
 
 module "secure_harness" {
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.12.0"
+  version = "~> 0.14.0"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-scf-security"
@@ -59,6 +59,8 @@ module "secure_harness" {
   base_serverless_api                         = "cloudfunctions.googleapis.com"
   use_shared_vpc                              = true
   time_to_wait_vpc_sc_propagation             = "300s"
+  project_deletion_policy                     = "DELETE"
+  folder_deletion_protection                  = false
 
   service_account_project_roles = {
     "prj-scf-internal-server" = [
@@ -165,7 +167,7 @@ resource "time_sleep" "wait_upload_certificate" {
 
 module "secure_web_proxy" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-web-proxy"
-  version = "~> 0.5"
+  version = "~> 0.6"
 
   project_id          = module.secure_harness.network_project_id[0]
   region              = local.region
@@ -212,7 +214,7 @@ resource "google_project_iam_member" "network_service_agent_editor" {
 
 module "secure_cloud_function" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function"
-  version = "~> 0.5"
+  version = "~> 0.6"
 
   function_name             = "secure-function2-internal-server"
   function_description      = "Secure cloud function example"

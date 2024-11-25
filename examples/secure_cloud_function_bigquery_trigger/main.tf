@@ -32,7 +32,7 @@ resource "random_id" "random_folder_suffix" {
 
 module "secure_harness" {
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.12.0"
+  version = "~> 0.14.0"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-scf-security"
@@ -58,6 +58,8 @@ module "secure_harness" {
   base_serverless_api                         = "cloudfunctions.googleapis.com"
   use_shared_vpc                              = true
   time_to_wait_vpc_sc_propagation             = "300s"
+  project_deletion_policy                     = "DELETE"
+  folder_deletion_protection                  = false
 
   service_account_project_roles = {
     "prj-scf-bq-trigger" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
@@ -124,7 +126,7 @@ data "google_bigquery_default_service_account" "bq_sa" {
 
 module "bigquery_kms" {
   source  = "terraform-google-modules/kms/google"
-  version = "~> 2.2"
+  version = "~> 3.2"
 
   project_id           = module.secure_harness.security_project_id
   location             = local.location
@@ -145,7 +147,7 @@ module "bigquery_kms" {
 
 module "bigquery" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "~> 7.0"
+  version = "~> 9.0"
 
   dataset_id                  = "dst_secure_cloud_function"
   dataset_name                = "dst-secure-cloud-function"
@@ -222,7 +224,7 @@ resource "time_sleep" "wait_upload_certificate" {
 
 module "secure_web_proxy" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-web-proxy"
-  version = "~> 0.5"
+  version = "~> 0.6"
 
   project_id          = module.secure_harness.network_project_id[0]
   region              = local.region
@@ -271,7 +273,7 @@ resource "google_project_iam_member" "network_service_agent_editor" {
 
 module "secure_cloud_function" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function"
-  version = "~> 0.5"
+  version = "~> 0.6"
 
   function_name             = "secure-cloud-function-bigquery"
   function_description      = "Logs when there is a new row in the BigQuery"
