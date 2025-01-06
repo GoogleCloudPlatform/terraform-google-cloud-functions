@@ -25,7 +25,7 @@ resource "google_folder" "ci-iam-folder" {
 
 module "project" {
   source  = "terraform-google-modules/project-factory/google"
-  version = "~> 15.0"
+  version = "~> 17.0"
 
   name                    = "ci-cloud-functions"
   random_project_id       = "true"
@@ -33,6 +33,7 @@ module "project" {
   folder_id               = google_folder.ci-iam-folder.id
   billing_account         = var.billing_account
   default_service_account = "keep"
+  deletion_policy         = "DELETE"
 
   activate_apis = [
     "cloudresourcemanager.googleapis.com",
