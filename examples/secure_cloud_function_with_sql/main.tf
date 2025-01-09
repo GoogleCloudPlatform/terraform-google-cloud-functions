@@ -151,7 +151,7 @@ resource "google_project_service_identity" "secrets_sa" {
 
 module "kms_keys" {
   source  = "terraform-google-modules/kms/google"
-  version = "~> 2.2"
+  version = "~> 3.0"
 
   project_id         = module.secure_harness.security_project_id
   location           = local.location
