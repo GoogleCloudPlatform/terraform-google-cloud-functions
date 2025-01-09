@@ -8,6 +8,17 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.7.0](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.6.0...v0.7.0) (2025-01-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deps:** Update Terraform terraform-google-modules/cloud-storage/google to v8 ([#147](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/147))
+
+### Bug Fixes
+
+* **deps:** Update Terraform terraform-google-modules/cloud-storage/google to v8 ([#147](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/147)) ([3b38f4b](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/3b38f4baf8c855780b17c92affb6f0b9c4e4deac))
+
 ## [0.6.0](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.5.0...v0.6.0) (2024-06-26)
 
 
