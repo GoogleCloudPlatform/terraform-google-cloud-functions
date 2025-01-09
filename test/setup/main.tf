@@ -25,7 +25,7 @@ resource "google_folder" "ci-iam-folder" {
 
 module "project" {
   source  = "terraform-google-modules/project-factory/google"
-  version = "~> 15.0"
+  version = "~> 17.0"
 
   name                    = "ci-cloud-functions"
   random_project_id       = "true"
