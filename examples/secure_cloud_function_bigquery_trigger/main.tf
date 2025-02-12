@@ -124,7 +124,7 @@ data "google_bigquery_default_service_account" "bq_sa" {
 
 module "bigquery_kms" {
   source  = "terraform-google-modules/kms/google"
-  version = "~> 2.2"
+  version = "~> 4.0"
 
   project_id           = module.secure_harness.security_project_id
   location             = local.location
