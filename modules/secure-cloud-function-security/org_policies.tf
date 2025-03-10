@@ -22,7 +22,7 @@ locals {
 
 module "cloudfunction_allowed_ingress" {
   source  = "terraform-google-modules/org-policy/google"
-  version = "~> 5.1"
+  version = "~> 7.0"
 
   policy_for        = var.policy_for
   project_id        = local.project
@@ -36,7 +36,7 @@ module "cloudfunction_allowed_ingress" {
 
 module "cloudfunction_allowed_vpc_egress" {
   source  = "terraform-google-modules/org-policy/google"
-  version = "~> 5.1"
+  version = "~> 7.0"
 
   policy_for      = var.policy_for
   project_id      = local.project
@@ -49,7 +49,7 @@ module "cloudfunction_allowed_vpc_egress" {
 
 module "cloudfunction_vpc_connector_egress_settings" {
   source  = "terraform-google-modules/org-policy/google"
-  version = "~> 5.1"
+  version = "~> 7.0"
 
   policy_for        = var.policy_for
   project_id        = local.project
@@ -63,7 +63,7 @@ module "cloudfunction_vpc_connector_egress_settings" {
 
 module "cloudrun_allowed_ingress" {
   source  = "terraform-google-modules/org-policy/google"
-  version = "~> 5.1"
+  version = "~> 7.0"
 
   policy_for        = var.policy_for
   project_id        = local.project
@@ -77,7 +77,7 @@ module "cloudrun_allowed_ingress" {
 
 module "cloudrun_allowed_vpc_egress" {
   source  = "terraform-google-modules/org-policy/google"
-  version = "~> 5.1"
+  version = "~> 7.0"
 
   policy_for        = var.policy_for
   project_id        = local.project
