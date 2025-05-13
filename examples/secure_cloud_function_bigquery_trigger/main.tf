@@ -32,7 +32,7 @@ resource "random_id" "random_folder_suffix" {
 
 module "secure_harness" {
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.14.0"
+  version = "~> 0.17.2"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-scf-security"
@@ -74,7 +74,7 @@ module "secure_harness" {
 
 module "cloudfunction_source_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = "~> 8.0"
+  version = "~> 10.0"
 
   project_id    = module.secure_harness.serverless_project_ids[0]
   name          = "bkt-${local.location}-${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}-cfv2-zip-files"
@@ -126,7 +126,7 @@ data "google_bigquery_default_service_account" "bq_sa" {
 
 module "bigquery_kms" {
   source  = "terraform-google-modules/kms/google"
-  version = "~> 3.2"
+  version = "~> 4.0"
 
   project_id           = module.secure_harness.security_project_id
   location             = local.location
@@ -147,7 +147,7 @@ module "bigquery_kms" {
 
 module "bigquery" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "~> 9.0"
+  version = "~> 10.0"
 
   dataset_id                  = "dst_secure_cloud_function"
   dataset_name                = "dst-secure-cloud-function"
