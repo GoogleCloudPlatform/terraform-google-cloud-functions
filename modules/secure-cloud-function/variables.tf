@@ -346,3 +346,9 @@ variable "bucket_lifecycle_rules" {
     }
   }]
 }
+
+variable "time_to_wait_service_identity_propagation" {
+  type        = string
+  description = "The time to wait for service identity propagation."
+  default     = "180s"
+}
