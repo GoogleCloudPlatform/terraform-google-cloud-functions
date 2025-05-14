@@ -261,7 +261,7 @@ module "secure_cloud_function" {
       attribute_value = module.cloudfunction_source_bucket.name
     }]
   }
-  runtime     = "go118"
+  runtime     = "go121"
   entry_point = "helloHTTP"
 
   depends_on = [

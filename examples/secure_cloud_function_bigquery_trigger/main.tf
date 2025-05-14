@@ -333,7 +333,7 @@ module "secure_cloud_function" {
         operator        = "match-path-pattern" # This allows path patterns to be used in the value field
     }]
   }
-  runtime     = "go118"
+  runtime     = "go121"
   entry_point = "HelloCloudFunction"
 
   depends_on = [

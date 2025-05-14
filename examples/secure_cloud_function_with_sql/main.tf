@@ -564,7 +564,7 @@ module "secure_cloud_function" {
     service_account_email = module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]
   }
 
-  runtime     = "go118"
+  runtime     = "go121"
   entry_point = "HelloCloudFunction"
 
   depends_on = [
