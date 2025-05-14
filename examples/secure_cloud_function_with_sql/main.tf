@@ -151,6 +151,16 @@ resource "google_project_service_identity" "secrets_sa" {
   depends_on = [module.secure_harness]
 }
 
+resource "time_sleep" "wait_service_identity_propagation" {
+  create_duration = var.time_to_wait_service_identity_propagation
+
+  depends_on = [
+    google_project_service_identity.pubsub_sa,
+    google_project_service_identity.cloudsql_sa,
+    google_project_service_identity.secrets_sa
+  ]
+}
+
 module "kms_keys" {
   source  = "terraform-google-modules/kms/google"
   version = "~> 4.0"
@@ -174,7 +184,11 @@ module "kms_keys" {
   prevent_destroy      = false
   key_rotation_period  = "2592000s"
   key_protection_level = "HSM"
-  depends_on           = [module.secure_harness]
+
+  depends_on = [
+    module.secure_harness,
+    time_sleep.wait_service_identity_propagation
+  ]
 }
 
 resource "null_resource" "generate_certificate" {
