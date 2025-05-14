@@ -36,7 +36,7 @@ resource "random_id" "random_folder_suffix" {
 
 module "secure_harness" {
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.12.0"
+  version = "~> 0.17.2"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-scf-security"
@@ -62,14 +62,16 @@ module "secure_harness" {
   base_serverless_api                         = "cloudfunctions.googleapis.com"
   use_shared_vpc                              = true
   time_to_wait_vpc_sc_propagation             = "300s"
+  project_deletion_policy                     = "DELETE"
+  folder_deletion_protection                  = false
 
-  network_project_extra_apis = ["networksecurity.googleapis.com"]
+  network_project_extra_apis = ["compute.googleapis.com", "networksecurity.googleapis.com"]
 
-  security_project_extra_apis = ["secretmanager.googleapis.com"]
+  security_project_extra_apis = ["compute.googleapis.com", "secretmanager.googleapis.com"]
 
   serverless_project_extra_apis = {
-    "prj-scf-access-sql" = ["servicenetworking.googleapis.com", "sqladmin.googleapis.com", "cloudscheduler.googleapis.com", "networksecurity.googleapis.com", "cloudfunctions.googleapis.com", "cloudbuild.googleapis.com", "eventarc.googleapis.com", "eventarcpublishing.googleapis.com"],
-    "prj-scf-cloud-sql"  = ["sqladmin.googleapis.com", "sql-component.googleapis.com", "servicenetworking.googleapis.com"]
+    "prj-scf-access-sql" = ["compute.googleapis.com", "servicenetworking.googleapis.com", "sqladmin.googleapis.com", "cloudscheduler.googleapis.com", "networksecurity.googleapis.com", "cloudfunctions.googleapis.com", "cloudbuild.googleapis.com", "eventarc.googleapis.com", "eventarcpublishing.googleapis.com"],
+    "prj-scf-cloud-sql"  = ["compute.googleapis.com", "sqladmin.googleapis.com", "sql-component.googleapis.com", "servicenetworking.googleapis.com"]
   }
 
   service_account_project_roles = {
@@ -80,7 +82,7 @@ module "secure_harness" {
 
 module "cloudfunction_source_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = "~> 8.0"
+  version = "~> 10.0"
 
   project_id    = module.secure_harness.serverless_project_ids[0]
   name          = "bkt-${local.location}-${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}-cfv2-zip-files"
@@ -99,7 +101,7 @@ module "cloudfunction_source_bucket" {
 
 module "cloud_sql_temp_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = "~> 8.0"
+  version = "~> 10.0"
 
   project_id    = module.secure_harness.serverless_project_ids[1]
   name          = "bkt-${local.location}-${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[1]]}-temp-files"
@@ -149,9 +151,19 @@ resource "google_project_service_identity" "secrets_sa" {
   depends_on = [module.secure_harness]
 }
 
+resource "time_sleep" "wait_service_identity_propagation" {
+  create_duration = var.time_to_wait_service_identity_propagation
+
+  depends_on = [
+    google_project_service_identity.pubsub_sa,
+    google_project_service_identity.cloudsql_sa,
+    google_project_service_identity.secrets_sa
+  ]
+}
+
 module "kms_keys" {
   source  = "terraform-google-modules/kms/google"
-  version = "~> 2.2"
+  version = "~> 4.0"
 
   project_id         = module.secure_harness.security_project_id
   location           = local.location
@@ -172,7 +184,11 @@ module "kms_keys" {
   prevent_destroy      = false
   key_rotation_period  = "2592000s"
   key_protection_level = "HSM"
-  depends_on           = [module.secure_harness]
+
+  depends_on = [
+    module.secure_harness,
+    time_sleep.wait_service_identity_propagation
+  ]
 }
 
 resource "null_resource" "generate_certificate" {
@@ -216,7 +232,7 @@ resource "time_sleep" "wait_upload_certificate" {
 
 module "secure_web_proxy" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-web-proxy"
-  version = "~> 0.5"
+  version = "~> 0.6"
 
   project_id          = module.secure_harness.network_project_id[0]
   region              = local.region
@@ -257,8 +273,9 @@ module "secure_web_proxy" {
 }
 
 module "safer_mysql_db" {
-  source               = "GoogleCloudPlatform/sql-db/google//modules/mysql"
-  version              = "~> 20.0"
+  source  = "GoogleCloudPlatform/sql-db/google//modules/mysql"
+  version = "~> 25.0"
+
   name                 = "csql-test"
   db_name              = local.db_name
   random_instance_name = true
@@ -285,8 +302,9 @@ module "safer_mysql_db" {
 }
 
 module "cloud_sql_firewall_rule" {
-  source       = "terraform-google-modules/network/google//modules/firewall-rules"
-  version      = "~> 9.0"
+  source  = "terraform-google-modules/network/google//modules/firewall-rules"
+  version = "~> 11.0"
+
   project_id   = module.secure_harness.network_project_id[0]
   network_name = module.secure_harness.service_vpc[0].network.name
 
@@ -465,7 +483,7 @@ resource "google_cloud_scheduler_job" "job" {
 
 module "pubsub" {
   source  = "terraform-google-modules/pubsub/google"
-  version = "~> 6.0"
+  version = "~> 7.0"
 
   topic              = "tpc-cloud-function-sql"
   project_id         = module.secure_harness.serverless_project_ids[0]
@@ -490,7 +508,7 @@ resource "google_project_iam_member" "network_service_agent_editor" {
 
 module "secure_cloud_function" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function"
-  version = "~> 0.5"
+  version = "~> 0.6"
 
   function_name             = "secure-cloud-function-cloud-sql"
   function_description      = "Read from Cloud SQL"
@@ -546,7 +564,7 @@ module "secure_cloud_function" {
     service_account_email = module.secure_harness.service_account_email[module.secure_harness.serverless_project_ids[0]]
   }
 
-  runtime     = "go118"
+  runtime     = "go121"
   entry_point = "HelloCloudFunction"
 
   depends_on = [

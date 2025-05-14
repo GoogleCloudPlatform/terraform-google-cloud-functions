@@ -133,6 +133,7 @@ module "secure_cloud_function" {
 | shared\_vpc\_name | Shared VPC name which is going to be re-used to create Serverless Connector. | `string` | n/a | yes |
 | storage\_source | Get the source from this location in Google Cloud Storage. | <pre>object({<br>    bucket     = string<br>    object     = string<br>    generation = optional(string, null)<br>  })</pre> | `null` | no |
 | subnet\_name | Subnet name to be re-used to create Serverless Connector. | `string` | `null` | no |
+| time\_to\_wait\_service\_identity\_propagation | The time to wait for service identity propagation. | `string` | `"180s"` | no |
 | timeout\_seconds | Timeout for each request. | `number` | `120` | no |
 | vpc\_egress\_value | Sets VPC Egress firewall rule. Supported values are VPC\_CONNECTOR\_EGRESS\_SETTINGS\_UNSPECIFIED, PRIVATE\_RANGES\_ONLY, and ALL\_TRAFFIC. | `string` | `"ALL_TRAFFIC"` | no |
 | vpc\_project\_id | The host project for the shared vpc. | `string` | n/a | yes |

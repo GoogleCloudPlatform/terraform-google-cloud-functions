@@ -1027,7 +1027,7 @@ will deployed in the Secure Cloud Function that will be created in step `5-app-i
     module "secure_web_proxy" {
       source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-web-proxy"
       count   = var.enable_scf ? 1 : 0
-      version = "~> 0.4.0"
+      version = "~> 0.6.0"
 
       project_id          = local.restricted_project_id
       region              = local.default_region
@@ -1270,11 +1270,11 @@ We consider that the `terraform-example-foundation` directory is at the same lev
       required_providers {
         google = {
           source  = "hashicorp/google"
-          version = "< 5.0"
+          version = "< 7.0"
         }
         google-beta = {
           source  = "hashicorp/google-beta"
-          version = "< 5.0"
+          version = "< 7.0"
         }
       }
       required_version = ">= 0.13"

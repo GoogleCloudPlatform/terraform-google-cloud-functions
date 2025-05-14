@@ -33,7 +33,7 @@ resource "random_id" "random_folder_suffix" {
 
 module "secure_harness" {
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.12.0"
+  version = "~> 0.17.2"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-scf-security"
@@ -59,6 +59,8 @@ module "secure_harness" {
   base_serverless_api                         = "cloudfunctions.googleapis.com"
   use_shared_vpc                              = true
   time_to_wait_vpc_sc_propagation             = "300s"
+  project_deletion_policy                     = "DELETE"
+  folder_deletion_protection                  = false
 
   service_account_project_roles = {
     "prj-scf-internal-server" = [
@@ -70,6 +72,7 @@ module "secure_harness" {
   }
 
   network_project_extra_apis = [
+    "compute.googleapis.com",
     "networksecurity.googleapis.com",
     "networkservices.googleapis.com",
     "certificatemanager.googleapis.com"
@@ -77,6 +80,7 @@ module "secure_harness" {
 
   serverless_project_extra_apis = {
     "prj-scf-internal-server" = [
+      "compute.googleapis.com",
       "opsconfigmonitoring.googleapis.com",
       "cloudfunctions.googleapis.com",
       "cloudbuild.googleapis.com",
@@ -89,7 +93,7 @@ module "secure_harness" {
 
 module "cloudfunction_source_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = "~> 8.0"
+  version = "~> 10.0"
 
   project_id    = module.secure_harness.serverless_project_ids[0]
   name          = "bkt-${local.location}-${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}-cfv2-zip-files"
@@ -165,7 +169,7 @@ resource "time_sleep" "wait_upload_certificate" {
 
 module "secure_web_proxy" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-web-proxy"
-  version = "~> 0.5"
+  version = "~> 0.6"
 
   project_id          = module.secure_harness.network_project_id[0]
   region              = local.region
@@ -212,7 +216,7 @@ resource "google_project_iam_member" "network_service_agent_editor" {
 
 module "secure_cloud_function" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function"
-  version = "~> 0.5"
+  version = "~> 0.6"
 
   function_name             = "secure-function2-internal-server"
   function_description      = "Secure cloud function example"
@@ -257,7 +261,7 @@ module "secure_cloud_function" {
       attribute_value = module.cloudfunction_source_bucket.name
     }]
   }
-  runtime     = "go118"
+  runtime     = "go121"
   entry_point = "helloHTTP"
 
   depends_on = [

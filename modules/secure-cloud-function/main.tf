@@ -17,7 +17,7 @@
 
 module "cloud_serverless_network" {
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-net"
-  version = "~> 0.12.0"
+  version = "~> 0.17.2"
 
   connector_name            = var.connector_name
   subnet_name               = var.subnet_name
@@ -76,6 +76,17 @@ resource "google_project_service_identity" "pubsub_sa" {
   service = "pubsub.googleapis.com"
 }
 
+resource "time_sleep" "wait_service_identity_propagation" {
+  create_duration = var.time_to_wait_service_identity_propagation
+
+  depends_on = [
+    google_project_service_identity.artifact_sa,
+    google_project_service_identity.pubsub_sa,
+    google_project_service_identity.cloudfunction_sa,
+    google_project_service_identity.eventarc_sa
+  ]
+}
+
 module "cloud_function_security" {
   source = "../secure-cloud-function-security"
 
@@ -108,6 +119,10 @@ module "cloud_function_security" {
     "serviceAccount:${google_project_service_identity.eventarc_sa.email}",
     "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}",
     "serviceAccount:${google_project_service_identity.pubsub_sa.email}"
+  ]
+
+  depends_on = [
+    time_sleep.wait_service_identity_propagation
   ]
 }
 

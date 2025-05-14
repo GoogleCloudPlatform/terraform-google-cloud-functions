@@ -26,7 +26,7 @@ resource "google_compute_subnetwork" "swp_subnetwork_proxy" {
 
 module "swp_firewall_rule" {
   source       = "terraform-google-modules/network/google//modules/firewall-rules"
-  version      = "~> 9.0"
+  version      = "~> 11.0"
   project_id   = var.project_id
   network_name = var.network_id
 

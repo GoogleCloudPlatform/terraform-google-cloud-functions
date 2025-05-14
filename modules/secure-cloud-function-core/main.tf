@@ -24,7 +24,7 @@ data "google_project" "project" {
 
 module "cloudfunction_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = "~> 8.0"
+  version = "~> 10.0"
 
   project_id      = var.project_id
   labels          = var.labels
@@ -67,7 +67,7 @@ module "pubsub" {
   for_each = toset(["container-analysis-notes-v1", "container-analysis-notes-v1beta1", "container-analysis-occurrences-v1", "container-analysis-occurrences-v1beta1"])
 
   source  = "terraform-google-modules/pubsub/google"
-  version = "~> 6.0"
+  version = "~> 7.0"
 
   topic              = each.value
   project_id         = var.project_id

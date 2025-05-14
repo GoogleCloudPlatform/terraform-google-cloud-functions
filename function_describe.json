@@ -3,7 +3,7 @@
     "build": "projects/97410184241/locations/us-west1/builds/f52182e4-a155-41e4-8c51-cf26f6b4b489",
     "dockerRepository": "projects/prj-secure-cloud-function-25de/locations/us-west1/repositories/rep-cloud-function-secure-cloud-function-bigquery",
     "entryPoint": "HelloCloudFunction",
-    "runtime": "go118",
+    "runtime": "go121",
     "source": {
       "storageSource": {
         "bucket": "gcf-v2-sources-97410184241-us-west1",

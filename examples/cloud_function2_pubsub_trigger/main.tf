@@ -29,7 +29,7 @@ resource "google_storage_bucket_object" "function-source" {
 
 module "pubsub" {
   source  = "terraform-google-modules/pubsub/google"
-  version = "~> 6.0"
+  version = "~> 7.0"
 
   topic      = "function2-topic"
   project_id = var.project_id
@@ -37,7 +37,7 @@ module "pubsub" {
 
 module "cloud_functions2" {
   source  = "GoogleCloudPlatform/cloud-functions/google"
-  version = "~> 0.5"
+  version = "~> 0.6"
 
   project_id        = var.project_id
   function_name     = "function2-pubsub-trigger-py"

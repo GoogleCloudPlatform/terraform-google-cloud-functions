@@ -1,6 +1,6 @@
 module example.com/module/helloworld
 
-go 1.18
+go 1.21
 
 require (
 	cloud.google.com/go/storage v1.29.0
