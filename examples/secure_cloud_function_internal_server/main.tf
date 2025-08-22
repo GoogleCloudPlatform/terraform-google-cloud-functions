@@ -33,7 +33,7 @@ resource "random_id" "random_folder_suffix" {
 
 module "secure_harness" {
   source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.17.2"
+  version = "~> 0.21.0"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-scf-security"
