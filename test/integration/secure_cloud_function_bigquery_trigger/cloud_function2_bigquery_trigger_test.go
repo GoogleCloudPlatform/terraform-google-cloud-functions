@@ -43,6 +43,9 @@ var (
 
 		// Editing VPC Service Controls is eventually consistent.
 		".*Error 403.*Request is prohibited by organization's policy.*vpcServiceControlsUniqueIdentifier.*": "Request is prohibited by organization's policy.",
+
+		// Google Storage Service Agent propagation issue.
+		".*Error 400.*Service account service-.*@gs-project-accounts.iam.gserviceaccount.com does not exist.*": "Google Storage Service Agent propagation issue",
 	}
 )
 
@@ -247,7 +250,7 @@ func TestGCF2BigqueryTrigger(t *testing.T) {
 
 		// Network test
 		opNet := gcloud.Runf(t, "compute networks describe %s --project=%s", networkName, networkProjectID)
-		assert.Equal("GLOBAL", opNet.Get("routingConfig.routingMode").String(), fmt.Sprint("Routing Mode should be GLOBAL."))
+		assert.Equal("GLOBAL", opNet.Get("routingConfig.routingMode").String(), "Routing Mode should be GLOBAL.")
 
 		// Sub-network test
 		subnetName := bqt.GetStringOutput("service_vpc_subnet_name")

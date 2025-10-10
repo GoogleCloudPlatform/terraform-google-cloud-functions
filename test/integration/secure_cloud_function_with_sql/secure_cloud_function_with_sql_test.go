@@ -42,6 +42,9 @@ var (
 
 		// Editing VPC Service Controls is eventually consistent.
 		".*Error 403.*Request is prohibited by organization's policy.*vpcServiceControlsUniqueIdentifier.*": "Request is prohibited by organization's policy.",
+
+		// Google Storage Service Agent propagation issue.
+		".*Error 400.*Service account service-.*@gs-project-accounts.iam.gserviceaccount.com does not exist.*": "Google Storage Service Agent propagation issue",
 	}
 )
 
