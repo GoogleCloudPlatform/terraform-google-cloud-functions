@@ -23,7 +23,7 @@ spec:
   source:
     repo: sso://user/prabhuramasamy/terraform-google-cloud-functions
     sourceType: git
-  version: 0.6.0
+  version: 0.7.0
   actuationTool:
     type: Terraform
     version: '>= 0.13'

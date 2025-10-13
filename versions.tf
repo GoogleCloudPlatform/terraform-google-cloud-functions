@@ -28,9 +28,9 @@ terraform {
   }
 
   provider_meta "google" {
-    module_name = "blueprints/terraform/terraform-google-cloud-functions/v0.6.0"
+    module_name = "blueprints/terraform/terraform-google-cloud-functions/v0.7.0"
   }
   provider_meta "google-beta" {
-    module_name = "blueprints/terraform/terraform-google-cloud-functions/v0.6.0"
+    module_name = "blueprints/terraform/terraform-google-cloud-functions/v0.7.0"
   }
 }

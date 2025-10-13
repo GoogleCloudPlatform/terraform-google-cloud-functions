@@ -61,7 +61,7 @@ Basic usage of this module is as follows:
 ```hcl
 module "secure_cloud_function" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function"
-  version = "~> 0.6"
+  version = "~> 0.7"
 
   function_name             = <FUNCTION-NAME>
   function_description      = <FUNCTION-DESCRIPTION>

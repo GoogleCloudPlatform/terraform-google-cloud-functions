@@ -8,6 +8,23 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.7.0](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.6.0...v0.7.0) (2025-10-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deps:** Update Terraform terraform-google-modules/cloud-storage/google to v8 ([#147](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/147))
+
+### Features
+
+* update dependencies and module for google provider v6 ([#151](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/151)) ([3f9d914](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/3f9d9140ca9ecc3c7224578a9110f0d1bee6f13c))
+
+
+### Bug Fixes
+
+* **deps:** Update Terraform terraform-google-modules/cloud-storage/google to v8 ([#147](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/147)) ([3b38f4b](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/3b38f4baf8c855780b17c92affb6f0b9c4e4deac))
+* remove alpha-documentai.googleapis.com from the list of VPC_SC restricted service ([#188](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/188)) ([96d009c](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/96d009c263817bc2e3f7cd2fa5917b21d56ed476))
+
 ## [0.6.0](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.5.0...v0.6.0) (2024-06-26)
 
 
