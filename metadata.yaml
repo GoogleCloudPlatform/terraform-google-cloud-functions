@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,152 +19,255 @@ metadata:
   annotations:
     config.kubernetes.io/local-config: "true"
 spec:
-  title: Terraform Google Cloud Functions (Gen 2) module
-  source:
-    repo: sso://user/prabhuramasamy/terraform-google-cloud-functions
-    sourceType: git
-  version: 0.7.0
-  actuationTool:
-    type: Terraform
-    version: '>= 0.13'
-  examples:
-  - name: cloud_function2_gcs_source
-    location: examples/cloud_function2_gcs_source
-  - name: cloud_function2_pubsub_trigger
-    location: examples/cloud_function2_pubsub_trigger
-  variables:
-  - name: build_env_variables
-    description: User-provided build-time environment variables
-    type: map(string)
-    required: false
-  - name: description
-    description: Short description of the function
-    type: string
-    required: false
-  - name: docker_repository
-    description: User managed repository created in Artifact Registry optionally with a customer managed encryption key.
-    type: string
-    required: false
-  - name: entrypoint
-    description: The name of the function (as defined in source code) that will be executed. Defaults to the resource name suffix, if not specified
-    type: string
-    required: true
-  - name: event_trigger
-    description: Event triggers for the function
-    type: |-
-      object({
-          trigger_region        = string
-          event_type            = string
-          service_account_email = string
-          pubsub_topic          = string
-          retry_policy          = string
-          event_filters = set(object({
-            attribute       = string
-            attribute_value = string
-            operator        = string
-          }))
-        })
-    required: false
-  - name: function_location
-    description: The location of this cloud function
-    type: string
-    required: true
-  - name: function_name
-    description: A user-defined name of the function
-    type: string
-    required: true
-  - name: labels
-    description: A set of key/value label pairs associated with this Cloud Function
-    type: map(string)
-    required: false
-  - name: project_id
-    description: Project ID to create Cloud Function
-    type: string
-    required: true
-  - name: repo_source
-    description: Get the source from this location in a Cloud Source Repository
-    type: |-
-      object({
-          project_id   = string
-          repo_name    = string
-          branch_name  = string
-          dir          = string
-          tag_name     = string
-          commit_sha   = string
-          invert_regex = bool
-        })
-    required: false
-  - name: runtime
-    description: The runtime in which to run the function.
-    type: string
-    required: true
-  - name: service_config
-    description: Details of the service
-    type: |-
-      object({
-          max_instance_count    = string
-          min_instance_count    = string
-          available_memory      = string
-          timeout_seconds       = string
-          runtime_env_variables = map(string)
-          runtime_secret_env_variables = set(object({
-            key_name   = string
-            project_id = string
-            secret     = string
-            version    = string
-          }))
-          secret_volumes = set(object({
-            mount_path = string
-            project_id = string
-            secret     = string
-            versions = set(object({
-              version = string
-              path    = string
-            }))
-          }))
-          vpc_connector                  = string
-          vpc_connector_egress_settings  = string
-          ingress_settings               = string
-          service_account_email          = string
-          all_traffic_on_latest_revision = bool
-        })
-    default:
-      all_traffic_on_latest_revision: true
-      available_memory: 256M
-      ingress_settings: null
-      max_instance_count: "100"
-      min_instance_count: null
-      runtime_env_variables: null
-      runtime_secret_env_variables: null
-      secret_volumes: null
-      service_account_email: null
-      timeout_seconds: "60"
-      vpc_connector: null
-      vpc_connector_egress_settings: null
-    required: false
-  - name: storage_source
-    description: Get the source from this location in Google Cloud Storage
-    type: |-
-      object({
-          bucket     = string
-          object     = string
-          generation = string
-        })
-    required: false
-  - name: worker_pool
-    description: Name of the Cloud Build Custom Worker Pool that should be used to build the function.
-    type: string
-    required: false
-  outputs:
-  - name: function_name
-    description: Name of the Cloud Function (Gen 2)
-  - name: function_uri
-    description: URI of the Cloud Function (Gen 2)
-  roles:
-  - level: Project
+  info:
+    title: Terraform Google Cloud Functions (Gen 2) module
+    source:
+      repo: https://github.com/anshukaira/terraform-google-cloud-functions.git
+      sourceType: git
+    version: 0.7.0
+    actuationTool:
+      flavor: Terraform
+      version: ">= 1.3"
+    description: {}
+  content:
+    subBlueprints:
+      - name: secure-cloud-function
+        location: modules/secure-cloud-function
+      - name: secure-cloud-function-core
+        location: modules/secure-cloud-function-core
+      - name: secure-cloud-function-security
+        location: modules/secure-cloud-function-security
+      - name: secure-web-proxy
+        location: modules/secure-web-proxy
+    examples:
+      - name: cloud_function2_gcs_source
+        location: examples/cloud_function2_gcs_source
+      - name: cloud_function2_pubsub_trigger
+        location: examples/cloud_function2_pubsub_trigger
+      - name: secure_cloud_function_bigquery_trigger
+        location: examples/secure_cloud_function_bigquery_trigger
+      - name: secure_cloud_function_internal_server
+        location: examples/secure_cloud_function_internal_server
+      - name: secure_cloud_function_with_sql
+        location: examples/secure_cloud_function_with_sql
+  interfaces:
+    variables:
+      - name: project_id
+        description: Project ID to create Cloud Function
+        varType: string
+        required: true
+      - name: function_name
+        description: A user-defined name of the function
+        varType: string
+        required: true
+      - name: function_location
+        description: "DEPRECATED: Please use the 'location' variable instead. This will be removed in a future version."
+        varType: string
+      - name: location
+        description: The location of this cloud function
+        varType: string
+        required: true
+      - name: description
+        description: Short description of the function
+        varType: string
+      - name: labels
+        description: A set of key/value label pairs associated with this Cloud Function
+        varType: map(string)
+      - name: runtime
+        description: The runtime in which to run the function.
+        varType: string
+        required: true
+      - name: entrypoint
+        description: The name of the function (as defined in source code) that will be executed. Defaults to the resource name suffix, if not specified
+        varType: string
+        required: true
+      - name: build_env_variables
+        description: User-provided build-time environment variables
+        varType: map(string)
+      - name: worker_pool
+        description: Name of the Cloud Build Custom Worker Pool that should be used to build the function.
+        varType: string
+      - name: docker_repository
+        description: User managed repository created in Artifact Registry optionally with a customer managed encryption key.
+        varType: string
+      - name: storage_source
+        description: Get the source from this location in Google Cloud Storage
+        varType: |-
+          object({
+              bucket     = string
+              object     = string
+              generation = optional(string, null)
+            })
+        connections:
+          - source:
+              source: github.com/terraform-google-modules/terraform-google-cloud-storage//modules/simple_bucket
+              version: ">= 8.0"
+            spec:
+              outputExpr: name
+              inputPath: bucket
+      - name: repo_source
+        description: Get the source from this location in a Cloud Source Repository
+        varType: |-
+          object({
+              project_id   = optional(string)
+              repo_name    = string
+              branch_name  = string
+              dir          = optional(string)
+              tag_name     = optional(string)
+              commit_sha   = optional(string)
+              invert_regex = optional(bool, false)
+            })
+      - name: event_trigger
+        description: Event triggers for the function
+        varType: |-
+          object({
+              trigger_region        = optional(string)
+              event_type            = string
+              service_account_email = string
+              pubsub_topic          = optional(string)
+              retry_policy          = string
+              event_filters = optional(set(object({
+                attribute       = string
+                attribute_value = string
+                operator        = optional(string)
+              })))
+            })
+        connections:
+          - source:
+              source: github.com/terraform-google-modules/terraform-google-pubsub//modules/pubsub
+              version: ">= 7.0.0"
+            spec:
+              outputExpr: id
+              inputPath: pubsub_topic
+          - source:
+              source: github.com/terraform-google-modules/terraform-google-service-accounts//modules/simple-sa
+              version: ">= 4.4"
+            spec:
+              outputExpr: email
+              inputPath: service_account_email
+      - name: service_config
+        description: Details of the service
+        varType: |-
+          object({
+              max_instance_count    = optional(string, 100)
+              min_instance_count    = optional(string, 1)
+              available_memory      = optional(string, "256M")
+              available_cpu         = optional(string, 1)
+              timeout_seconds       = optional(string, 60)
+              runtime_env_variables = optional(map(string), null)
+              runtime_secret_env_variables = optional(set(object({
+                key_name   = string
+                project_id = optional(string)
+                secret     = string
+                version    = string
+              })), null)
+              secret_volumes = optional(set(object({
+                mount_path = string
+                project_id = optional(string)
+                secret     = string
+                versions = set(object({
+                  version = string
+                  path    = string
+                }))
+              })), null)
+              vpc_connector                  = optional(string, null)
+              vpc_connector_egress_settings  = optional(string, null)
+              ingress_settings               = optional(string, null)
+              service_account_email          = optional(string, null)
+              all_traffic_on_latest_revision = optional(bool, true)
+            })
+        defaultValue: {}
+        connections:
+          - source:
+              source: github.com/terraform-google-modules/terraform-google-sql-db//modules/postgresql
+              version: ">= 23"
+            spec:
+              outputExpr: "{\"CLOUD_SQL_DATABASE_HOST\" : instance_first_ip_address, \"CLOUD_SQL_DATABASE_CONNECTION_NAME\" : instance_connection_name, \"CLOUD_SQL_DATABASE_NAME\" : env_vars.CLOUD_SQL_DATABASE_NAME}"
+              inputPath: runtime_env_variables
+          - source:
+              source: github.com/terraform-google-modules/terraform-google-sql-db//modules/mysql
+              version: ">= 23.0"
+            spec:
+              outputExpr: "{\"CLOUD_SQL_DATABASE_HOST\" : instance_first_ip_address, \"CLOUD_SQL_DATABASE_CONNECTION_NAME\" : instance_connection_name, \"CLOUD_SQL_DATABASE_NAME\" : env_vars.CLOUD_SQL_DATABASE_NAME}"
+              inputPath: runtime_env_variables
+          - source:
+              source: github.com/terraform-google-modules/terraform-google-memorystore
+              version: ">= 12.0"
+            spec:
+              outputExpr: "{\"REDIS_HOST\": host, \"REDIS_PORT\": env_vars.REDIS_PORT, \"REDIS_AUTH_STRING\": auth_string}"
+              inputPath: runtime_env_variables
+          - source:
+              source: github.com/terraform-google-modules/terraform-google-service-accounts//modules/simple-sa
+              version: ">= 4.4"
+            spec:
+              outputExpr: email
+              inputPath: service_account_email
+          - source:
+              source: github.com/terraform-google-modules/terraform-google-kms
+              version: ">=4.1.2"
+            spec:
+              outputExpr: key_id_list[0]
+              inputPath: runtime_secret_env_variables.key_name
+      - name: members
+        description: Cloud Function Invoker and Developer roles for Users/SAs. Key names must be developers and/or invokers
+        varType: map(list(string))
+        defaultValue: {}
+      - name: build_service_account
+        description: Cloud Function Build Service Account Id. This is The fully-qualified name of the service account to be used for building the container.
+        varType: string
+        connections:
+          - source:
+              source: github.com/terraform-google-modules/terraform-google-service-accounts//modules/simple-sa
+              version: ">= 4.4"
+            spec:
+              outputExpr: email
+    outputs:
+      - name: function_name
+        description: Name of the Cloud Function (Gen 2)
+        type: string
+      - name: function_uri
+        description: URI of the Cloud Function (Gen 2)
+        type: string
+  requirements:
     roles:
-    - roles/owner
-  services:
-  - cloudresourcemanager.googleapis.com
-  - storage-api.googleapis.com
-  - serviceusage.googleapis.com
+      - level: Project
+        roles:
+          - roles/accesscontextmanager.policyAdmin
+          - roles/orgpolicy.policyAdmin
+      - level: Project
+        roles:
+          - roles/owner
+          - roles/iam.serviceAccountUser
+          - roles/certificatemanager.editor
+      - level: Project
+        roles:
+          - roles/resourcemanager.folderAdmin
+          - roles/resourcemanager.projectCreator
+          - roles/resourcemanager.projectDeleter
+          - roles/compute.xpnAdmin
+          - roles/iam.serviceAccountTokenCreator
+    services:
+      - cloudresourcemanager.googleapis.com
+      - storage-api.googleapis.com
+      - serviceusage.googleapis.com
+      - cloudfunctions.googleapis.com
+      - run.googleapis.com
+      - cloudbuild.googleapis.com
+      - artifactregistry.googleapis.com
+      - pubsub.googleapis.com
+      - eventarc.googleapis.com
+      - iamcredentials.googleapis.com
+      - accesscontextmanager.googleapis.com
+      - iam.googleapis.com
+      - cloudbilling.googleapis.com
+      - cloudkms.googleapis.com
+      - bigquery.googleapis.com
+      - certificatemanager.googleapis.com
+      - sql-component.googleapis.com
+      - sqladmin.googleapis.com
+      - servicenetworking.googleapis.com
+    providerVersions:
+      - source: hashicorp/google
+        version: ">= 4.48, < 7"
+      - source: hashicorp/google-beta
+        version: ">= 4.48, < 7"

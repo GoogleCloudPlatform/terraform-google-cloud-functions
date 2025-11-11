@@ -1,0 +1,162 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: blueprints.cloud.google.com/v1alpha1
+kind: BlueprintMetadata
+metadata:
+  name: terraform-google-cloud-functions-secure-cloud-function-security
+  annotations:
+    config.kubernetes.io/local-config: "true"
+spec:
+  info:
+    title: Secure Cloud Function (2nd Gen) Security
+    source:
+      repo: https://github.com/anshukaira/terraform-google-cloud-functions.git
+      sourceType: git
+      dir: /modules/secure-cloud-function-security
+    version: 0.7.0
+    actuationTool:
+      flavor: Terraform
+      version: ">= 1.3"
+    description: {}
+  content:
+    examples:
+      - name: cloud_function2_gcs_source
+        location: examples/cloud_function2_gcs_source
+      - name: cloud_function2_pubsub_trigger
+        location: examples/cloud_function2_pubsub_trigger
+      - name: secure_cloud_function_bigquery_trigger
+        location: examples/secure_cloud_function_bigquery_trigger
+      - name: secure_cloud_function_internal_server
+        location: examples/secure_cloud_function_internal_server
+      - name: secure_cloud_function_with_sql
+        location: examples/secure_cloud_function_with_sql
+  interfaces:
+    variables:
+      - name: kms_project_id
+        description: The project where KMS will be created.
+        varType: string
+        required: true
+      - name: serverless_project_id
+        description: The project where Cloud Function is going to be deployed.
+        varType: string
+        required: true
+      - name: prevent_destroy
+        description: Set the prevent_destroy lifecycle attribute on keys..
+        varType: bool
+        defaultValue: true
+      - name: keyring_name
+        description: Keyring name.
+        varType: string
+        required: true
+      - name: key_rotation_period
+        description: Period of key rotation in seconds.
+        varType: string
+        defaultValue: 2592000s
+      - name: key_name
+        description: Key name.
+        varType: string
+        required: true
+      - name: key_protection_level
+        description: "The protection level to use when creating a version based on this template. Possible values: [\"SOFTWARE\", \"HSM\"]"
+        varType: string
+        defaultValue: HSM
+      - name: location
+        description: The location where resources are going to be deployed.
+        varType: string
+        defaultValue: us-east4
+      - name: owners
+        description: List of comma-separated owners for each key declared in set_owners_for.
+        varType: list(string)
+        defaultValue: []
+      - name: encrypters
+        description: List of comma-separated owners for each key declared in set_encrypters_for.
+        varType: list(string)
+        defaultValue: []
+      - name: decrypters
+        description: List of comma-separated owners for each key declared in set_decrypters_for.
+        varType: list(string)
+        defaultValue: []
+      - name: policy_for
+        description: "Policy Root: set one of the following values to determine where the policy is applied. Possible values: [\"project\", \"folder\", \"organization\"]."
+        varType: string
+        defaultValue: project
+      - name: folder_id
+        description: The folder ID to apply the policy to.
+        varType: string
+        defaultValue: ""
+      - name: organization_id
+        description: The organization ID to apply the policy to.
+        varType: string
+        defaultValue: ""
+      - name: groups
+        description: "  Groups which will have roles assigned.\n  The Serverless Administrators email group which the following roles will be added: Cloud Function Admin, Compute Network Viewer and Compute Network User.\n  The Serverless Security Administrators email group which the following roles will be added: Cloud Function Viewer, Cloud KMS Viewer and Artifact Registry Reader.\n  The Cloud Function Developer email group which the following roles will be added: Cloud Function Developer, Artifact Registry Writer and Cloud KMS CryptoKey Encrypter.\n  The Cloud Function User email group which the following roles will be added: Cloud Function Invoker.\n"
+        varType: |-
+          object({
+              group_serverless_administrator          = optional(string, null)
+              group_serverless_security_administrator = optional(string, null)
+              group_cloud_function_developer          = optional(string, null)
+              group_cloud_function_user               = optional(string, null)
+            })
+        defaultValue: {}
+    outputs:
+      - name: key_self_link
+        description: Key self link.
+      - name: keyring_resource
+        description: Keyring resource.
+      - name: keyring_self_link
+        description: Self link of the keyring.
+  requirements:
+    roles:
+      - level: Project
+        roles:
+          - roles/accesscontextmanager.policyAdmin
+          - roles/orgpolicy.policyAdmin
+      - level: Project
+        roles:
+          - roles/owner
+          - roles/iam.serviceAccountUser
+          - roles/certificatemanager.editor
+      - level: Project
+        roles:
+          - roles/resourcemanager.folderAdmin
+          - roles/resourcemanager.projectCreator
+          - roles/resourcemanager.projectDeleter
+          - roles/compute.xpnAdmin
+          - roles/iam.serviceAccountTokenCreator
+    services:
+      - cloudresourcemanager.googleapis.com
+      - storage-api.googleapis.com
+      - serviceusage.googleapis.com
+      - cloudfunctions.googleapis.com
+      - run.googleapis.com
+      - cloudbuild.googleapis.com
+      - artifactregistry.googleapis.com
+      - pubsub.googleapis.com
+      - eventarc.googleapis.com
+      - iamcredentials.googleapis.com
+      - accesscontextmanager.googleapis.com
+      - iam.googleapis.com
+      - cloudbilling.googleapis.com
+      - cloudkms.googleapis.com
+      - bigquery.googleapis.com
+      - certificatemanager.googleapis.com
+      - sql-component.googleapis.com
+      - sqladmin.googleapis.com
+      - servicenetworking.googleapis.com
+    providerVersions:
+      - source: hashicorp/google
+        version: ">= 4.74, < 7.0"
+      - source: hashicorp/google-beta
+        version: < 7.0
