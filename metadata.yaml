@@ -98,13 +98,6 @@ spec:
               object     = string
               generation = optional(string, null)
             })
-        connections:
-          - source:
-              source: github.com/terraform-google-modules/terraform-google-cloud-storage//modules/simple_bucket
-              version: ">= 8.0"
-            spec:
-              outputExpr: name
-              inputPath: bucket
       - name: repo_source
         description: Get the source from this location in a Cloud Source Repository
         varType: |-
@@ -134,14 +127,14 @@ spec:
             })
         connections:
           - source:
-              source: github.com/terraform-google-modules/terraform-google-pubsub//modules/pubsub
-              version: ">= 7.0.0"
+              source: github.com/terraform-google-modules/terraform-google-pubsub
+              version: ">= 8.3.2"
             spec:
               outputExpr: id
               inputPath: pubsub_topic
           - source:
               source: github.com/terraform-google-modules/terraform-google-service-accounts//modules/simple-sa
-              version: ">= 4.4"
+              version: ">= 4.6.0"
             spec:
               outputExpr: email
               inputPath: service_account_email
@@ -149,11 +142,11 @@ spec:
         description: Details of the service
         varType: |-
           object({
-              max_instance_count    = optional(string, 100)
-              min_instance_count    = optional(string, 1)
+              max_instance_count    = optional(string, "100")
+              min_instance_count    = optional(string, "1")
               available_memory      = optional(string, "256M")
-              available_cpu         = optional(string, 1)
-              timeout_seconds       = optional(string, 60)
+              available_cpu         = optional(string, "1")
+              timeout_seconds       = optional(string, "60")
               runtime_env_variables = optional(map(string), null)
               runtime_secret_env_variables = optional(set(object({
                 key_name   = string
@@ -180,19 +173,19 @@ spec:
         connections:
           - source:
               source: github.com/terraform-google-modules/terraform-google-sql-db//modules/postgresql
-              version: ">= 23"
+              version: ">= 26.2.2"
             spec:
               outputExpr: "{\"CLOUD_SQL_DATABASE_HOST\" : instance_first_ip_address, \"CLOUD_SQL_DATABASE_CONNECTION_NAME\" : instance_connection_name, \"CLOUD_SQL_DATABASE_NAME\" : env_vars.CLOUD_SQL_DATABASE_NAME}"
               inputPath: runtime_env_variables
           - source:
               source: github.com/terraform-google-modules/terraform-google-sql-db//modules/mysql
-              version: ">= 23.0"
+              version: ">= 26.2.2"
             spec:
               outputExpr: "{\"CLOUD_SQL_DATABASE_HOST\" : instance_first_ip_address, \"CLOUD_SQL_DATABASE_CONNECTION_NAME\" : instance_connection_name, \"CLOUD_SQL_DATABASE_NAME\" : env_vars.CLOUD_SQL_DATABASE_NAME}"
               inputPath: runtime_env_variables
           - source:
               source: github.com/terraform-google-modules/terraform-google-memorystore
-              version: ">= 12.0"
+              version: ">= 15.2.1"
             spec:
               outputExpr: "{\"REDIS_HOST\": host, \"REDIS_PORT\": env_vars.REDIS_PORT, \"REDIS_AUTH_STRING\": auth_string}"
               inputPath: runtime_env_variables
@@ -204,7 +197,7 @@ spec:
               inputPath: service_account_email
           - source:
               source: github.com/terraform-google-modules/terraform-google-kms
-              version: ">=4.1.2"
+              version: ">= 4.1.2"
             spec:
               outputExpr: key_id_list[0]
               inputPath: runtime_secret_env_variables.key_name
@@ -220,7 +213,7 @@ spec:
               source: github.com/terraform-google-modules/terraform-google-service-accounts//modules/simple-sa
               version: ">= 4.4"
             spec:
-              outputExpr: email
+              outputExpr: id
     outputs:
       - name: function_name
         description: Name of the Cloud Function (Gen 2)

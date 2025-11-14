@@ -33,6 +33,8 @@ spec:
         build_service_account:
           name: build_service_account
           title: Build Service Account
+          regexValidation: ^projects/[a-z0-9-]+/serviceAccounts/[a-z][a-z0-9-]{4,29}@[a-z][a-z0-9-]{4,29}\.iam\.gserviceaccount\.com$
+          validation: "Must be the full service account identifier: projects/{project_id}/serviceAccounts/{account_email}"
         description:
           name: description
           title: Description
@@ -46,6 +48,12 @@ spec:
         event_trigger:
           name: event_trigger
           title: Event Trigger
+          properties:
+            service_account_email:
+              name: service_account_email
+              title: Service Account Email
+              regexValidation: ^[a-z][a-z0-9-]{4,29}@[a-z][a-z0-9-]{4,29}\.iam\.gserviceaccount\.com$
+              validation: Service account email must be in the format {account-id}@{project-id}.iam.gserviceaccount.com.
         function_location:
           name: function_location
           title: Function Location
@@ -70,6 +78,77 @@ spec:
         runtime:
           name: runtime
           title: Runtime
+          enumValueLabels:
+            - label: Node_JS_24
+              value: nodejs24
+            - label: Node_JS_22
+              value: nodejs22
+            - label: Node_JS_20
+              value: nodejs20
+            - label: Node_JS_18
+              value: nodejs18
+            - label: Node_JS_16
+              value: nodejs16
+            - label: Node_JS_14
+              value: nodejs14
+            - label: Node_JS_12
+              value: nodejs12
+            - label: Node_JS_10
+              value: nodejs10
+            - label: Python_3_13
+              value: python313
+            - label: Python_3_12
+              value: python312
+            - label: Python_3_11
+              value: python311
+            - label: Python_3_10
+              value: python310
+            - label: Go_1_23
+              value: go123
+            - label: Go_1_22
+              value: go122
+            - label: Go_1_21
+              value: go121
+            - label: Go_1_20
+              value: go120
+            - label: Go_1_19
+              value: go119
+            - label: Go_1_18
+              value: go118
+            - label: Go_1_16
+              value: go116
+            - label: Go_1_13
+              value: go113
+            - label: Java_21
+              value: java21
+            - label: Java_17
+              value: java17
+            - label: Java_11
+              value: java11
+            - label: Ruby_3_3
+              value: ruby33
+            - label: Ruby_3_2
+              value: ruby32
+            - label: Ruby_3_0
+              value: ruby30
+            - label: Ruby_2_7
+              value: ruby27
+            - label: Ruby_2_6
+              value: ruby26
+            - label: PHP_8_3
+              value: php83
+            - label: PHP_8_2
+              value: php82
+            - label: PHP_8_1
+              value: php81
+            - label: PHP_7_4
+              value: php74
+            - label: DOT_NET_8
+              value: dotnet8
+            - label: DOT_NET_6
+              value: dotnet6
+            - label: DOT_NET_3
+              value: dotnet3
           level: 1
         service_config:
           name: service_config
