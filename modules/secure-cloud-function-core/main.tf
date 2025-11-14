@@ -97,7 +97,7 @@ module "cloud_function" {
   description         = var.function_description
   project_id          = var.project_id
   labels              = var.labels
-  function_location   = var.location
+  location            = var.location
   runtime             = var.runtime
   entrypoint          = var.entry_point
   repo_source         = var.repo_source
