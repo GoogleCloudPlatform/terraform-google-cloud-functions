@@ -32,9 +32,9 @@ func TestGCF2GCSSource(t *testing.T) {
 
 		function_name := gcs_sourceT.GetStringOutput("function_name")
 		projectID := gcs_sourceT.GetStringOutput("project_id")
-		function_location := gcs_sourceT.GetStringOutput("function_location")
+		location := gcs_sourceT.GetStringOutput("location")
 
-		function_cmd := gcloud.Run(t, "functions describe", gcloud.WithCommonArgs([]string{function_name, "--project", projectID, "--gen2", "--region", function_location, "--format", "json"}))
+		function_cmd := gcloud.Run(t, "functions describe", gcloud.WithCommonArgs([]string{function_name, "--project", projectID, "--gen2", "--region", location, "--format", "json"}))
 
 		// T01: Verify if the Cloud Functions deployed is in ACTIVE state
 		assert.Equal("ACTIVE", function_cmd.Get("state").String(), fmt.Sprintf("Should be ACTIVE. Cloud Function is not successfully deployed."))

@@ -19,7 +19,7 @@ variable "project_id" {
   type        = string
 }
 
-variable "function_location" {
+variable "location" {
   description = "The location of this cloud function"
   type        = string
   default     = "us-central1"

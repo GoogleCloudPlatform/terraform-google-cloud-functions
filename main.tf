@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
+locals {
+  # If var.location is set, use it. Otherwise, use var.function_location.
+  # This makes the change backward-compatible.
+  effective_location = coalesce(var.location, var.function_location)
+}
+
 /******************************************
 	Cloud Function Definition with
 	Repo/Storage Build Source and Event Trigger
  *****************************************/
 resource "google_cloudfunctions2_function" "function" {
   name        = var.function_name
-  location    = var.function_location
+  location    = local.effective_location
   description = var.description
   project     = var.project_id
 
