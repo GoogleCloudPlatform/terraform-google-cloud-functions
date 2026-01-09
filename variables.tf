@@ -25,6 +25,12 @@ variable "function_name" {
 }
 
 variable "function_location" {
+  description = "DEPRECATED: Please use the 'location' variable instead. This will be removed in a future version."
+  type        = string
+  default     = null
+}
+
+variable "location" {
   description = "The location of this cloud function"
   type        = string
 }

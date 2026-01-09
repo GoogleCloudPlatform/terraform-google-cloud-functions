@@ -36,14 +36,13 @@ module "pubsub" {
 }
 
 module "cloud_functions2" {
-  source  = "GoogleCloudPlatform/cloud-functions/google"
-  version = "~> 0.6"
+  source = "../../"
 
-  project_id        = var.project_id
-  function_name     = "function2-pubsub-trigger-py"
-  function_location = var.function_location
-  runtime           = "python38"
-  entrypoint        = "hello_http"
+  project_id    = var.project_id
+  function_name = "function2-pubsub-trigger-py"
+  location      = var.location
+  runtime       = "python310"
+  entrypoint    = "hello_http"
   storage_source = {
     bucket     = google_storage_bucket.bucket.name
     object     = google_storage_bucket_object.function-source.name

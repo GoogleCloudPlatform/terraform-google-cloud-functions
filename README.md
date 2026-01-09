@@ -31,7 +31,7 @@ module "cloud_functions2" {
   # Required variables
   function_name      = "<FUNCTION_NAME>"
   project_id         = "<PROJECT_ID>"
-  function_location  = "<LOCATION>"
+  location  = "<LOCATION>"
   runtime            = "<RUNTIME>"
   entrypoint         = "<ENTRYPOINT>"
   storage_source = {
@@ -56,9 +56,10 @@ Functional examples are included in the
 | docker\_repository | User managed repository created in Artifact Registry optionally with a customer managed encryption key. | `string` | `null` | no |
 | entrypoint | The name of the function (as defined in source code) that will be executed. Defaults to the resource name suffix, if not specified | `string` | n/a | yes |
 | event\_trigger | Event triggers for the function | <pre>object({<br>    trigger_region        = optional(string)<br>    event_type            = string<br>    service_account_email = string<br>    pubsub_topic          = optional(string)<br>    retry_policy          = string<br>    event_filters = optional(set(object({<br>      attribute       = string<br>      attribute_value = string<br>      operator        = optional(string)<br>    })))<br>  })</pre> | `null` | no |
-| function\_location | The location of this cloud function | `string` | n/a | yes |
+| function\_location | DEPRECATED: Please use the 'location' variable instead. This will be removed in a future version. | `string` | `null` | no |
 | function\_name | A user-defined name of the function | `string` | n/a | yes |
 | labels | A set of key/value label pairs associated with this Cloud Function | `map(string)` | `null` | no |
+| location | The location of this cloud function | `string` | n/a | yes |
 | members | Cloud Function Invoker and Developer roles for Users/SAs. Key names must be developers and/or invokers | `map(list(string))` | `{}` | no |
 | project\_id | Project ID to create Cloud Function | `string` | n/a | yes |
 | repo\_source | Get the source from this location in a Cloud Source Repository | <pre>object({<br>    project_id   = optional(string)<br>    repo_name    = string<br>    branch_name  = string<br>    dir          = optional(string)<br>    tag_name     = optional(string)<br>    commit_sha   = optional(string)<br>    invert_regex = optional(bool, false)<br>  })</pre> | `null` | no |
