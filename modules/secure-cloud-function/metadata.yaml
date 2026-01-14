@@ -1,0 +1,362 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: blueprints.cloud.google.com/v1alpha1
+kind: BlueprintMetadata
+metadata:
+  name: terraform-google-cloud-functions
+  annotations:
+    config.kubernetes.io/local-config: "true"
+spec:
+  info:
+    title: Secure Cloud Function
+    source:
+      repo: https://github.com/anshukaira/terraform-google-cloud-functions.git
+      sourceType: git
+      dir: /modules/secure-cloud-function
+    version: 0.7.0
+    actuationTool:
+      flavor: Terraform
+      version: ">= 1.3"
+    description: {}
+  content:
+    examples:
+      - name: cloud_function2_gcs_source
+        location: examples/cloud_function2_gcs_source
+      - name: cloud_function2_pubsub_trigger
+        location: examples/cloud_function2_pubsub_trigger
+      - name: secure_cloud_function_bigquery_trigger
+        location: examples/secure_cloud_function_bigquery_trigger
+      - name: secure_cloud_function_internal_server
+        location: examples/secure_cloud_function_internal_server
+      - name: secure_cloud_function_with_sql
+        location: examples/secure_cloud_function_with_sql
+  interfaces:
+    variables:
+      - name: location
+        description: The location where resources are going to be deployed.
+        varType: string
+        required: true
+      - name: serverless_project_id
+        description: The project to deploy the cloud function service.
+        varType: string
+        required: true
+      - name: serverless_project_number
+        description: The project number to deploy to.
+        varType: number
+      - name: vpc_project_id
+        description: The host project for the shared vpc.
+        varType: string
+        required: true
+      - name: network_id
+        description: VPC network ID which is going to be used to connect the WorkerPool.
+        varType: string
+        required: true
+      - name: key_name
+        description: The name of KMS Key to be created and used in Cloud Run.
+        varType: string
+        defaultValue: cloud-run-kms-key
+      - name: kms_project_id
+        description: The project where KMS will be created.
+        varType: string
+        required: true
+      - name: function_name
+        description: Cloud Function name.
+        varType: string
+        required: true
+      - name: function_description
+        description: Cloud Function description.
+        varType: string
+        required: true
+      - name: service_account_email
+        description: Service account to be used on Cloud Function.
+        varType: string
+        required: true
+      - name: connector_name
+        description: The name for the connector to be created.
+        varType: string
+        defaultValue: serverless-vpc-connector
+      - name: subnet_name
+        description: Subnet name to be re-used to create Serverless Connector.
+        varType: string
+      - name: shared_vpc_name
+        description: Shared VPC name which is going to be re-used to create Serverless Connector.
+        varType: string
+        required: true
+      - name: all_traffic_on_latest_revision
+        description: Timeout for each request.
+        varType: bool
+        defaultValue: true
+      - name: environment_variables
+        description: A set of key/value environment variable pairs to assign to the function.
+        varType: map(string)
+        defaultValue: {}
+      - name: build_environment_variables
+        description: A set of key/value environment variable pairs to be used when building the Function.
+        varType: map(string)
+        defaultValue: {}
+      - name: event_trigger
+        description: A source that fires events in response to a condition in another service.
+        varType: |-
+          object({
+              trigger_region        = optional(string)
+              event_type            = string
+              service_account_email = string
+              pubsub_topic          = optional(string)
+              retry_policy          = string
+              event_filters = optional(set(object({
+                attribute       = string
+                attribute_value = string
+                operator        = optional(string)
+              })))
+            })
+        required: true
+      - name: prevent_destroy
+        description: Set the `prevent_destroy` lifecycle attribute on the Cloud KMS key.
+        varType: bool
+        defaultValue: true
+      - name: keyring_name
+        description: Keyring name.
+        varType: string
+        defaultValue: cloud-run-kms-keyring
+      - name: key_rotation_period
+        description: Period of key rotation in seconds.
+        varType: string
+        defaultValue: 2592000s
+      - name: key_protection_level
+        description: "The protection level to use when creating a version based on this template. Possible values: [\"SOFTWARE\", \"HSM\"]"
+        varType: string
+        defaultValue: HSM
+      - name: ip_cidr_range
+        description: The range of internal addresses that are owned by the subnetwork and which is going to be used by VPC Connector. For example, 10.0.0.0/28 or 192.168.0.0/28. Ranges must be unique and non-overlapping within a network. Only IPv4 is supported.
+        varType: string
+        required: true
+      - name: create_subnet
+        description: The subnet will be created with the subnet_name variable if true. When false, it will use the subnet_name for the subnet.
+        varType: bool
+        defaultValue: true
+      - name: policy_for
+        description: "Policy Root: set one of the following values to determine where the policy is applied. Possible values: [\"project\", \"folder\", \"organization\"]."
+        varType: string
+        defaultValue: project
+      - name: folder_id
+        description: The folder ID to apply the policy to.
+        varType: string
+        defaultValue: ""
+      - name: organization_id
+        description: The organization ID to apply the policy to.
+        varType: string
+        defaultValue: ""
+      - name: runtime
+        description: The runtime in which the function will be executed.
+        varType: string
+        required: true
+      - name: entry_point
+        description: The name of a method in the function source which will be invoked when the function is executed.
+        varType: string
+        required: true
+      - name: repo_source
+        description: The source repository where the Cloud Function Source is stored. Do not use combined with source_path.
+        varType: |-
+          object({
+              project_id   = optional(string)
+              repo_name    = string
+              branch_name  = string
+              dir          = optional(string)
+              tag_name     = optional(string)
+              commit_sha   = optional(string)
+              invert_regex = optional(bool, false)
+            })
+      - name: storage_source
+        description: Get the source from this location in Google Cloud Storage.
+        varType: |-
+          object({
+              bucket     = string
+              object     = string
+              generation = optional(string, null)
+            })
+      - name: labels
+        description: Labels to be assigned to resources.
+        varType: map(any)
+        defaultValue: {}
+      - name: resource_names_suffix
+        description: A suffix to concat in the end of the network resources names being created.
+        varType: string
+      - name: max_scale_instances
+        description: Sets the maximum number of container instances needed to handle all incoming requests or events from each revison from Cloud Run. For more information, access this [documentation](https://cloud.google.com/run/docs/about-instance-autoscaling).
+        varType: number
+        defaultValue: 2
+      - name: min_scale_instances
+        description: Sets the minimum number of container instances needed to handle all incoming requests or events from each revison from Cloud Run. For more information, access this [documentation](https://cloud.google.com/run/docs/about-instance-autoscaling).
+        varType: number
+        defaultValue: 1
+      - name: available_memory_mb
+        description: The amount of memory in megabytes allotted for the function to use.
+        varType: string
+        defaultValue: 256Mi
+      - name: timeout_seconds
+        description: Timeout for each request.
+        varType: number
+        defaultValue: 120
+      - name: vpc_egress_value
+        description: Sets VPC Egress firewall rule. Supported values are VPC_CONNECTOR_EGRESS_SETTINGS_UNSPECIFIED, PRIVATE_RANGES_ONLY, and ALL_TRAFFIC.
+        varType: string
+        defaultValue: ALL_TRAFFIC
+      - name: ingress_settings
+        description: The ingress settings for the function. Allowed values are ALLOW_ALL, ALLOW_INTERNAL_AND_GCLB and ALLOW_INTERNAL_ONLY. Changes to this field will recreate the cloud function.
+        varType: string
+        defaultValue: ALLOW_INTERNAL_AND_GCLB
+      - name: secret_environment_variables
+        description: A list of maps which contains key, project_id, secret_name (not the full secret id) and version to assign to the function as a set of secret environment variables.
+        varType: |-
+          set(object({
+              key_name   = string
+              project_id = optional(string)
+              secret     = string
+              version    = string
+            }))
+      - name: secret_volumes
+        description: "[Beta] Environment variables (Secret Manager)."
+        varType: |-
+          set(object({
+              mount_path = string
+              project_id = optional(string)
+              secret     = string
+              versions = set(object({
+                version = string
+                path    = string
+              }))
+            }))
+      - name: groups
+        description: "  Groups which will have roles assigned.\n  The Serverless Administrators email group which the following roles will be added: Cloud Run Admin, Compute Network Viewer and Compute Network User.\n  The Serverless Security Administrators email group which the following roles will be added: Cloud Run Viewer, Cloud KMS Viewer and Artifact Registry Reader.\n  The Cloud Run Developer email group which the following roles will be added: Cloud Run Developer, Artifact Registry Writer and Cloud KMS CryptoKey Encrypter.\n  The Cloud Run User email group which the following roles will be added: Cloud Run Invoker.\n"
+        varType: |-
+          object({
+              group_serverless_administrator          = optional(string, null)
+              group_serverless_security_administrator = optional(string, null)
+              group_cloud_run_developer               = optional(string, null)
+              group_cloud_run_user                    = optional(string, null)
+            })
+        defaultValue: {}
+      - name: bucket_cors
+        description: Configuration of CORS for bucket with structure as defined in https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_bucket#cors.
+        varType: any
+        defaultValue:
+          - max_age_seconds: 0
+            method:
+              - GET
+            origin:
+              - https://*.cloud.google.com
+              - https://*.corp.google.com
+              - https://*.corp.google.com:*
+              - https://*.cloud.google
+              - https://*.byoid.goog
+            response_header: []
+      - name: bucket_lifecycle_rules
+        description: The bucket's Lifecycle Rules configuration.
+        varType: |-
+          list(object({
+              # Object with keys:
+              # - type - The type of the action of this Lifecycle Rule. Supported values: Delete and SetStorageClass.
+              # - storage_class - (Required if action type is SetStorageClass) The target Storage Class of objects affected by this Lifecycle Rule.
+              action = any
+
+              # Object with keys:
+              # - age - (Optional) Minimum age of an object in days to satisfy this condition.
+              # - created_before - (Optional) Creation date of an object in RFC 3339 (e.g. 2017-06-13) to satisfy this condition.
+              # - with_state - (Optional) Match to live and/or archived objects. Supported values include: "LIVE", "ARCHIVED", "ANY".
+              # - matches_storage_class - (Optional) Storage Class of objects to satisfy this condition. Supported values include: MULTI_REGIONAL, REGIONAL, NEARLINE, COLDLINE, STANDARD, DURABLE_REDUCED_AVAILABILITY.
+              # - matches_prefix - (Optional) One or more matching name prefixes to satisfy this condition.
+              # - matches_suffix - (Optional) One or more matching name suffixes to satisfy this condition
+              # - num_newer_versions - (Optional) Relevant only for versioned objects. The number of newer versions of an object to satisfy this condition.
+              condition = any
+            }))
+        defaultValue:
+          - action:
+              type: Delete
+            condition:
+              age: 0
+              days_since_custom_time: 0
+              days_since_noncurrent_time: 0
+              num_newer_versions: 3
+              with_state: ARCHIVED
+      - name: time_to_wait_service_identity_propagation
+        description: The time to wait for service identity propagation.
+        varType: string
+        defaultValue: 180s
+    outputs:
+      - name: cloud_services_sa
+        description: Service Account for Cloud Function.
+      - name: cloudfunction_bucket
+        description: The Cloud Function source bucket.
+      - name: cloudfunction_bucket_name
+        description: The Cloud Function source bucket.
+      - name: cloudfunction_name
+        description: ID of the created Cloud Function.
+      - name: cloudfunction_url
+        description: Url of the created Cloud Function.
+      - name: connector_id
+        description: VPC serverless connector ID.
+      - name: gca_vpcaccess_sa
+        description: Service Account for VPC Access.
+      - name: key_self_link
+        description: Name of the Cloud KMS crypto key.
+      - name: keyring_self_link
+        description: Name of the Cloud KMS keyring.
+      - name: serverless_identity_services_sa
+        description: Service Identity to serverless services.
+  requirements:
+    roles:
+      - level: Project
+        roles:
+          - roles/accesscontextmanager.policyAdmin
+          - roles/orgpolicy.policyAdmin
+      - level: Project
+        roles:
+          - roles/owner
+          - roles/iam.serviceAccountUser
+          - roles/certificatemanager.editor
+      - level: Project
+        roles:
+          - roles/resourcemanager.folderAdmin
+          - roles/resourcemanager.projectCreator
+          - roles/resourcemanager.projectDeleter
+          - roles/compute.xpnAdmin
+          - roles/iam.serviceAccountTokenCreator
+    services:
+      - cloudresourcemanager.googleapis.com
+      - storage-api.googleapis.com
+      - serviceusage.googleapis.com
+      - cloudfunctions.googleapis.com
+      - run.googleapis.com
+      - cloudbuild.googleapis.com
+      - artifactregistry.googleapis.com
+      - pubsub.googleapis.com
+      - eventarc.googleapis.com
+      - iamcredentials.googleapis.com
+      - accesscontextmanager.googleapis.com
+      - iam.googleapis.com
+      - cloudbilling.googleapis.com
+      - cloudkms.googleapis.com
+      - bigquery.googleapis.com
+      - certificatemanager.googleapis.com
+      - sql-component.googleapis.com
+      - sqladmin.googleapis.com
+      - servicenetworking.googleapis.com
+    providerVersions:
+      - source: hashicorp/google
+        version: ">= 4.74, < 7.0"
+      - source: hashicorp/google-beta
+        version: < 7.0
+      - source: hashicorp/time
+        version: ">= 0.9.1"
