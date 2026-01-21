@@ -36,7 +36,7 @@ module "secure_harness" {
   version = "~> 0.21.5"
 
   billing_account                             = var.billing_account
-  security_project_name                       = "prj-scf-security"
+  security_project_name                       = "prj-scf-security-cf"
   network_project_name                        = "prj-scf-restricted-shared"
   serverless_project_names                    = ["prj-scf-internal-server"]
   org_id                                      = var.org_id
@@ -61,6 +61,7 @@ module "secure_harness" {
   time_to_wait_vpc_sc_propagation             = "300s"
   project_deletion_policy                     = "DELETE"
   folder_deletion_protection                  = false
+  time_to_wait_service_identity_propagation   = "300s"
 
   service_account_project_roles = {
     "prj-scf-internal-server" = [
@@ -89,6 +90,14 @@ module "secure_harness" {
       "networksecurity.googleapis.com"
     ]
   }
+}
+
+resource "time_sleep" "wait_for_secure_harness" {
+  create_duration = "1m"
+
+  depends_on = [
+    null_resource.generate_certificate
+  ]
 }
 
 module "cloudfunction_source_bucket" {

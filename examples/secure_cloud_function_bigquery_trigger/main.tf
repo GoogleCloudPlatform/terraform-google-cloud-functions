@@ -35,9 +35,9 @@ module "secure_harness" {
   version = "~> 0.21.5"
 
   billing_account                             = var.billing_account
-  security_project_name                       = "prj-scf-security"
-  network_project_name                        = "prj-scf-restricted-shared"
-  serverless_project_names                    = ["prj-scf-bq-trigger"]
+  security_project_name                       = "prj-scf-sec-bq"
+  network_project_name                        = "prj-scf-r-sh-bq"
+  serverless_project_names                    = ["prj-scf-bq-trg"]
   org_id                                      = var.org_id
   parent_folder_id                            = var.folder_id
   serverless_folder_suffix                    = random_id.random_folder_suffix.hex
@@ -62,13 +62,13 @@ module "secure_harness" {
   folder_deletion_protection                  = false
 
   service_account_project_roles = {
-    "prj-scf-bq-trigger" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
+    "prj-scf-bq-trg" = ["roles/eventarc.eventReceiver", "roles/viewer", "roles/compute.networkViewer", "roles/run.invoker"]
   }
 
   network_project_extra_apis = ["compute.googleapis.com", "networksecurity.googleapis.com"]
 
   serverless_project_extra_apis = {
-    "prj-scf-bq-trigger" = ["compute.googleapis.com", "networksecurity.googleapis.com", "cloudfunctions.googleapis.com", "cloudbuild.googleapis.com", "eventarc.googleapis.com", "eventarcpublishing.googleapis.com"]
+    "prj-scf-bq-trg" = ["compute.googleapis.com", "networksecurity.googleapis.com", "cloudfunctions.googleapis.com", "cloudbuild.googleapis.com", "eventarc.googleapis.com", "eventarcpublishing.googleapis.com"]
   }
 }
 
@@ -92,7 +92,7 @@ module "cloudfunction_source_bucket" {
 }
 
 resource "google_project_service" "network_project_apis" {
-  for_each           = toset(["networkservices.googleapis.com", "certificatemanager.googleapis.com"])
+  for_each           = toset(["networkservices.googleapis.com", "certificatemanager.googleapis.com", "cloudbuild.googleapis.com"])
   project            = module.secure_harness.network_project_id[0]
   service            = each.value
   disable_on_destroy = false
