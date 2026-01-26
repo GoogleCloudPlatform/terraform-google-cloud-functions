@@ -24,9 +24,9 @@ output "function_name" {
   value       = module.cloud_functions2.function_name
 }
 
-output "function_location" {
+output "location" {
   description = "Location of the Cloud Function (Gen 2)"
-  value       = var.function_location
+  value       = var.location
 }
 
 output "pubsub_topic" {

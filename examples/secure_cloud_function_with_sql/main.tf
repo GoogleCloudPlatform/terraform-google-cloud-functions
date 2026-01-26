@@ -39,8 +39,8 @@ module "secure_harness" {
   version = "~> 0.21.5"
 
   billing_account                             = var.billing_account
-  security_project_name                       = "prj-scf-security"
-  network_project_name                        = "prj-scf-restricted-shared"
+  security_project_name                       = "prj-scf-sec-sql"
+  network_project_name                        = "prj-scf-sql-shared"
   serverless_project_names                    = ["prj-scf-access-sql", "prj-scf-cloud-sql"]
   org_id                                      = var.org_id
   parent_folder_id                            = var.folder_id
