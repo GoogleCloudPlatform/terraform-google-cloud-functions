@@ -1,13 +1,13 @@
 module example.com/cloudsql
 
-go 1.21
+go 1.23.0
 
 require (
 	cloud.google.com/go/cloudsqlconn v1.2.3
 	github.com/GoogleCloudPlatform/functions-framework-go v1.7.1
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/go-sql-driver/mysql v1.7.1
-	golang.org/x/sync v0.1.0
+	golang.org/x/sync v0.12.0
 )
 
 require (
@@ -26,11 +26,11 @@ require (
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.10.0 // indirect
-	golang.org/x/crypto v0.21.0 // indirect
-	golang.org/x/net v0.23.0 // indirect
+	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/api v0.117.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
