@@ -24,7 +24,7 @@ spec:
     source:
       repo: https://github.com/anshukaira/terraform-google-cloud-functions.git
       sourceType: git
-    version: 0.7.0
+    version: 0.8.0
     actuationTool:
       flavor: Terraform
       version: ">= 1.3"

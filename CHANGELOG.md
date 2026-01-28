@@ -8,6 +8,17 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.8.0](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.7.0...v0.8.0) (2026-01-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* Making Cloud Functions ADC Compliant ([#194](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/194))
+
+### Bug Fixes
+
+* Making Cloud Functions ADC Compliant ([#194](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/194)) ([564e92e](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/564e92eba724eebd7625d75c830d56a40b59f8e5))
+
 ## [0.7.0](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.6.0...v0.7.0) (2025-10-13)
 
 
