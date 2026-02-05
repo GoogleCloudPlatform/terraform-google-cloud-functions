@@ -6,6 +6,6 @@ require (
 	cloud.google.com/go/storage v1.29.0
 	github.com/GoogleCloudPlatform/functions-framework-go v1.6.1
 	github.com/cloudevents/sdk-go/v2 v2.15.2
-	golang.org/x/oauth2 v0.6.0
+	golang.org/x/oauth2 v0.27.0
 	google.golang.org/api v0.113.0
 )
