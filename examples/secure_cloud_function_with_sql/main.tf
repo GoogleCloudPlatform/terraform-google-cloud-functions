@@ -483,7 +483,7 @@ resource "google_cloud_scheduler_job" "job" {
 
 module "pubsub" {
   source  = "terraform-google-modules/pubsub/google"
-  version = "~> 7.0"
+  version = "~> 8.0"
 
   topic              = "tpc-cloud-function-sql"
   project_id         = module.secure_harness.serverless_project_ids[0]

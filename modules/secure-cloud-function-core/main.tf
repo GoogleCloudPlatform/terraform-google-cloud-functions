@@ -67,7 +67,7 @@ module "pubsub" {
   for_each = toset(["container-analysis-notes-v1", "container-analysis-notes-v1beta1", "container-analysis-occurrences-v1", "container-analysis-occurrences-v1beta1"])
 
   source  = "terraform-google-modules/pubsub/google"
-  version = "~> 7.0"
+  version = "~> 8.0"
 
   topic              = each.value
   project_id         = var.project_id
