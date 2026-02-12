@@ -29,7 +29,7 @@ resource "google_storage_bucket_object" "function-source" {
 
 module "cloud_functions2" {
   source  = "GoogleCloudPlatform/cloud-functions/google"
-  version = "~> 0.7"
+  version = "~> 0.8"
 
   project_id    = var.project_id
   function_name = "function2-gcs-source-py"

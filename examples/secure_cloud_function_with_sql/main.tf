@@ -232,7 +232,7 @@ resource "time_sleep" "wait_upload_certificate" {
 
 module "secure_web_proxy" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-web-proxy"
-  version = "~> 0.6"
+  version = "~> 0.8"
 
   project_id          = module.secure_harness.network_project_id[0]
   region              = local.region
@@ -508,7 +508,7 @@ resource "google_project_iam_member" "network_service_agent_editor" {
 
 module "secure_cloud_function" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function"
-  version = "~> 0.6"
+  version = "~> 0.8"
 
   function_name             = "secure-cloud-function-cloud-sql"
   function_description      = "Read from Cloud SQL"

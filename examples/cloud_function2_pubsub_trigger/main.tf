@@ -37,7 +37,7 @@ module "pubsub" {
 
 module "cloud_functions2" {
   source  = "GoogleCloudPlatform/cloud-functions/google"
-  version = "~> 0.7"
+  version = "~> 0.8"
 
   project_id    = var.project_id
   function_name = "function2-pubsub-trigger-py"
