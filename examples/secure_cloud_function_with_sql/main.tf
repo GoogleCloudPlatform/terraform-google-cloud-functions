@@ -35,8 +35,7 @@ resource "random_id" "random_folder_suffix" {
 }
 
 module "secure_harness" {
-  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.23"
+  source = "git::https://github.com/marcos-leal-cit/terraform-google-cloud-run.git//modules/secure-serverless-harness?ref=8804387cdfd62e074ff3ad529f41b8768b8ddac8"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-scf-sec-sql"
@@ -82,7 +81,7 @@ module "secure_harness" {
 
 module "cloudfunction_source_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = "~> 10.0"
+  version = "~> 12.3"
 
   project_id    = module.secure_harness.serverless_project_ids[0]
   name          = "bkt-${local.location}-${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}-cfv2-zip-files"
@@ -101,7 +100,7 @@ module "cloudfunction_source_bucket" {
 
 module "cloud_sql_temp_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = "~> 10.0"
+  version = "~> 12.3"
 
   project_id    = module.secure_harness.serverless_project_ids[1]
   name          = "bkt-${local.location}-${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[1]]}-temp-files"
@@ -231,8 +230,7 @@ resource "time_sleep" "wait_upload_certificate" {
 }
 
 module "secure_web_proxy" {
-  source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-web-proxy"
-  version = "~> 0.6"
+  source  = "../../modules/secure-web-proxy"
 
   project_id          = module.secure_harness.network_project_id[0]
   region              = local.region
@@ -274,7 +272,7 @@ module "secure_web_proxy" {
 
 module "safer_mysql_db" {
   source  = "GoogleCloudPlatform/sql-db/google//modules/mysql"
-  version = "~> 25.0"
+  version = "~> 28.0"
 
   name                 = "csql-test"
   db_name              = local.db_name
@@ -303,7 +301,7 @@ module "safer_mysql_db" {
 
 module "cloud_sql_firewall_rule" {
   source  = "terraform-google-modules/network/google//modules/firewall-rules"
-  version = "~> 11.0"
+  version = "~> 18.0"
 
   project_id   = module.secure_harness.network_project_id[0]
   network_name = module.secure_harness.service_vpc[0].network.name
@@ -483,7 +481,7 @@ resource "google_cloud_scheduler_job" "job" {
 
 module "pubsub" {
   source  = "terraform-google-modules/pubsub/google"
-  version = "~> 7.0"
+  version = "~> 8.6"
 
   topic              = "tpc-cloud-function-sql"
   project_id         = module.secure_harness.serverless_project_ids[0]
@@ -507,8 +505,7 @@ resource "google_project_iam_member" "network_service_agent_editor" {
 }
 
 module "secure_cloud_function" {
-  source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function"
-  version = "~> 0.6"
+  source  = "../../modules/secure-cloud-function"
 
   function_name             = "secure-cloud-function-cloud-sql"
   function_description      = "Read from Cloud SQL"
