@@ -1,5 +1,5 @@
 # /**
-#  * Copyright 2023 Google LLC
+#  * Copyright 2026 Google LLC
 #  *
 #  * Licensed under the Apache License, Version 2.0 (the "License");
 #  * you may not use this file except in compliance with the License.
@@ -32,8 +32,7 @@ resource "random_id" "random_folder_suffix" {
 }
 
 module "secure_harness" {
-  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
-  version = "~> 0.23"
+  source = "git::https://github.com/marcos-leal-cit/terraform-google-cloud-run.git//modules/secure-serverless-harness?ref=8804387cdfd62e074ff3ad529f41b8768b8ddac8"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-scf-security-cf"
@@ -102,7 +101,7 @@ resource "time_sleep" "wait_for_secure_harness" {
 
 module "cloudfunction_source_bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = "~> 10.0"
+  version = "~> 12.3"
 
   project_id    = module.secure_harness.serverless_project_ids[0]
   name          = "bkt-${local.location}-${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}-cfv2-zip-files"
@@ -177,8 +176,7 @@ resource "time_sleep" "wait_upload_certificate" {
 }
 
 module "secure_web_proxy" {
-  source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-web-proxy"
-  version = "~> 0.6"
+  source  = "../../modules/secure-web-proxy"
 
   project_id          = module.secure_harness.network_project_id[0]
   region              = local.region
@@ -224,8 +222,7 @@ resource "google_project_iam_member" "network_service_agent_editor" {
 }
 
 module "secure_cloud_function" {
-  source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function"
-  version = "~> 0.6"
+  source  = "../../modules/secure-cloud-function"
 
   function_name             = "secure-function2-internal-server"
   function_description      = "Secure cloud function example"

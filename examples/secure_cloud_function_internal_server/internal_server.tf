@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ resource "google_compute_instance" "internal_server" {
 
 module "internal_server_firewall_rule" {
   source  = "terraform-google-modules/network/google//modules/firewall-rules"
-  version = "~> 11.0"
+  version = "~> 18.0"
 
   project_id   = module.secure_harness.network_project_id[0]
   network_name = module.secure_harness.service_vpc[0].network.name
