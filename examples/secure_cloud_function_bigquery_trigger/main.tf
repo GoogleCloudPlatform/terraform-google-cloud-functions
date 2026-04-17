@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -330,7 +330,7 @@ module "secure_cloud_function" {
         operator        = "match-path-pattern" # This allows path patterns to be used in the value field
     }]
   }
-  runtime     = "go121"
+  runtime     = "go124"
   entry_point = "HelloCloudFunction"
 
   depends_on = [
