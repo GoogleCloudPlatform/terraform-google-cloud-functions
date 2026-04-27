@@ -1,4 +1,4 @@
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -142,11 +142,11 @@ spec:
         description: Details of the service
         varType: |-
           object({
-              max_instance_count    = optional(string, "100")
-              min_instance_count    = optional(string, "1")
+              max_instance_count    = optional(string, 100)
+              min_instance_count    = optional(string, 1)
               available_memory      = optional(string, "256M")
-              available_cpu         = optional(string, "1")
-              timeout_seconds       = optional(string, "60")
+              available_cpu         = optional(string, 1)
+              timeout_seconds       = optional(string, 60)
               runtime_env_variables = optional(map(string), null)
               runtime_secret_env_variables = optional(set(object({
                 key_name   = string
@@ -261,6 +261,6 @@ spec:
       - servicenetworking.googleapis.com
     providerVersions:
       - source: hashicorp/google
-        version: ">= 4.48, < 7"
+        version: ">= 4.48, < 8"
       - source: hashicorp/google-beta
-        version: ">= 4.48, < 7"
+        version: ">= 4.48, < 8"
