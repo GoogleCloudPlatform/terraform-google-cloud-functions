@@ -16,7 +16,8 @@
 
 
 module "cloud_serverless_network" {
-  source = "git::https://github.com/marcos-leal-cit/terraform-google-cloud-run.git//modules/secure-serverless-net?ref=8804387cdfd62e074ff3ad529f41b8768b8ddac8"
+  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-net"
+  version = "~> 0.27"
 
   connector_name            = var.connector_name
   subnet_name               = var.subnet_name

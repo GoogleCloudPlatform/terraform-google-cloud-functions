@@ -32,7 +32,8 @@ resource "random_id" "random_folder_suffix" {
 }
 
 module "secure_harness" {
-  source = "git::https://github.com/marcos-leal-cit/terraform-google-cloud-run.git//modules/secure-serverless-harness?ref=8804387cdfd62e074ff3ad529f41b8768b8ddac8"
+  source  = "GoogleCloudPlatform/cloud-run/google//modules/secure-serverless-harness"
+  version = "~> 0.27"
 
   billing_account                             = var.billing_account
   security_project_name                       = "prj-scf-security-cf"
