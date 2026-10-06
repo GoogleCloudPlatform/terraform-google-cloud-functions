@@ -63,6 +63,7 @@ spec:
       - name: function_location
         description: "DEPRECATED: Please use the 'location' variable instead. This will be removed in a future version."
         varType: string
+        defaultValue: null
       - name: location
         description: The location of this cloud function
         varType: string
@@ -70,9 +71,11 @@ spec:
       - name: description
         description: Short description of the function
         varType: string
+        defaultValue: null
       - name: labels
         description: A set of key/value label pairs associated with this Cloud Function
         varType: map(string)
+        defaultValue: null
       - name: runtime
         description: The runtime in which to run the function.
         varType: string
@@ -84,12 +87,15 @@ spec:
       - name: build_env_variables
         description: User-provided build-time environment variables
         varType: map(string)
+        defaultValue: null
       - name: worker_pool
         description: Name of the Cloud Build Custom Worker Pool that should be used to build the function.
         varType: string
+        defaultValue: null
       - name: docker_repository
         description: User managed repository created in Artifact Registry optionally with a customer managed encryption key.
         varType: string
+        defaultValue: null
       - name: storage_source
         description: Get the source from this location in Google Cloud Storage
         varType: |-
@@ -98,6 +104,7 @@ spec:
               object     = string
               generation = optional(string, null)
             })
+        defaultValue: null
       - name: repo_source
         description: Get the source from this location in a Cloud Source Repository
         varType: |-
@@ -110,6 +117,7 @@ spec:
               commit_sha   = optional(string)
               invert_regex = optional(bool, false)
             })
+        defaultValue: null
       - name: event_trigger
         description: Event triggers for the function
         varType: |-
@@ -125,6 +133,7 @@ spec:
                 operator        = optional(string)
               })))
             })
+        defaultValue: null
         connections:
           - source:
               source: github.com/terraform-google-modules/terraform-google-pubsub
@@ -208,6 +217,7 @@ spec:
       - name: build_service_account
         description: Cloud Function Build Service Account Id. This is The fully-qualified name of the service account to be used for building the container.
         varType: string
+        defaultValue: null
         connections:
           - source:
               source: github.com/terraform-google-modules/terraform-google-service-accounts//modules/simple-sa
