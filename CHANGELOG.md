@@ -8,6 +8,13 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.9.1](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.9.0...v0.9.1) (2026-10-15)
+
+
+### Bug Fixes
+
+* populate null defaultValue in cloud-functions blueprint metadata ([#241](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/issues/241)) ([8c8a26d](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/commit/8c8a26d37c27008fdbf6c89705409ae7dc2cfa28))
+
 ## [0.9.0](https://github.com/GoogleCloudPlatform/terraform-google-cloud-functions/compare/v0.8.0...v0.9.0) (2026-04-27)
 
 
