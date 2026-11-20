@@ -26,8 +26,6 @@ locals {
   secret_name     = "sct-sql-password"
   labels          = { "env" = "dev" }
   subnet_ip       = "10.0.0.0/28"
-
-  cloud_services_sa = "${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}@cloudservices.gserviceaccount.com"
 }
 
 resource "random_id" "random_folder_suffix" {
@@ -498,14 +496,6 @@ data "google_secret_manager_secret_version" "latest_version" {
   depends_on = [null_resource.create_user_pwd]
 }
 
-resource "google_project_iam_member" "network_service_agent_editor" {
-  project = module.secure_harness.network_project_id[0]
-  role    = "roles/editor"
-  member  = "serviceAccount:${local.cloud_services_sa}"
-
-  depends_on = [module.secure_harness]
-}
-
 module "secure_cloud_function" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function"
   version = "~> 0.6"
@@ -573,7 +563,6 @@ module "secure_cloud_function" {
     google_secret_manager_secret_iam_member.member,
     null_resource.create_and_populate_db,
     null_resource.create_user_pwd,
-    module.secure_web_proxy,
-    google_project_iam_member.network_service_agent_editor
+    module.secure_web_proxy
   ]
 }

@@ -22,8 +22,6 @@ locals {
   table_name      = "tbl_test"
   kms_bigquery    = "key-secure-bigquery"
   subnet_ip       = "10.0.0.0/28"
-
-  cloud_services_sa = "${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}@cloudservices.gserviceaccount.com"
 }
 
 resource "random_id" "random_folder_suffix" {
@@ -263,14 +261,6 @@ module "secure_web_proxy" {
   ]
 }
 
-resource "google_project_iam_member" "network_service_agent_editor" {
-  project = module.secure_harness.network_project_id[0]
-  role    = "roles/editor"
-  member  = "serviceAccount:${local.cloud_services_sa}"
-
-  depends_on = [module.secure_harness]
-}
-
 module "secure_cloud_function" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function"
   version = "~> 0.6"
@@ -340,7 +330,6 @@ module "secure_cloud_function" {
     module.secure_harness,
     module.bigquery,
     google_storage_bucket_object.cf_bigquery_source_zip,
-    module.secure_web_proxy,
-    google_project_iam_member.network_service_agent_editor
+    module.secure_web_proxy
   ]
 }
