@@ -29,8 +29,8 @@ host=${7}
 
 create_user_and_save_pwd_in_secret() {
 
-    pwd=$(echo $RANDOM | md5sum | head -c 20; echo;)
-    password=$(echo "${pwd}" | base64)
+    # Generate a 32-character alphanumeric password from the kernel CSPRNG.
+    password=$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32)
 
     gcloud sql users create "${user_name}" \
     --instance "${instance_name}" \
