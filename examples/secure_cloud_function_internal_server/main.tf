@@ -25,7 +25,6 @@ locals {
   proxy_ip           = "10.0.0.10"
 
   private_service_connect_ip = "10.3.0.5"
-  cloud_services_sa          = "${module.secure_harness.serverless_project_numbers[module.secure_harness.serverless_project_ids[0]]}@cloudservices.gserviceaccount.com"
 }
 resource "random_id" "random_folder_suffix" {
   byte_length = 2
@@ -215,14 +214,6 @@ module "secure_web_proxy" {
   ]
 }
 
-resource "google_project_iam_member" "network_service_agent_editor" {
-  project = module.secure_harness.network_project_id[0]
-  role    = "roles/editor"
-  member  = "serviceAccount:${local.cloud_services_sa}"
-
-  depends_on = [module.secure_harness]
-}
-
 module "secure_cloud_function" {
   source  = "GoogleCloudPlatform/cloud-functions/google//modules/secure-cloud-function"
   version = "~> 0.6"
@@ -277,7 +268,6 @@ module "secure_cloud_function" {
     google_compute_instance.internal_server,
     google_storage_bucket_object.function-source,
     module.internal_server_firewall_rule,
-    module.secure_web_proxy,
-    google_project_iam_member.network_service_agent_editor
+    module.secure_web_proxy
   ]
 }
